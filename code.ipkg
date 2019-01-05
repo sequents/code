@@ -1,0 +1,18 @@
+package code
+
+sourcedir = src
+
+modules = Lambda.Untyped.TermNam
+        , Lambda.Untyped.SmallstepNam
+        , Lambda.Untyped.TermDB
+        , Lambda.Untyped.SmallstepDB
+        , Lambda.Untyped.KAM
+        , Lambda.Untyped.CEK
+         
+        , Lambda.STLC.Ty
+        , Lambda.STLC.Term
+        , Lambda.STLC.Smallstep
+        , Lambda.STLC.KAM
+        , Lambda.STLC.CEK
+
+opts = "--total"
