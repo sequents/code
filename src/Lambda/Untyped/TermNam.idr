@@ -28,6 +28,15 @@ data Term = Var Name
 Term0 : Term 
 Term0 = App (Lam X $ App (Var X) (Var X)) (Lam X $ Var X)
 
+-- λx.x
+identity : Term
+identity = Lam X $ Var X
+
+-- (λx.x) (λx.x)
+identityApp : Term
+identityApp = App (Lam X (Var X)) (Lam X (Var X))
+
+-- ((λx.x) (λx.x)) (λx.x)
 Term1 : Term 
 Term1 = App (App (Lam X $ Var X) (Lam X $ Var X)) (Lam X $ Var X)
 

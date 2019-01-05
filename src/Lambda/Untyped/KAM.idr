@@ -5,8 +5,6 @@ import Lambda.Untyped.TermDB
 %default total
 %access public export
 
--- untyped KAM 
-
 mutual
   Env : Type 
   Env = List Clos
