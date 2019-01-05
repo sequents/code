@@ -19,19 +19,25 @@ allVars (Var x)   = [x]
 allVars (Lam _ t) = allVars t
 allVars (App t1 t2) = allVars t1 `union` allVars t2
 
+-- substituting `s` for variable `x` inside `b`
 subst : Name -> Term -> Term -> Term
 subst x s b = sub b
   where
   sub : Term -> Term
   sub e@(Var v) = if v == x then s else e
   sub e@(Lam v t) = 
-    if v == x then e else 
-      let fvs = freeVars s in
-      if v `elem` fvs 
-        then 
-          let v1 = fresh $ fvs `union` allVars b in
-          Lam v1 (assert_total $ sub $ subst v (Var v1) t)
-        else Lam v (sub t)
+    if v == x 
+      then e 
+      else 
+        let fvs = freeVars s in
+        if v `elem` fvs 
+          then 
+            let 
+              v1 = fresh $ fvs `union` allVars b 
+              t2 = subst v (Var v1) t -- rename bound variable in body
+             in
+            Lam v1 (assert_total $ sub t2) -- safe because `t2` is isomorphic to `t`, thus smaller than `Lam v t`
+          else Lam v (sub t)
   sub (App t1 t2) = App (sub t1) (sub t2)
 
 isVal : Term -> Bool
