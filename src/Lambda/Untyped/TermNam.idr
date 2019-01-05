@@ -25,9 +25,6 @@ data Term = Var Name
           | Lam Name Term
           | App Term Term
 
-Term0 : Term 
-Term0 = App (Lam X $ App (Var X) (Var X)) (Lam X $ Var X)
-
 -- λx.x
 identity : Term
 identity = Lam X $ Var X
@@ -36,25 +33,39 @@ identity = Lam X $ Var X
 identityApp : Term
 identityApp = App (Lam X (Var X)) (Lam X (Var X))
 
+-- (λx.λy.x) y -> λy'.y
+renamed : Term
+renamed = App (Lam X $ Lam Y $ Var X) (Var Y)
+
+-- (λx.x x) (λx.x)          
+Term0 : Term 
+Term0 = App (Lam X $ App (Var X) (Var X)) (Lam X $ Var X)
+
 -- ((λx.x) (λx.x)) (λx.x)
 Term1 : Term 
 Term1 = App (App (Lam X $ Var X) (Lam X $ Var X)) (Lam X $ Var X)
 
+-- (λx.x) ((λx.x) (λx.x))
 Term2 : Term 
 Term2 = App (Lam X $ Var X) (App (Lam X $ Var X) (Lam X $ Var X))
 
+-- λx.λy.x
 false : Term
 false = Lam X $ Lam Y $ Var X
 
+-- λx.λy.y
 true : Term
 true = Lam X $ Lam Y $ Var Y
 
+-- λx.λy.λz.(x z) y
 ifT : Term
 ifT = Lam X $ Lam Y $ Lam Z $ App (App (Var X) (Var Z)) (Var Y)
 
+-- λx.λy.x
 zero : Term
 zero = Lam X $ Lam Y $ Var X
 
+-- λx.λy.λz.z x
 succ : Term
 succ = Lam X $ Lam Y $ Lam Z $ App (Var Z) (Var X)
 
