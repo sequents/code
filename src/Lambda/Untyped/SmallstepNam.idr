@@ -15,8 +15,8 @@ freeVars (Lam x t)   = filter (/= x) $ freeVars t
 freeVars (App t1 t2) = freeVars t1 `union` freeVars t2
 
 allVars : Term -> List Name
-allVars (Var x)   = [x]
-allVars (Lam _ t) = allVars t
+allVars (Var x)     = [x]
+allVars (Lam _ t)   = allVars t
 allVars (App t1 t2) = allVars t1 `union` allVars t2
 
 -- substituting `s` for variable `x` inside `b`
@@ -24,7 +24,7 @@ subst : Name -> Term -> Term -> Term
 subst x s b = sub b
   where
   sub : Term -> Term
-  sub e@(Var v) = if v == x then s else e
+  sub e@(Var v)   = if v == x then s else e
   sub e@(Lam v t) = 
     if v == x 
       then e 
@@ -45,8 +45,9 @@ isVal (Lam _ _) = True
 isVal (Var _)   = True
 isVal  _        = False
 
+-- search for a single redex and reduce it
 step : Term -> Maybe Term
-step (App (Lam x t) sub) = Just $ subst x sub t
+step (App (Lam x t) sub) = Just $ subst x sub t  -- beta-reduction
 step (App  t1       t2 ) = 
   if isVal t1 
     then App     t1        <$> (step t2) 
