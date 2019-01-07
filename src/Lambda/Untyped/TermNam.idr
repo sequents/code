@@ -144,3 +144,14 @@ n5 = App (App add two) three
 
 n6 : Term
 n6 = App (App add three) three
+
+--
+
+zero' : Term 
+zero' = Lam X $ Lam Y $ Var Y
+
+one' : Term 
+one' = Lam X $ Lam Y $ App (Var X) (Var Y)
+
+succ' : Term
+succ' = Lam X $ Lam Y $ Lam Z $ App (Var Y) (App (App (Var X) (Var Y)) (Var Z))

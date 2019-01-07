@@ -29,14 +29,14 @@ stepIter s with (step s)
   | Nothing = Just s
   | Just s1 = assert_total $ stepIter s1
 
-run : Term -> Maybe State
-run t = stepIter (t, [], [])
+runKAM : Term -> Maybe State
+runKAM t = stepIter (t, [], [])
 
-test0 : run Term0 = Just (Lam $ Var Z, [], [])
+test0 : runKAM Term0 = Just (Lam $ Var Z, [], [])
 test0 = Refl
 
-test1 : run Term1 = Just (Lam $ Var Z, [], [])
+test1 : runKAM Term1 = Just (Lam $ Var Z, [], [])
 test1 = Refl
 
-test2 : run Term2 = Just (Lam $ Var Z, [], [])
+test2 : runKAM Term2 = Just (Lam $ Var Z, [], [])
 test2 = Refl

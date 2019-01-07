@@ -39,3 +39,28 @@ test2 = Refl
 
 ResultTm : Term [] TestTy
 ResultTm = Lam $ Var Here  
+
+NumTy : Ty
+NumTy = A~>(A~>A)~>A
+
+zero : Term [] NumTy
+zero = Lam $ Lam $ Var $ There Here
+
+succ : Term [] (NumTy~>A~>(NumTy~>NumTy)~>NumTy)
+succ = Lam $ Lam $ Lam $ App (Var Here) (Var $ There $ There Here)
+
+one : Term [] (A~>(NumTy~>NumTy)~>NumTy)
+one = App succ zero
+
+
+NumTy' : Ty
+NumTy' = (A~>A)~>A~>A
+
+zero' : Term [] NumTy'
+zero' = Lam $ Lam $ Var Here
+
+one' : Term [] NumTy'
+one' = Lam $ Lam $ App (Var $ There Here) (Var Here)
+
+succ' : Term [] (NumTy' ~> NumTy')
+succ' = Lam $ Lam $ Lam $ App (Var $ There Here) (App (App (Var $ There $ There Here) (Var $ There Here)) (Var Here))

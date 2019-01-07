@@ -81,3 +81,14 @@ n5 = App (App add two) three
 
 n6 : Term
 n6 = App (App add three) three
+
+--
+
+zero' : Term 
+zero' = Lam $ Lam $ Var 0
+
+one' : Term 
+one' = Lam $ Lam $ App (Var 1) (Var 0)
+
+succ' : Term
+succ' = Lam $ Lam $ Lam $ App (Var 1) (App (App (Var 2) (Var 1)) (Var 0))

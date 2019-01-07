@@ -5,6 +5,6 @@ module Lambda.STLC.Ty
 
 data Ty = A | Imp Ty Ty
 
-infix 5 ~>
+infixr 5 ~>
 (~>) : Ty -> Ty -> Ty
 (~>) = Imp
