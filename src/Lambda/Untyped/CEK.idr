@@ -37,14 +37,14 @@ stepIter s = loop Z s
       | Nothing = (n, Just s1)
       | Just s2 = assert_total $ loop (S n) s2
 
-run : Term -> (Nat, Maybe State0)
-run t = stepIter $ L t [] []
+runCEK : Term -> (Nat, Maybe State)
+runCEK t = stepIter $ L t [] []
 
-test0 : run Term0 = (11, Just (R (Cl (Lam (Var 0)) []) []))
+test0 : runCEK Term0 = (11, Just (R (Cl (Lam (Var 0)) []) []))
 test0 = Refl
 
-test1 : run Term1 = (11, Just (R (Cl (Lam (Var 0)) []) []))
+test1 : runCEK Term1 = (11, Just (R (Cl (Lam (Var 0)) []) []))
 test1 = Refl
 
-test2 : run Term2 = (11, Just (R (Cl (Lam (Var 0)) []) []))
+test2 : runCEK Term2 = (11, Just (R (Cl (Lam (Var 0)) []) []))
 test2 = Refl

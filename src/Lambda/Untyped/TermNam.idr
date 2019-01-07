@@ -155,3 +155,12 @@ one' = Lam X $ Lam Y $ App (Var X) (Var Y)
 
 succ' : Term
 succ' = Lam X $ Lam Y $ Lam Z $ App (Var Y) (App (App (Var X) (Var Y)) (Var Z))
+
+true' : Term
+true' = Lam X $ Lam Y $ Var X
+
+false' : Term
+false' = Lam X $ Lam Y $ Var Y
+
+and' : Term
+and' = Lam X $ Lam Y $ App (App (Var X) (Var Y)) false'

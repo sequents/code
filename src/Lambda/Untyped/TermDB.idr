@@ -16,6 +16,9 @@ Term1 = App (App (Lam $ Var Z) (Lam $ Var Z)) (Lam $ Var Z)
 Term2 : Term
 Term2 = App (Lam $ Var Z) (App (Lam $ Var Z) (Lam $ Var Z))
 
+omega : Term
+omega = App (Lam (App (Var 0) (Var 0))) (Lam (App (Var 0) (Var 0)))
+
 false : Term
 false = Lam $ Lam $ Var 1
 
@@ -92,3 +95,18 @@ one' = Lam $ Lam $ App (Var 1) (Var 0)
 
 succ' : Term
 succ' = Lam $ Lam $ Lam $ App (Var 1) (App (App (Var 2) (Var 1)) (Var 0))
+
+true' : Term
+true' = Lam $ Lam $ Var 1
+
+false' : Term
+false' = Lam $ Lam $ Var 0
+
+and' : Term
+and' = Lam $ Lam $ App (App (Var 1) (Var 0)) false'
+
+notCBV : Term
+notCBV = Lam $ Lam $ Lam $ App (App (Var 2) (Var 0)) (Var 1)
+
+notCBN : Term
+notCBN = Lam $ App (App (Var 0) false') true'
