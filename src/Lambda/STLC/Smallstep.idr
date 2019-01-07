@@ -1,55 +1,54 @@
 module Lambda.STLC.Smallstep
 
+import Data.List
+import Lambda.STLC.Ty
 import Lambda.STLC.Term
 
 %access public export
 %default total
 
-{-
-shift : Bool -> Nat -> Nat -> Nat
-shift b k arg = if arg < k then arg else if b then S arg else pred arg
+Subset : List Ty -> List Ty -> Type
+Subset g d = {x : Ty} -> Elem x g -> Elem x d
 
--- This is cycles every term above a threshold by a given amount
--- taking into consideration how far our term is within a binding
--- tree.
---
---       - increase or decrease
---       |
---       |      - cycle threshold
---       |      |
-cycle : Bool -> Nat -> Tm0 -> Tm0
-cycle b k (Vr0 v)     = Vr0 $ shift b k v
-cycle b k (Ap0 l1 l2) = Ap0 (cycle b k l1) (cycle b k l2)
-cycle b k (Lm0 l1)    = Lm0 $ cycle b (S k) l1
+ext : Subset g d -> Subset (b::g) (b::d)
+ext _  Here      = Here
+ext r (There el) = There (r el)
 
-mutual
-  substitute : (Nat, Tm0) -> Tm0 -> Tm0
-  substitute (n, sub) (Vr0 m)     = if n == m then sub else Vr0 m
-  substitute (n, sub) (Lm0 t)     = Lm0 $ substitute (S n, cycleSucc sub) t
-  substitute (n, sub) (Ap0 t1 t2) = Ap0 (substitute (n, sub) t1) (substitute (n, sub) t2)
-  
-  cycleSucc : Tm0 -> Tm0
-  cycleSucc = cycle True 0
+rename : Subset g d -> Term g a -> Term d a
+rename r (Var el)    = Var $ r el
+rename r (Lam t)     = Lam $ rename (ext r) t
+rename r (App t1 t2) = App (rename r t1) (rename r t2)
 
-cyclePred : Tm0 -> Tm0
-cyclePred = cycle False 0
+exts : ({x : Ty} -> Elem x g -> Term d x) -> Elem a (b::g) -> Term (b::d) a
+exts _  Here      = Var Here
+exts s (There el) = rename There (s el)
 
---          -- term to be substituted
---          |
-topSubst : Tm0 -> Tm0 -> Tm0
-topSubst sub body =
-  cyclePred $ substitute (0, cycleSucc sub) body
+subst : ({x : Ty} -> Elem x g -> Term d x) -> Term g a -> Term d a
+subst s (Var el)    = s el
+subst s (Lam t)     = Lam $ subst (exts s) t
+subst s (App t1 t2) = App (subst s t1) (subst s t2)
 
-isVal : Tm0 -> Bool
-isVal (Lm0 _) = True
-isVal (Vr0 _) = True
+subst1 : Term (b::g) a -> Term g b -> Term g a 
+subst1 {g} {b} t s = subst {g=b::g} go t
+  where
+  go : Elem x (b::g) -> Term g x
+  go  Here      = s
+  go (There el) = Var el
+
+isVal : Term g a -> Bool
+isVal (Lam _) = True
+isVal (Var _) = True
 isVal  _      = False
 
-smallStep : Tm0 -> Maybe Tm0
-smallStep (Ap0 (Lm0 body) sub) = pure $ topSubst sub body
-smallStep (Ap0  t1        t2 ) = 
+step : Term g a -> Maybe (Term g a)
+step (App (Lam body) sub) = Just $ subst1 body sub
+step (App  t1        t2 ) = 
   if isVal t1 
-    then Ap0     t1             <$> (smallStep t2) 
-    else Ap0 <$> (smallStep t1) <*> pure t2
-smallStep  _ = Nothing
-  -}
+    then App     t1        <$> (step t2) 
+    else App <$> (step t1) <*> pure t2
+step  _ = Nothing
+
+stepIter : Term g a -> Maybe (Term g a)
+stepIter t with (step t)
+  | Nothing = Just t
+  | Just t2 = assert_total $ stepIter t2
