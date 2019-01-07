@@ -21,20 +21,17 @@ cycle b k (Var v)     = Var $ shift b k v
 cycle b k (App l1 l2) = App (cycle b k l1) (cycle b k l2)
 cycle b k (Lam l1)    = Lam $ cycle b (S k) l1
 
-mutual
-  substitute : (Nat, Term) -> Term -> Term
-  substitute (n, sub) (Var m)     = if n == m then sub else Var m
-  substitute (n, sub) (Lam t)     = Lam $ substitute (S n, cycleSucc sub) t
-  substitute (n, sub) (App t1 t2) = App (substitute (n, sub) t1) (substitute (n, sub) t2)
-  
-  cycleSucc : Term -> Term
-  cycleSucc = cycle True 0
+cycleSucc : Term -> Term
+cycleSucc = cycle True 0
 
 cyclePred : Term -> Term
 cyclePred = cycle False 0
 
---          -- term to be substituted
---          |
+substitute : (Nat, Term) -> Term -> Term
+substitute (n, sub) (Var m)     = if n == m then sub else Var m
+substitute (n, sub) (Lam t)     = Lam $ substitute (S n, cycleSucc sub) t
+substitute (n, sub) (App t1 t2) = App (substitute (n, sub) t1) (substitute (n, sub) t2)
+
 topSubst : Term -> Term -> Term
 topSubst sub body =
   cyclePred $ substitute (0, cycleSucc sub) body
