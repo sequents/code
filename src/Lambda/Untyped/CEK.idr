@@ -20,7 +20,7 @@ Stack = List Frame
 data State = L Term Env Stack
            | R Clos Stack
 
-step : State0 -> Maybe State
+step : State -> Maybe State
 step (L (Var  Z)    (v::_)             s ) = Just $ R  v                                  s
 step (L (Var (S n)) (_::e)             s ) = Just $ L (Var n)     e                       s
 step (L (Lam t)         e              s ) = Just $ R (Cl (Lam t) e)                      s

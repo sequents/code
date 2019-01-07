@@ -34,7 +34,7 @@ subst x s b = sub b
           then 
             let 
               v1 = fresh $ fvs `union` allVars b 
-              t2 = subst v (Var v1) t -- rename bound variable in body
+              t2 = subst v (Var v1) t -- rename bound variable in body by substituting a fresh var
              in
             Lam v1 (assert_total $ sub t2) -- safe because `t2` is isomorphic to `t`, thus smaller than `Lam v t`
           else Lam v (sub t)

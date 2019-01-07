@@ -15,7 +15,7 @@ Stack : Type
 Stack = List Clos
 
 State : Type
-State = (Term, Env0, Stack)
+State = (Term, Env, Stack)
 
 step : State -> Maybe State
 step (Var  Z   , Cl t e::_,    s) = Just (    t,    e,         s)
