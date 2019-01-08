@@ -6,6 +6,7 @@ modules = Lambda.Untyped.TermNam
         , Lambda.Untyped.SmallstepNam
         , Lambda.Untyped.TermDB
         , Lambda.Untyped.SmallstepDB
+        , Lambda.Untyped.Strong
         , Lambda.Untyped.KAM
         , Lambda.Untyped.KAM2
         , Lambda.Untyped.CEK
