@@ -1,5 +1,6 @@
 module Lambda.Untyped.KAM
 
+import Util
 import Lambda.Untyped.TermDB
 
 %default total
@@ -24,13 +25,8 @@ step (Lam t    ,         e, c::s) = Just (    t, c::e,         s)
 step (App t u  ,         e,    s) = Just (    t,    e, Cl u e::s)
 step  _                           = Nothing
 
-stepIter : State -> Maybe State
-stepIter s with (step s)
-  | Nothing = Just s
-  | Just s1 = assert_total $ stepIter s1
-
 runKAM : Term -> Maybe State
-runKAM t = stepIter (t, [], [])
+runKAM t = iter step (t, [], [])
 
 test0 : runKAM Term0 = Just (Lam $ Var Z, [], [])
 test0 = Refl

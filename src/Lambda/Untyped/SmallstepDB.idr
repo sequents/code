@@ -1,5 +1,6 @@
 module Lambda.Untyped.SmallstepDB
 
+import Util
 import Lambda.Untyped.TermDB
 
 %access public export
@@ -50,11 +51,6 @@ step (App  t1        t2 ) =
     else App <$> (step t1) <*> Just t2
 step  _ = Nothing
 
-stepIter : Term -> Maybe Term
-stepIter t with (step t)
-  | Nothing = Just t
-  | Just t2 = assert_total $ stepIter t2
-
 -- call-by-value
 stepV : Term -> Maybe Term
 stepV (App t1 t2) = 
@@ -66,7 +62,14 @@ stepV (App t1 t2) =
     else App     t1         <$> (stepV t2) 
 stepV  _          = Nothing  
 
-stepIterV : Term -> Maybe Term
-stepIterV t with (stepV t)
-  | Nothing = Just t
-  | Just t2 = assert_total $ stepIterV t2
+iterN : Term -> Maybe Term
+iterN = iter step
+
+countN : Term -> (Nat, Maybe Term)
+countN = iterCount step
+
+iterV : Term -> Maybe Term
+iterV = iter stepV
+
+countV : Term -> (Nat, Maybe Term)
+countV = iterCount stepV

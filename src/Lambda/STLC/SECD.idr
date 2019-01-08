@@ -1,5 +1,6 @@
 module Lambda.STLC.SECD
 
+import Util
 import Data.List
 import Data.List.Quantifiers
 import Lambda.STLC.Ty
@@ -58,13 +59,5 @@ step (St (Sn              s  e (Tm (App t1 t2)::c))             d ) = Just $ St 
 step (St (Sn (Cl t e1::v::s) e (            Ap::c))             d ) = Just $ St (Sn []           (v::e1) [Tm t]               ) (Sn s e c::d) 
 step _ = Nothing
 
-stepIter : State a -> (Nat, Maybe (State a))
-stepIter s = loop Z s
-  where
-    loop : Nat -> State a -> (Nat, Maybe (State a))
-    loop n s1 with (step s1)
-      | Nothing = (n, Just s1)
-      | Just s2 = assert_total $ loop (S n) s2
-
 runSECD : Term [] a -> (Nat, Maybe (State a))
-runSECD t = stepIter $ St (Sn [] [] [Tm t]) []
+runSECD t = iterCount step $ St (Sn [] [] [Tm t]) []

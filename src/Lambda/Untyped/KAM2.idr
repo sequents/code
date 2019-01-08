@@ -1,5 +1,6 @@
 module Lambda.Untyped.KAM2
 
+import Util
 import Lambda.Untyped.TermDB
 
 %default total
@@ -22,10 +23,5 @@ step (ClApp (ClTm (Lam t) e) c1) = Just $ ClTm t (c1::e)
 step (ClApp  c0              c1) = ClApp <$> (step c0) <*> Just c1
 step  _                          = Nothing
 
-stepIter : Clos -> Maybe Clos
-stepIter s with (step s)
-  | Nothing = Just s
-  | Just s1 = assert_total $ stepIter s1
-
 runKAM : Term -> Maybe Clos
-runKAM t = stepIter (ClTm t [])
+runKAM t = iter step $ ClTm t []

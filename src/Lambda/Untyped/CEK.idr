@@ -1,5 +1,6 @@
 module Lambda.Untyped.CEK
 
+import Util
 import Lambda.Untyped.TermDB
 
 %default total
@@ -29,16 +30,8 @@ step (R (Cl (Lam t)     e) (Fun t1 e1::s)) = Just $ L t1          e1 (Arg (Cl (L
 step (R (Cl (Lam t)     e) (    Arg v::s)) = Just $ L t       (v::e)                      s
 step  _                                    = Nothing
 
-stepIter : State -> (Nat, Maybe State)
-stepIter s = loop Z s
-  where
-    loop : Nat -> State -> (Nat, Maybe State)
-    loop n s1 with (step s1)
-      | Nothing = (n, Just s1)
-      | Just s2 = assert_total $ loop (S n) s2
-
 runCEK : Term -> (Nat, Maybe State)
-runCEK t = stepIter $ L t [] []
+runCEK t = iterCount step $ L t [] []
 
 test0 : runCEK Term0 = (11, Just (R (Cl (Lam (Var 0)) []) []))
 test0 = Refl

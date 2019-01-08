@@ -40,6 +40,8 @@ test2 = Refl
 ResultTm : Term [] TestTy
 ResultTm = Lam $ Var Here  
 
+-- scott?
+
 NumTy : Ty
 NumTy = A~>(A~>A)~>A
 
@@ -52,6 +54,7 @@ succ = Lam $ Lam $ Lam $ App (Var Here) (Var $ There $ There Here)
 one : Term [] (A~>(NumTy~>NumTy)~>NumTy)
 one = App succ zero
 
+-- church
 
 NumTy' : Ty
 NumTy' = (A~>A)~>A~>A

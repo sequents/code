@@ -1,5 +1,6 @@
 module Lambda.STLC.KAM
 
+import Util
 import Data.List
 import Lambda.STLC.Ty
 import Lambda.STLC.Term
@@ -32,16 +33,8 @@ step (St (Lam t         )           e  (CS c s)) = Just $ St  t       (c::e)    
 step (St (App t u       )           e        s ) = Just $ St  t           e  (Cl u e `CS` s)
 step  _                                          = Nothing  
 
-stepIter : State a -> (Nat, Maybe (State a))
-stepIter s = loop Z s
-  where
-    loop : Nat -> State a -> (Nat, Maybe (State a))
-    loop n s1 with (step s1)
-      | Nothing = (n, Just s1)
-      | Just s2 = assert_total $ loop (S n) s2
-
 runKAM : Term [] a -> (Nat, Maybe (State a))
-runKAM t = stepIter $ St t [] NS
+runKAM t = iterCount step $ St t [] NS
 
 test1 : runKAM TestTm1 = (6, Just (St {g=[]} {a=TestTy} ResultTm [] NS))
 test1 = Refl

@@ -1,5 +1,6 @@
 module Lambda.Untyped.Strong.Scoped
 
+import Util
 import Data.Fin
 import Data.List
 
@@ -80,9 +81,7 @@ step (App  t1        t2 ) =
     then App     t1        <$> (step t2) 
     else App <$> (step t1) <*> Just t2
 step (Lam t)              = Lam <$> step t
-step  _ = Nothing  
+step  _                   = Nothing  
 
 stepIter : Term n -> Maybe (Term n)
-stepIter t with (step t)
-  | Nothing = Just t
-  | Just t2 = assert_total $ stepIter t2
+stepIter = iter step 
