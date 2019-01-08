@@ -45,7 +45,7 @@ isVal (Lam _ _) = True
 isVal (Var _)   = True
 isVal  _        = False
 
--- search for a single redex and reduce it
+-- search for a single redex and reduce it, call-by-name
 step : Term -> Maybe Term
 step (App (Lam x t) sub) = Just $ subst x sub t  -- beta-reduction
 step (App  t1       t2 ) = 
@@ -58,3 +58,19 @@ stepIter : Term -> Maybe Term
 stepIter t with (step t)
   | Nothing = Just t
   | Just t2 = assert_total $ stepIter t2
+
+-- call-by-value  
+stepV : Term -> Maybe Term
+stepV (App t1 t2) = 
+  if isVal t2 
+    then 
+      case t1 of
+        Lam x t => Just $ subst x t2 t  -- beta-reduction
+        _ => App <$> (stepV t1) <*> Just t2
+    else App     t1         <$> (stepV t2) 
+stepV  _          = Nothing  
+
+stepIterV : Term -> Maybe Term
+stepIterV t with (stepV t)
+  | Nothing = Just t
+  | Just t2 = assert_total $ stepIterV t2
