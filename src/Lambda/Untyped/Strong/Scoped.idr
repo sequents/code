@@ -1,4 +1,4 @@
-module Lambda.Untyped.Strong
+module Lambda.Untyped.Strong.Scoped
 
 import Data.Fin
 import Data.List
