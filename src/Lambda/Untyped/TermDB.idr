@@ -28,11 +28,16 @@ true = Lam $ Lam $ Var 0
 if2 : Term
 if2 = Lam $ Lam $ Lam $ App (App (Var 2) (Var 0)) (Var 1)
 
+-- Scott encodings
+
 zero : Term
 zero = Lam $ Lam $ Var 1
 
 succ : Term
 succ = Lam $ Lam $ Lam $ App (Var 0) (Var 2)
+
+pred : Term
+pred = Lam $ App (App (Var 0) zero) (Lam $ Var 0)
 
 one : Term 
 one = App succ zero
@@ -85,7 +90,7 @@ n5 = App (App add two) three
 n6 : Term
 n6 = App (App add three) three
 
---
+-- Church encodings
 
 zero' : Term 
 zero' = Lam $ Lam $ Var 0

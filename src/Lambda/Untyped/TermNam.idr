@@ -88,6 +88,8 @@ true = Lam X $ Lam Y $ Var Y
 ifT : Term
 ifT = Lam X $ Lam Y $ Lam Z $ App (App (Var X) (Var Z)) (Var Y)
 
+-- Scott encodings
+
 -- λx.λy.x
 zero : Term
 zero = Lam X $ Lam Y $ Var X
@@ -95,6 +97,9 @@ zero = Lam X $ Lam Y $ Var X
 -- λx.λy.λz.z x
 succ : Term
 succ = Lam X $ Lam Y $ Lam Z $ App (Var Z) (Var X)
+
+pred : Term
+pred = Lam X $ App (App (Var X) zero) (Lam X $ Var X)
 
 one : Term
 one = App succ zero
@@ -145,7 +150,7 @@ n5 = App (App add two) three
 n6 : Term
 n6 = App (App add three) three
 
---
+-- Church encodings
 
 zero' : Term 
 zero' = Lam X $ Lam Y $ Var Y

@@ -7,12 +7,14 @@ modules = Lambda.Untyped.TermNam
         , Lambda.Untyped.TermDB
         , Lambda.Untyped.SmallstepDB
         , Lambda.Untyped.KAM
+        , Lambda.Untyped.KAM2
         , Lambda.Untyped.CEK
          
         , Lambda.STLC.Ty
         , Lambda.STLC.Term
         , Lambda.STLC.Smallstep
         , Lambda.STLC.KAM
+        , Lambda.STLC.SECD
         , Lambda.STLC.CEK
 
 opts = "--total"
