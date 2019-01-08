@@ -83,5 +83,14 @@ step (App  t1        t2 ) =
 step (Lam t)              = Lam <$> step t
 step  _                   = Nothing  
 
-stepIter : Term n -> Maybe (Term n)
-stepIter = iter step 
+stepIter : Term n -> (Nat, Maybe (Term n))
+stepIter = iterCount step 
+
+test : stepIter Scoped.twotwo = (6, Just Scoped.four)
+test = Refl
+
+TestTm : Term 1
+TestTm = Lam $ App (App (Lam $ Lam $ App (App V1 V0) V2) (Lam V0)) V0
+
+test2 : stepIter TestTm = (3, Just $ Lam $ App V0 V0)
+test2 = Refl
