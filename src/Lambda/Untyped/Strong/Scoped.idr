@@ -11,6 +11,9 @@ data Term : Nat -> Type where
   Lam : Term (S n) -> Term n
   App : Term n -> Term n -> Term n
 
+Closed : Type
+Closed = Term 0  
+
 V0 : Term (S n)     
 V0 = Var FZ       
                     
@@ -32,7 +35,7 @@ four = Lam $ Lam $ App V1 (App V1 (App V1 (App V1 V0)))
 plus : Term n
 plus = Lam $ Lam $ Lam $ Lam $ App (App V3 V1) (App (App V2 V1) V0)
 
-twotwo : Term Z
+twotwo : Closed
 twotwo = App (App plus two) two
 
 ext : (Fin n -> Fin m) -> Fin (S n) -> Fin (S m)
