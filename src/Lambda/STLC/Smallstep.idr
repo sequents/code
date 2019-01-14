@@ -1,6 +1,5 @@
 module Lambda.STLC.Smallstep
 
-import Util
 import Data.List
 import Lambda.STLC.Ty
 import Lambda.STLC.Term
@@ -20,11 +19,14 @@ rename r (Var el)    = Var $ r el
 rename r (Lam t)     = Lam $ rename (ext r) t
 rename r (App t1 t2) = App (rename r t1) (rename r t2)
 
-exts : ({x : Ty} -> Elem x g -> Term d x) -> Elem a (b::g) -> Term (b::d) a
+Subst : List Ty -> List Ty -> Type
+Subst g d = {x : Ty} -> Elem x g -> Term d x
+
+exts : Subst g d -> Subst (b::g) (b::d)
 exts _  Here      = Var Here
 exts s (There el) = rename There (s el)
 
-subst : ({x : Ty} -> Elem x g -> Term d x) -> Term g a -> Term d a
+subst : Subst g d -> Term g a -> Term d a
 subst s (Var el)    = s el
 subst s (Lam t)     = Lam $ subst (exts s) t
 subst s (App t1 t2) = App (subst s t1) (subst s t2)
@@ -32,7 +34,7 @@ subst s (App t1 t2) = App (subst s t1) (subst s t2)
 subst1 : Term (b::g) a -> Term g b -> Term g a 
 subst1 {g} {b} t s = subst {g=b::g} go t
   where
-  go : Elem x (b::g) -> Term g x
+  go : Subst (b::g) g
   go  Here      = s
   go (There el) = Var el
 
@@ -50,4 +52,6 @@ step (App  t1        t2 ) =
 step  _ = Nothing
 
 stepIter : Term g a -> Maybe (Term g a)
-stepIter = iter step
+stepIter t with (step t)
+  | Nothing = Just t
+  | Just t2 = assert_total $ stepIter t2

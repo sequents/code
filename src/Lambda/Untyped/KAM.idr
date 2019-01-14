@@ -25,14 +25,14 @@ step (Lam t    ,         e, c::s) = Just (    t, c::e,         s)
 step (App t u  ,         e,    s) = Just (    t,    e, Cl u e::s)
 step  _                           = Nothing
 
-runKAM : Term -> Maybe State
-runKAM t = iter step (t, [], [])
+runKAM : Term -> (Nat, Maybe State)
+runKAM t = iterCount step (t, [], [])
 
-test0 : runKAM Term0 = Just (Lam $ Var Z, [], [])
+test0 : runKAM Term0 = (7, Just (Lam $ Var Z, [], []))
 test0 = Refl
 
-test1 : runKAM Term1 = Just (Lam $ Var Z, [], [])
+test1 : runKAM Term1 = (6, Just (Lam $ Var Z, [], []))
 test1 = Refl
 
-test2 : runKAM Term2 = Just (Lam $ Var Z, [], [])
+test2 : runKAM Term2 = (6, Just (Lam $ Var Z, [], []))
 test2 = Refl

@@ -6,10 +6,6 @@ import Lambda.Untyped.TermNam
 %default total
 %access public export
 
-fresh : List Name -> Name
-fresh []      = X
-fresh (v::vs) = map S $ foldr max v vs
-
 freeVars : Term -> List Name
 freeVars (Var x)     = [x]
 freeVars (Lam x t)   = filter (/= x) $ freeVars t

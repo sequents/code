@@ -4,11 +4,13 @@ sourcedir = src
 
 modules = Lambda.Untyped.TermNam
         , Lambda.Untyped.SmallstepNam
+        , Lambda.ParserNam
         , Lambda.Untyped.TermDB
         , Lambda.Untyped.SmallstepDB
         , Lambda.Untyped.KAM
         , Lambda.Untyped.KAM2
         , Lambda.Untyped.CEK
+        , Lambda.Untyped.CEK2
 
         , Lambda.Untyped.Strong.Scoped        
         
@@ -20,3 +22,5 @@ modules = Lambda.Untyped.TermNam
         , Lambda.STLC.CEK
 
 opts = "--total"
+
+pkgs = tparsec

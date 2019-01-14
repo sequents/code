@@ -21,6 +21,10 @@ T = ("t", 0)
 Q : Name
 Q = ("q", 0)
 
+fresh : List Name -> Name
+fresh []      = X
+fresh (v::vs) = map S $ foldr max v vs
+
 data Term = Var Name
           | Lam Name Term
           | App Term Term

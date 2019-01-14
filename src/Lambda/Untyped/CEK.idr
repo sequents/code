@@ -6,6 +6,9 @@ import Lambda.Untyped.TermDB
 %default total
 %access public export
 
+-- from Ariola, Bohannon, Sabry, "Sequent calculi and abstract machines" (pg 41)
+-- right-to-left
+
 mutual
   Env : Type 
   Env = List Clos
