@@ -1,39 +1,11 @@
-module Lambda.Untyped.Strong.Scoped
+module Lambda.Untyped.Scoped.Smallstep
 
 import Data.Fin
-import Data.List
+import Util
+import Lambda.Untyped.Scoped.Term
 
 %default total
 %access public export
-
-data Term : Nat -> Type where
-  Var : Fin n -> Term n
-  Lam : Term (S n) -> Term n
-  App : Term n -> Term n -> Term n
-
-V0 : Term (S n)     
-V0 = Var FZ       
-                    
-V1 : Term (2+n)     
-V1 = Var $ FS FZ  
-
-V2 : Term (3+n)     
-V2 = Var $ FS $ FS FZ  
-
-V3 : Term (4+n)     
-V3 = Var $ FS $ FS $ FS FZ  
-
-two : Term n
-two = Lam $ Lam $ App V1 (App V1 V0)
-
-four : Term n
-four = Lam $ Lam $ App V1 (App V1 (App V1 (App V1 V0)))
-
-plus : Term n
-plus = Lam $ Lam $ Lam $ Lam $ App (App V3 V1) (App (App V2 V1) V0)
-
-twotwo : Term Z
-twotwo = App (App plus two) two
 
 Ren : Nat -> Nat -> Type
 Ren n m = Fin n -> Fin m
@@ -76,16 +48,14 @@ mutual
   isNormal (Lam t) = isNormal t
   isNormal  n      = isNeutral n
 
-step : Term n -> Maybe (Term n)
-step (App (Lam body) sub) = Just $ subst1 body sub
-step (App  t1        t2 ) = 
+stepStr : Term n -> Maybe (Term n)
+stepStr (App (Lam body) sub) = Just $ subst1 body sub
+stepStr (App  t1        t2 ) = 
   if isNeutral t1 
-    then App     t1        <$> (step t2) 
-    else App <$> (step t1) <*> Just t2
-step (Lam t)              = Lam <$> step t
-step  _ = Nothing  
+    then App     t1           <$> (stepStr t2) 
+    else App <$> (stepStr t1) <*> Just t2
+stepStr (Lam t)              = Lam <$> stepStr t
+stepStr  _ = Nothing  
 
-stepIter : Term n -> Maybe (Term n)
-stepIter t with (step t)
-  | Nothing = Just t
-  | Just t2 = assert_total $ stepIter t2
+iterStr : Term n -> Maybe (Term n)
+iterStr = iter stepStr

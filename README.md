@@ -2,6 +2,7 @@
 
 Code for proof theory webinar series
 
-## Schedule
+## Sessions
 
 1. Untyped lambda calculus: named
+2. Untyped lambda calculus: DeBrujin indices, strong reduction, abstract machines, scoped terms

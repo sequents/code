@@ -1,5 +1,6 @@
 module Lambda.Untyped.TermDB
 
+%hide Language.Reflection.Lam
 %default total
 %access public export
 

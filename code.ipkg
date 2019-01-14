@@ -4,15 +4,17 @@ sourcedir = src
 
 modules = Lambda.Untyped.TermNam
         , Lambda.Untyped.SmallstepNam
-        , Lambda.ParserNam
         , Lambda.Untyped.TermDB
+        , Lambda.Untyped.TermConvert
         , Lambda.Untyped.SmallstepDB
+        , Lambda.Untyped.KAM0
         , Lambda.Untyped.KAM
         , Lambda.Untyped.KAM2
         , Lambda.Untyped.CEK
         , Lambda.Untyped.CEK2
 
-        , Lambda.Untyped.Strong.Scoped        
+        , Lambda.Untyped.Scoped.Term
+        , Lambda.Untyped.Scoped.Smallstep
         
         , Lambda.STLC.Ty
         , Lambda.STLC.Term
