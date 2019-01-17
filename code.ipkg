@@ -3,6 +3,7 @@ package code
 sourcedir = src
 
 modules = Iter
+        , OrdNat
         , Parse
         , Main
 
@@ -20,6 +21,7 @@ modules = Iter
 
         , Lambda.Untyped.Scoped.Term
         , Lambda.Untyped.Scoped.Smallstep
+        , Lambda.Untyped.Scoped.Parser
         
         , Lambda.STLC.Ty
         , Lambda.STLC.Term
