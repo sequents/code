@@ -11,6 +11,8 @@ import Lambda.Untyped.Scoped.Term
 %access public export
 %default total
 
+-- bidirectional-style indexed terms with positional info
+
 mutual
   data Val : Nat -> Type where
     Lam : Position -> Val (S n) -> Val n
@@ -36,11 +38,6 @@ weakApp pos n ne m va with (ordNat n m)
   weakApp pos  m    ne  m    va | EQN   = (m   ** App pos              ne               va )
   weakApp pos  n    ne (n+k) va | LTN k = (n+k ** App pos (weakenNeu k ne)              va )
   weakApp pos (m+k) ne  m    va | GTN k = (m+k ** App pos              ne  (weakenVal k va))
-
-record ULC (m : Nat) where
-  constructor MkULC
-  val : Parser' (n ** Val n) m
-  neu : Parser' (n ** Neu n) m
 
 var : All (Parser' (n ** Neu n))
 var = map (\n => (S n ** Parser.Var $ last {n})) $ decimalNat
@@ -69,11 +66,20 @@ emb rec = map (\(p,(n**v)) => (n ** Emb p v)) $ mand getPosition (neu rec)
 val : All (Box (Parser' (n ** Val n)) :-> Parser' (n ** Val n))
 val rec = (lam rec) `alt` (emb rec) 
 
+-- tying the knot
+
+record ULC (m : Nat) where
+  constructor MkULC
+  val : Parser' (n ** Val n) m
+  neu : Parser' (n ** Neu n) m
+
 ulc : All ULC
 ulc = fix _ $ \rec =>
   let ihv = Nat.map {a=ULC} val rec in
   MkULC (val ihv) (neu ihv)
-  
+
+-- converting to terms  
+
 mutual
   v2t : Val n -> Term n
   v2t (Lam _ t) = Lam (v2t t)

@@ -9,6 +9,8 @@ import Lambda.Untyped.TermConvert
 %access public export
 %default total
 
+-- bidirectional-style terms with positional info
+
 mutual
   data Val : Type where
     Lam : Position -> String -> Val -> Val
@@ -18,11 +20,6 @@ mutual
     Var : String -> Neu
     Cut : Position -> Val -> Neu
     App : Position -> Neu -> Val -> Neu
-
-record ULC (n : Nat) where
-  constructor MkULC
-  val : Parser' Val n
-  neu : Parser' Neu n
 
 name : All (Parser' String)
 name = alphas
@@ -53,6 +50,13 @@ emb rec = map (uncurry Emb) $ mand getPosition (neu rec)
         
 val : All (Box (Parser' Val) :-> Parser' Val)
 val rec = (lam rec) `alt` (emb rec) 
+
+-- tying the knot
+
+record ULC (n : Nat) where
+  constructor MkULC
+  val : Parser' Val n
+  neu : Parser' Neu n
 
 ulc : All ULC
 ulc = fix _ $ \rec =>
