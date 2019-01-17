@@ -6,6 +6,9 @@ module Lambda.Untyped.TermNam
 Name : Type
 Name = (String, Nat)
 
+nameNum : Name -> Nat
+nameNum (s,n) = cast $ 10 * sum (ord <$> unpack s) + cast n
+
 X : Name
 X = ("x", 0)
 

@@ -75,5 +75,5 @@ parseNam : String -> Either Error TermNam.Term
 parseNam s = result Left Left (Right . v2t) $ parseResult s (val ulc) 
 
 parseDB : String -> Either Error TermDB.Term
-parseDB s = toDB (\(_,n) => 10 + n) <$> parseNam s
+parseDB s = toDB nameNum <$> parseNam s
   
