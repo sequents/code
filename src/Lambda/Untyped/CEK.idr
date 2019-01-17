@@ -13,11 +13,11 @@ mutual
   Env : Type 
   Env = List Clos
 
-  data Clos = Cl Term Env
+  data Clos = Cl Term Env  -- ~(\tm,env)
 
 -- non-empty evaluation contexts  
-data Frame = Fun Term Env  -- an evaluated function, E[(v[ ])] where v ~ (t,env)
-           | Arg Term Env  -- an argument to evaluate, E[([ ]e)] where e ~ (t,env)
+data Frame = Fun Clos      -- an evaluated function, E[(cl[ ])] 
+           | Arg Term Env  -- an argument to evaluate, E[([ ]e)] where e ~ (tm,env)
 
 Stack : Type
 Stack = List Frame
@@ -26,12 +26,12 @@ State : Type
 State = (Term, Env, Stack)
 
 step : State -> Maybe State
-step (Var  Z   , Cl t e::_,            s) = Just $ (Lam t,         e ,          s)
-step (Var (S n),      _::e,            s) = Just $ (Var n,         e ,          s)
-step (Lam t    ,         e, Arg t1 e1::s) = Just $ (t1   ,         e1, Fun t e::s)
-step (Lam t    ,         e, Fun t1 e1::s) = Just $ (t1   , Cl t e::e1,          s)
-step (App t u  ,         e,            s) = Just $ (t    ,          e, Arg u e::s)
-step  _                                         = Nothing
+step (Var  Z   , Cl t e::_,                 s) = Just $ (Lam t,         e ,               s)
+step (Var (S n),      _::e,                 s) = Just $ (Var n,         e ,               s)
+step (Lam t    ,         e,      Arg t1 e1::s) = Just $ (t1   ,         e1, Fun (Cl t e)::s)
+step (Lam t    ,         e, Fun (Cl t1 e1)::s) = Just $ (t1   , Cl t e::e1,               s)
+step (App t u  ,         e,                 s) = Just $ (t    ,          e,      Arg u e::s)
+step  _                                        = Nothing
 
 runCEK : Term -> (Nat, Maybe State)
 runCEK t = iterCount step (t, [], [])
