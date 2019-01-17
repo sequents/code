@@ -16,8 +16,8 @@ mutual
   data Clos = Cl Term Env
 
 -- non-empty evaluation contexts  
-data Frame = Fun Term Env  -- E[(v[ ])] where v ~ (t,env)
-           | Arg Term Env  -- E[([ ]e)] where e ~ (t,env)
+data Frame = Fun Term Env  -- an evaluated function, E[(v[ ])] where v ~ (t,env)
+           | Arg Term Env  -- an argument to evaluate, E[([ ]e)] where e ~ (t,env)
 
 Stack : Type
 Stack = List Frame

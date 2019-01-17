@@ -1,0 +1,32 @@
+[package]
+name = "sequents/code"
+version = "0.1.0"
+authors = ["Alex Gryzlov"]
+
+[dependencies]
+"gallais/idris-tparsec" = { git = "https://github.com/gallais/idris-tparsec/" }
+
+[targets.lib]
+path = "src"
+mods = [ "Lambda.Untyped.TermNam"
+       , "Lambda.Untyped.TermDB"
+       , "Lambda.Untyped.TermConvert"
+       , "Lambda.Untyped.Parser"
+       , "Lambda.Untyped.SmallstepNam"
+       , "Lambda.Untyped.SmallstepDB"
+       , "Lambda.Untyped.KAM0"
+       , "Lambda.Untyped.KAM"
+       , "Lambda.Untyped.KAM2"
+       , "Lambda.Untyped.CEK"
+       , "Lambda.Untyped.CEK2"
+
+       , "Lambda.Untyped.Scoped.Term"
+       , "Lambda.Untyped.Scoped.Smallstep"
+       
+       , "Lambda.STLC.Ty"
+       , "Lambda.STLC.Term"
+       , "Lambda.STLC.Smallstep"
+       , "Lambda.STLC.KAM"
+       , "Lambda.STLC.SECD"
+       , "Lambda.STLC.CEK"
+       ]

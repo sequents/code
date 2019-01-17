@@ -1,7 +1,7 @@
 module Lambda.Untyped.TermConvert
 
-import Lambda.Untyped.TermDB
-import Lambda.Untyped.TermNam
+import public Lambda.Untyped.TermDB
+import public Lambda.Untyped.TermNam
 
 %default total
 %access public export

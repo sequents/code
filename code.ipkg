@@ -3,9 +3,10 @@ package code
 sourcedir = src
 
 modules = Lambda.Untyped.TermNam
-        , Lambda.Untyped.SmallstepNam
         , Lambda.Untyped.TermDB
         , Lambda.Untyped.TermConvert
+        , Lambda.Untyped.Parser
+        , Lambda.Untyped.SmallstepNam
         , Lambda.Untyped.SmallstepDB
         , Lambda.Untyped.KAM0
         , Lambda.Untyped.KAM
