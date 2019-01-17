@@ -1,7 +1,7 @@
 module Lambda.Untyped.Scoped.Smallstep
 
 import Data.Fin
-import Util
+import Iter
 import Lambda.Untyped.Scoped.Term
 
 %default total

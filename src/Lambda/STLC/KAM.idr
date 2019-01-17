@@ -1,7 +1,7 @@
 module Lambda.STLC.KAM
 
-import Util
 import Data.List
+import Iter
 import Lambda.STLC.Ty
 import Lambda.STLC.Term
 

@@ -1,6 +1,6 @@
 module Lambda.Untyped.SmallstepDB
 
-import Util
+import Iter
 import Lambda.Untyped.TermDB
 
 %access public export

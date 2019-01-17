@@ -1,6 +1,6 @@
 module Lambda.Untyped.KAM2
 
-import Util
+import Iter
 import Lambda.Untyped.TermDB
 
 %default total

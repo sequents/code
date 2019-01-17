@@ -1,8 +1,8 @@
 module Lambda.STLC.SECD
 
-import Util
 import Data.List
 import Data.List.Quantifiers
+import Iter
 import Lambda.STLC.Ty
 import Lambda.STLC.Term
 

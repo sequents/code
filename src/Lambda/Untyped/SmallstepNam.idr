@@ -1,6 +1,6 @@
 module Lambda.Untyped.SmallstepNam
 
-import Util
+import Iter
 import Lambda.Untyped.TermNam
 
 %default total

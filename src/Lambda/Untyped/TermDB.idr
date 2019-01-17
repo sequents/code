@@ -8,6 +8,11 @@ data Term = Var Nat
           | Lam Term
           | App Term Term
 
+Show Term where
+  show (Var n) = show n
+  show (Lam t) = "^" ++ show t
+  show (App t u) = "(" ++ show t ++ ")(" ++ show u ++ ")"
+
 Term0 : Term
 Term0 = App (Lam $ App (Var Z) (Var Z)) (Lam $ Var Z)
 

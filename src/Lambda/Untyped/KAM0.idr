@@ -1,6 +1,6 @@
 module Lambda.Untyped.KAM0
 
-import Util
+import Iter
 import Lambda.Untyped.TermDB
 import Lambda.Untyped.SmallstepDB
 

@@ -1,4 +1,4 @@
-module Util
+module Iter
 
 %default total
 %access public export

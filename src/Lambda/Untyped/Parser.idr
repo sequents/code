@@ -1,21 +1,13 @@
 module Lambda.Untyped.Parser
 
-import Control.Monad.State
 import Data.NEList
 import TParsec
 import TParsec.Running
+import public Parse
 import Lambda.Untyped.TermConvert
 
+%access public export
 %default total
-
-data Error : Type where
-  ParseError : Position -> Error
-
-Parser' : Type -> Nat -> Type
-Parser' = Parser (TParsecM Error Void) chars
-
-Subset (Position, List Void) Error where
-  into = ParseError . fst
 
 mutual
   data Val : Type where
@@ -24,6 +16,7 @@ mutual
 
   data Neu : Type where
     Var : String -> Neu
+    Cut : Position -> Val -> Neu
     App : Position -> Neu -> Val -> Neu
 
 record ULC (n : Nat) where
@@ -37,15 +30,19 @@ name = alphas
 var : All (Parser' Neu)
 var = map Var name
 
+cut : All (Box (Parser' Val) :-> Parser' Neu)
+cut rec = map (\(v,p) => Cut p v) $ 
+          andm (parens $ Nat.map {a=Parser' _} commit rec) getPosition
+
 app : All (Parser' (Neu -> Val -> Neu))
 app = map App $ randm space getPosition
 
 neu : All (Box (Parser' Val) :-> Parser' Neu)
-neu rec = parensopt $ hchainl var app rec 
+neu rec = hchainl (var `alt` (cut rec)) app rec 
       
 lam : All (Box (Parser' Val) :-> Parser' Val)
 lam rec = map (\((p,s),v) => Lam p s v) $ 
-          rand (char '\\') 
+          rand (char '^') 
                (and (mand getPosition 
                           (withSpaces name)) 
                     (rand (andopt (char '.') spaces) 
@@ -55,7 +52,7 @@ emb : All (Box (Parser' Val) :-> Parser' Val)
 emb rec = map (uncurry Emb) $ mand getPosition (neu rec)
         
 val : All (Box (Parser' Val) :-> Parser' Val)
-val rec = (lam rec) `alt` (emb rec)
+val rec = (lam rec) `alt` (emb rec) 
 
 ulc : All ULC
 ulc = fix _ $ \rec =>
@@ -71,6 +68,7 @@ mutual
 
   n2t : Neu -> TermNam.Term
   n2t (Var x)       = Var (x, 0)
+  n2t (Cut _ v)     = v2t v
   n2t (App _ t1 t2) = App (n2t t1) (v2t t2)
 
 parseNam : String -> Either Error TermNam.Term
@@ -78,3 +76,4 @@ parseNam s = result Left Left (Right . v2t) $ parseResult s (val ulc)
 
 parseDB : String -> Either Error TermDB.Term
 parseDB s = toDB (\(_,n) => 10 + n) <$> parseNam s
+  
