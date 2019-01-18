@@ -52,7 +52,7 @@ lup (fx::_)  Here      = fx
 lup (_::fg) (There el) = lup fg el
 
 step : State a -> Maybe (State a) 
-step (St (Sn [v]             _ []                 ) (Sn s e c ::d)) = Just $ St (Sn (v      ::s)     e                      c )            d
+step (St (Sn            [v]  _ []                 ) (Sn s e c ::d)) = Just $ St (Sn (v      ::s)     e                      c )            d
 step (St (Sn              s  e (Tm (Var i    )::c))             d ) = Just $ St (Sn (lup e i::s)     e                      c )            d
 step (St (Sn              s  e (Tm (Lam t    )::c))             d ) = Just $ St (Sn (Cl t e ::s)     e                      c )            d
 step (St (Sn              s  e (Tm (App t1 t2)::c))             d ) = Just $ St (Sn           s      e   (Tm t2::Tm t1::Ap::c))            d

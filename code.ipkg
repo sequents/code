@@ -30,6 +30,11 @@ modules = Iter
         , Lambda.STLC.SECD
         , Lambda.STLC.CEK
 
+        , LambdaMu.Term
+        , LambdaMu.MuKAM
+        , LambdaMu.MuKAM2
+        , LambdaMu.Typed.Term
+
 executable = run
 
 main = Main                      
