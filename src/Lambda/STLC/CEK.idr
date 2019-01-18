@@ -1,43 +1,39 @@
-module Lambda.CEK
+module Lambda.STLC.CEK
 
+import Data.List
+import Iter
 import Lambda.STLC.Ty
 import Lambda.STLC.Term
 
 %default total
 %access public export
 
-{-
 mutual
   data Env : List Ty -> Type where
     Nil  : Env []
     (::) : Clos a -> Env g -> Env (a::g)
   
   data Clos : Ty -> Type where
-    Cl : Tm g a -> Env g -> Clos a
+    Cl : Term (a::g) b -> Env g -> Clos (a~>b) -- ~(\tm,env)
 
-data Frame : Ty -> Type where
-  Fun : Tm g a -> Env g -> Frame a
-  Arg : Clos a -> Frame a
- 
 data Stack : Ty -> Ty -> Type where
-  NS : Stack a a
-  CS : Frame a -> Stack b c -> Stack (a~>b) c
+  Mt : Stack a a
+  Fun : Clos (a~>b) -> Stack b c -> Stack a c
+  Arg : Term g a -> Env g -> Stack b c -> Stack (a~>b) c
 
---data Stack : Ty -> Ty -> Type where
---  NS : Stack a a
---  FS : Tm g a -> Env g -> Stack b c -> Stack a c
---  AS : Clos a -> Stack b c -> Stack a c
+record State (b : Ty) where
+  constructor St 
+  tm : Term g a 
+  env : Env g 
+  stk : Stack a b
 
-data State : List Ty -> Ty -> Ty -> Type where
-  L : Tm g a -> Env g -> Stack a b -> State g a b
-  R : Clos a -> Stack a b -> State g a b
+step : State a -> Maybe (State a)
+step (St (Var  Here     ) (Cl t e::_)                 s ) = Just $ St (Lam t)           e                 s
+step (St (Var (There el)) (     _::e)                 s ) = Just $ St (Var el)          e                 s
+step (St (Lam t         )          e       (Arg t1 e1 s)) = Just $ St  t1               e1  (Fun (Cl t e) s)
+step (St (Lam t         )          e  (Fun (Cl t1 e1) s)) = Just $ St  t1      (Cl t e::e1)               s
+step (St (App t u       )          e                  s ) = Just $ St  t                e        (Arg u e s)
+step  _                                                   = Nothing   
 
-step : State g a b -> Maybe (d ** c ** h ** State d c h)
-step {g=a::g}             {b} (L (Vr  Here)      (v::_)                 s ) = Just (   g ** a ** b   ** R  v            s)
-step {g=_::g} {a}         {b} (L (Vr (There el)) (_::e)                 s ) = Just (   g ** a ** b  ** L (Vr el)    e  s)
-step {g}      {a=Imp a x} {b} (L (Lm t)              e                  s ) = Just (   g ** Imp a x ** b ** R (Cl (Lm t) e) s)
-step {g}      {a}         (L (Ap {a=x} t u)      e                  s ) = Just (   g ** x  ** b     ** L  u         e  ?wat)
-step          {a=Imp a x} (R (Cl       (Lm t)    e) (CS (Fun {g=j} t1 e1) s)) = ?wat4 --Just (   j ** a       ** L t1         e1 ?wat1)
-step {g}      {a=Imp a x} (R (Cl {g=j} (Lm t)    e) (CS (Arg v)           s)) = ?wat5 --Just (a::j ** x       ** L t      (v::e) s)
-step _ = Nothing
--}
+runCEK : Term [] a -> (Nat, Maybe (State a))
+runCEK t = iterCount step $ St t [] Mt
