@@ -17,6 +17,7 @@ modules = Iter
         , Lambda.Untyped.KAM
         , Lambda.Untyped.KAM2
         , Lambda.Untyped.CEK
+        , Lambda.Untyped.CK
         , Lambda.Untyped.CEK2
 
         , Lambda.Untyped.Scoped.Term

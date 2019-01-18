@@ -1,4 +1,4 @@
-module Lambda.Untyped.CEK2
+module Lambda.Untyped.CEK
 
 import Iter
 import Lambda.Untyped.TermDB
