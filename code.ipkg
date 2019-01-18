@@ -27,6 +27,7 @@ modules = Iter
         , Lambda.STLC.Term
         , Lambda.STLC.Smallstep
         , Lambda.STLC.KAM
+        , Lambda.STLC.KAM0
         , Lambda.STLC.SECD
         , Lambda.STLC.CEK
 
