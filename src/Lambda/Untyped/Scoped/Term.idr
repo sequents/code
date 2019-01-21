@@ -10,6 +10,8 @@ data Term : Nat -> Type where
   Lam : Term (S n) -> Term n
   App : Term n -> Term n -> Term n
 
+-- convenience  
+
 V0 : Term (S n)     
 V0 = Var FZ       
                     
@@ -22,6 +24,8 @@ V2 = Var $ FS $ FS FZ
 V3 : Term (4+n)     
 V3 = Var $ FS $ FS $ FS FZ  
 
+-- Church
+
 two : Term n
 two = Lam $ Lam $ App V1 (App V1 V0)
 
@@ -33,3 +37,14 @@ plus = Lam $ Lam $ Lam $ Lam $ App (App V3 V1) (App (App V2 V1) V0)
 
 twotwo : Term Z
 twotwo = App (App plus two) two
+
+-- Scott
+
+zero' : Term n
+zero' = Lam $ Lam V1
+
+succ' : Term n
+succ' = Lam $ Lam $ Lam $ App V0 V2
+
+one' : Term n
+one' = App succ' zero'
