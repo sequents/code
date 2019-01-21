@@ -1,18 +1,12 @@
 module Lambda.STLC.Smallstep
 
 import Data.List
+import Subset
 import Lambda.STLC.Ty
 import Lambda.STLC.Term
 
 %access public export
 %default total
-
-Subset : List Ty -> List Ty -> Type
-Subset g d = {x : Ty} -> Elem x g -> Elem x d
-
-ext : Subset g d -> Subset (b::g) (b::d)
-ext _  Here      = Here
-ext r (There el) = There (r el)
 
 rename : Subset g d -> Term g a -> Term d a
 rename r (Var el)    = Var $ r el

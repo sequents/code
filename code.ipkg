@@ -5,6 +5,7 @@ sourcedir = src
 modules = Iter
         , OrdNat
         , Parse
+        , Subset
         , Main
 
         , Lambda.Untyped.TermNam
@@ -31,6 +32,7 @@ modules = Iter
         , Lambda.STLC.KAM0
         , Lambda.STLC.SECD
         , Lambda.STLC.CEK
+        , Lambda.STLC.CK
 
         , LambdaMu.Term
         , LambdaMu.MuKAM
@@ -39,9 +41,9 @@ modules = Iter
         , LambdaMu.Typed.Smallstep
         , LambdaMu.Typed.MuKAM0
 
-executable = run
+--executable = run
 
-main = Main                      
+--main = Main                      
 
 opts = "--total"
 

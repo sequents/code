@@ -1,6 +1,7 @@
 module LambdaMu.Typed.MuKAM0
 
 import Data.List
+import Subset
 import Iter
 import LambdaMu.Typed.Term
 import LambdaMu.Typed.Smallstep
