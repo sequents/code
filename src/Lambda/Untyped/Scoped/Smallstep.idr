@@ -55,7 +55,7 @@ stepStr (App  t1        t2 ) =
     then App     t1           <$> (stepStr t2) 
     else App <$> (stepStr t1) <*> Just t2
 stepStr (Lam t)              = Lam <$> stepStr t
-stepStr  _ = Nothing  
+stepStr  _                   = Nothing  
 
 iterStr : Term n -> Maybe (Term n)
 iterStr = iter stepStr

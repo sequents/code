@@ -5,8 +5,15 @@ import Data.List
 %access public export
 %default total
 
-Subset : List a -> List a -> Type
+Subset : (g : List a) -> (d : List a) -> Type
 Subset {a} g d = {x : a} -> Elem x g -> Elem x d
+
+nulSubs : Subset [] xs 
+nulSubs = absurd
+
+oneSubs : Subset [1,2] [3,2,1]
+oneSubs Here = There $ There Here
+oneSubs (There Here) = There Here
 
 ext : Subset g d -> Subset (b::g) (b::d)
 ext _  Here      = Here

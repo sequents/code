@@ -1,6 +1,7 @@
 module Lambda.STLC.Smallstep
 
 import Data.List
+import Iter
 import Subset
 import Lambda.STLC.Ty
 import Lambda.STLC.Term
@@ -43,9 +44,7 @@ step (App  t1        t2 ) =
   if isVal t1 
     then App     t1        <$> (step t2) 
     else App <$> (step t1) <*> pure t2
-step  _ = Nothing
+step  _                   = Nothing
 
 stepIter : Term g a -> Maybe (Term g a)
-stepIter t with (step t)
-  | Nothing = Just t
-  | Just t2 = assert_total $ stepIter t2
+stepIter = iter step

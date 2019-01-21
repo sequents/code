@@ -16,6 +16,7 @@ mutual
   data Clos : Ty -> Type where
     Cl : Term g a -> Env g -> Clos a
 
+-- list of arguments encountered along the spine of a term    
 data Stack : Ty -> Ty -> Type where
   NS : Stack a a
   CS : Clos a -> Stack b c -> Stack (a~>b) c
