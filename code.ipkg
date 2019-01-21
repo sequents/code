@@ -37,6 +37,7 @@ modules = Iter
         , LambdaMu.MuKAM2
         , LambdaMu.Typed.Term
         , LambdaMu.Typed.Smallstep
+        , LambdaMu.Typed.MuKAM0
 
 executable = run
 
