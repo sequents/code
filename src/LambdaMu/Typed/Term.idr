@@ -17,6 +17,12 @@ data Term : List Ty -> Ty -> List Ty -> Type where
   App   : Term g (a~>b) d -> Term g a d -> Term g b d
   Mu    : Term g Bot (a::d) -> Term g a d
   Named : Elem a d -> Term g a d -> Term g Bot d        -- passification term
+  
+dne : Term g (((a~>Bot)~>Bot)~>a) (Bot::d)
+dne = Lam $ Mu $ Named (There Here) (App (Var Here) (Lam $ Mu $ Named (There Here) (Var Here)))
+  
+contra : Term g ((a~>Bot)~>(a~>b)) (Bot::d)
+contra = Lam $ Lam $ Mu $ Named (There Here) (App (Var $ There Here) (Var Here))
 
 pierce : Term g (((a~>b)~>a)~>a) d
 pierce = Lam $ Mu $ Named Here $ App (Var Here) (Lam $ Mu $ Named (There Here) (Var Here))

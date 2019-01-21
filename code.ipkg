@@ -36,6 +36,7 @@ modules = Iter
         , LambdaMu.MuKAM
         , LambdaMu.MuKAM2
         , LambdaMu.Typed.Term
+        , LambdaMu.Typed.Smallstep
 
 executable = run
 
@@ -43,4 +44,4 @@ main = Main
 
 opts = "--total"
 
-pkgs = tparsec
+pkgs = tparsec, contrib

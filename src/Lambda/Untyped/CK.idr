@@ -23,7 +23,7 @@ step : State -> Maybe State
 step (Lam t  , Arg t1::s) = Just $ (t1                 , Fun t::s)
 step (Lam t  , Fun t1::s) = Just $ (topSubst (Lam t) t1,        s)
 step (App t u,         s) = Just $ (t                  , Arg u::s)
-step  _                     = Nothing
+step  _                   = Nothing
 
 runCK : Term -> (Nat, Maybe State)
 runCK t = iterCount step (t, [])

@@ -6,8 +6,8 @@ module LambdaMu.Term
 data Term = Var Nat 
           | Lam Term
           | App Term Term
-          | Mu Term
-          | Named Nat Term  -- passification term
+          | Mu Term         -- naming
+          | Named Nat Term  -- passification
 
 pierce : Term 
 pierce = Lam $ Mu $ Named 0 $ App (Var 0) (Lam $ Mu $ Named 1 (Var 0))
