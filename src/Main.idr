@@ -13,7 +13,7 @@ import Lambda.STLC.TyCheck
 
 untyped : IO ()
 untyped = 
-  repl ">" $ \s => 
+  repl "u>" $ \s => 
     case parseDB s of 
       Right t => show t ++ "\n"
       Left (ParseError (MkPosition l r)) => "parse error at line " ++ show l ++ " row " ++ show r ++ "\n"
@@ -21,7 +21,7 @@ untyped =
 
 scoped : IO ()
 scoped = 
-  repl ">" $ \s => 
+  repl "s>" $ \s => 
     case parseTerm s of 
       Right (n**t) => show t ++ ": " ++ show n ++ "\n"
       Left (ParseError (MkPosition l r)) => "parse error at line " ++ show l ++ " row " ++ show r ++ "\n"
@@ -29,7 +29,7 @@ scoped =
 
 typed : IO ()
 typed = 
-  repl ">" $ \s => 
+  repl "t>" $ \s => 
     case parseCheckTerm s of 
       Right (ty**t) => show t ++ ": " ++ show ty ++ "\n"
       Left (ParseError (MkPosition l r)) => "parse error at line " ++ show l ++ " row " ++ show r ++ "\n"
