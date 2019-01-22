@@ -11,12 +11,16 @@ import Lambda.STLC.TyCheck
 
 %default partial
 
+total
+parseErr : Position -> String
+parseErr (MkPosition l r) = "parse error at line " ++ show l ++ " row " ++ show r ++ "\n"
+
 untyped : IO ()
 untyped = 
   repl "u>" $ \s => 
     case parseDB s of 
       Right t => show t ++ "\n"
-      Left (ParseError (MkPosition l r)) => "parse error at line " ++ show l ++ " row " ++ show r ++ "\n"
+      Left (ParseError p) => parseErr p
       Left TypeError => "type error (can't happen for ULC)\n"
 
 scoped : IO ()
@@ -24,7 +28,7 @@ scoped =
   repl "s>" $ \s => 
     case parseTerm s of 
       Right (n**t) => show t ++ ": " ++ show n ++ "\n"
-      Left (ParseError (MkPosition l r)) => "parse error at line " ++ show l ++ " row " ++ show r ++ "\n"
+      Left (ParseError p) => parseErr p
       Left TypeError => "type error (can't happen for scoped ULC)\n"
 
 typed : IO ()
@@ -32,7 +36,7 @@ typed =
   repl "t>" $ \s => 
     case parseCheckTerm s of 
       Right (ty**t) => show t ++ ": " ++ show ty ++ "\n"
-      Left (ParseError (MkPosition l r)) => "parse error at line " ++ show l ++ " row " ++ show r ++ "\n"
+      Left (ParseError p) => parseErr p
       Left TypeError => "type error\n"
 
 main : IO ()      
