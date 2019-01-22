@@ -36,9 +36,10 @@ typed =
       Left TypeError => "type error\n"
 
 main : IO ()      
-main = do args <- getArgs 
-          case args of 
-            [_, "u"] => untyped
-            [_, "s"] => scoped
-            [_, "t"] => typed
-            _     => putStrLn "Wrong args, run with 'u' (untyped), 's' (scoped) or 't' typed"
+main = 
+  do args <- getArgs 
+     case args of 
+       [_, "u"] => untyped
+       [_, "s"] => scoped
+       [_, "t"] => typed
+       _        => putStrLn "Wrong args, run with 'u' (untyped), 's' (scoped) or 't' (typed)"
