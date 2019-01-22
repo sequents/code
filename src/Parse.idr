@@ -7,6 +7,7 @@ import TParsec
 
 data Error : Type where
   ParseError : Position -> Error
+  TypeError : Error
   
 Parser' : Type -> Nat -> Type
 Parser' = Parser (TParsecM Error Void) chars

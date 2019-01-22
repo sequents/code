@@ -33,6 +33,8 @@ modules = Iter
         , Lambda.STLC.SECD
         , Lambda.STLC.CEK
         , Lambda.STLC.CK
+        , Lambda.STLC.Parser
+        , Lambda.STLC.TyCheck
 
         , LambdaMu.Term
         , LambdaMu.MuKAM
@@ -41,9 +43,9 @@ modules = Iter
         , LambdaMu.Typed.Smallstep
         , LambdaMu.Typed.MuKAM0
 
---executable = run
+executable = run
 
---main = Main                      
+main = Main                      
 
 opts = "--total"
 
