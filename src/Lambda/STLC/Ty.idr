@@ -9,6 +9,10 @@ infixr 5 ~>
 (~>) : Ty -> Ty -> Ty
 (~>) = Imp
 
+Show Ty where
+  show  A        = "*"
+  show (Imp a b) = "(" ++ show a ++ "->" ++ show b ++ ")" 
+
 Uninhabited (A = Imp _ _) where
     uninhabited Refl impossible
   

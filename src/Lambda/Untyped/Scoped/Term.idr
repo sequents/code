@@ -10,6 +10,11 @@ data Term : Nat -> Type where
   Lam : Term (S n) -> Term n
   App : Term n -> Term n -> Term n
 
+Show (Term n) where
+  show (Var f) = show $ finToNat f
+  show (Lam t) = "^" ++ show t
+  show (App t u) = "(" ++ show t ++ ")(" ++ show u ++ ")"
+
 -- convenience  
 
 V0 : Term (S n)     
