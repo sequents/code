@@ -27,8 +27,10 @@ step  _                      = Nothing
 runKAM : Term g a -> (Nat, Maybe (State g a))
 runKAM t = iterCount step (St t NS)
 
+private
 test1 : runKAM TestTm1 = (4, Just (St ResultTm NS))
 test1 = Refl
 
+private
 test2 : runKAM TestTm2 = (4, Just (St ResultTm NS))
 test2 = Refl

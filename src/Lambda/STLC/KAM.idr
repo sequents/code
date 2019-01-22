@@ -37,9 +37,11 @@ step  _                                          = Nothing
 runKAM : Term [] a -> (Nat, Maybe (State a))
 runKAM t = iterCount step $ St t [] NS
 
+private
 test1 : runKAM TestTm1 = (6, Just (St {g=[]} {a=TestTy} ResultTm [] NS))
 test1 = Refl
 
+private
 test2 : runKAM TestTm2 = (6, Just (St {g=[]} {a=TestTy} ResultTm [] NS))
 test2 = Refl
 

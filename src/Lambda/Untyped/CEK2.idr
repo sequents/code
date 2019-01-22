@@ -36,11 +36,14 @@ step  _                                    = Nothing
 runCEK : Term -> (Nat, Maybe State)
 runCEK t = iterCount step $ L t [] []
 
+private
 test0 : runCEK Term0 = (11, Just (R (Cl (Lam (Var 0)) []) []))
 test0 = Refl
 
+private
 test1 : runCEK Term1 = (11, Just (R (Cl (Lam (Var 0)) []) []))
 test1 = Refl
 
+private
 test2 : runCEK Term2 = (11, Just (R (Cl (Lam (Var 0)) []) []))
 test2 = Refl

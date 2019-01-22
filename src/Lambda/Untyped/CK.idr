@@ -28,11 +28,14 @@ step  _                   = Nothing
 runCK : Term -> (Nat, Maybe State)
 runCK t = iterCount step (t, [])
 
+private
 test0 : runCK Term0 = (6, Just $ (Lam $ Var 0, []))
 test0 = Refl
 
+private
 test1 : runCK Term1 = (6, Just $ (Lam $ Var 0, []))
 test1 = Refl
 
+private
 test2 : runCK Term2 = (6, Just $ (Lam $ Var 0, []))
 test2 = Refl
