@@ -19,6 +19,7 @@ modules = Iter
         , Lambda.Untyped.KAM2
         , Lambda.Untyped.CEK
         , Lambda.Untyped.CK
+        , Lambda.Untyped.CEK1
         , Lambda.Untyped.CEK2
 
         , Lambda.Untyped.Scoped.Term
@@ -46,6 +47,7 @@ modules = Iter
         , PCF.Term
         , PCF.Smallstep
         , PCF.MachineN
+        , PCF.MachineV
 
 executable = run
 

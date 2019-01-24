@@ -28,9 +28,9 @@ step : State -> Maybe State
 step (L (Var  Z)    (v::_)             s ) = Just $ R  v                                  s
 step (L (Var (S n)) (_::e)             s ) = Just $ L (Var n)     e                       s
 step (L (Lam t)         e              s ) = Just $ R (Cl (Lam t) e)                      s
-step (L (App t u)       e              s ) = Just $ L u           e             (Fun t e::s)
 step (R (Cl (Lam t)     e) (Fun t1 e1::s)) = Just $ L t1          e1 (Arg (Cl (Lam t) e)::s)
 step (R (Cl (Lam t)     e) (    Arg v::s)) = Just $ L t       (v::e)                      s
+step (L (App t u)       e              s ) = Just $ L u           e             (Fun t e::s)
 step  _                                    = Nothing
 
 runCEK : Term -> (Nat, Maybe State)
