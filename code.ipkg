@@ -43,6 +43,10 @@ modules = Iter
         , LambdaMu.Typed.Smallstep
         , LambdaMu.Typed.MuKAM0
 
+        , PCF.Term
+        , PCF.Smallstep
+        , PCF.MachineN
+
 executable = run
 
 main = Main                      

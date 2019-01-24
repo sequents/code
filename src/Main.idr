@@ -9,7 +9,7 @@ import Lambda.STLC.Ty
 import Lambda.STLC.Term
 import Lambda.STLC.TyCheck
 
-%default partial
+%default covering
 
 total
 parseErr : Position -> String
