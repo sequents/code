@@ -34,11 +34,11 @@ step (St (Var  Here)      (Cl t e0::_)             s  r) = Just $ St  t         
 step (St (Var (There el))       (_::e)             s  r) = Just $ St (Var el)                e                 s    r
 step (St (Lam t)                    e       (Arg c s) r) = Just $ St  t                  (c::e)                s    r
 step (St (App t u)                  e              s  r) = Just $ St  t                      e   (Arg (Cl u e) s)   r
-step (St (Fix t)                    e              s  r) = Just $ St  t       (Cl (Fix t) e::e)                s    r
-step (St (If0 p t f)                e              s  r) = Just $ St  p                      e      (Tst t f e s)   r
 step (St  Zero                      _  (Tst t _ e1 s) r) = Just $ St  t                      e1                s    r
 step (St (Succ n)                   e  (Tst _ f e1 s) r) = Just $ St  f             (Cl n e::e1)               s    r
 step (St (Succ n)                   e              s  r) = Just $ St  n                      e                 s (S r)
+step (St (If0 p t f)                e              s  r) = Just $ St  p                      e      (Tst t f e s)   r
+step (St (Fix t)                    e              s  r) = Just $ St  t       (Cl (Fix t) e::e)                s    r
 step  _                                                  = Nothing  
 
 runMach : Term [] a -> (Nat, Maybe (State a))

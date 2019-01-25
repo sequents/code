@@ -33,7 +33,11 @@ twoC : Term g (Ch a)
 twoC = Lam $ Lam $ App (Var $ There Here) (App (Var $ There Here) (Var Here))
 
 plusC : Term g (Ch a ~> Ch a ~> Ch a)
-plusC = Lam $ Lam $ Lam $ Lam $ App (App (Var $ There $ There $ There Here) (Var $ There Here)) (App (App (Var $ There $ There Here) (Var $ There Here)) (Var Here)) 
+plusC = Lam $ Lam $ Lam $ Lam $ App (App (Var $ There $ There $ There Here) 
+                                         (Var $ There Here)) 
+                                    (App (App (Var $ There $ There Here) 
+                                              (Var $ There Here)) 
+                                         (Var Here)) 
 
 twoN : Term g N
 twoN = Succ $ Succ Zero
@@ -41,7 +45,9 @@ twoN = Succ $ Succ Zero
 plusN : Term g (N~>N~>N)
 plusN = Fix $ Lam $ Lam $ If0 (Var $ There Here) 
                               (Var Here) 
-                              (Succ $ App (App (Var $ There $ There $ There Here) (Var Here)) (Var $ There Here))
+                              (Succ $ App (App (Var $ There $ There $ There Here) 
+                                               (Var Here)) 
+                                          (Var $ There Here))
 
 twotwoN : Term [] N
 twotwoN = App (App plusN twoN) twoN

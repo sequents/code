@@ -85,7 +85,7 @@ mutual
     synth g (App t u) | Yes (A**n) = No $ \(_**App v _) => uninhabited $ neuUniq v n 
     synth g (App t u) | Yes ((Imp a b)**n) with (inherit g u a)
       synth g (App t u) | Yes ((Imp a b)**n) | Yes m = Yes (b ** App n m)
-      synth g (App t u) | Yes ((Imp a b)**n) | No ctra = No $ \(c**m) => notArg n ctra (c**m)
+      synth g (App t u) | Yes ((Imp a b)**n) | No ctra = No $ notArg n ctra
     synth g (App t u) | No ctra = No $ \(b**App {a} v _) => ctra ((a~>b) ** v)
 
   inherit : (g : Ctx) -> (m : Val) -> (a : Ty) -> Dec (Val g m a)
@@ -110,11 +110,10 @@ mutual
   neu2Term (App t u) = App (neu2Term t) (val2Term u)
 
 parseCheckTerm : String -> Either Error (a ** Term [] a)  
-parseCheckTerm s with (parseNeu s)
-  parseCheckTerm s | Left  a = Left a
-  parseCheckTerm s | Right b with (synth [] b)
-    parseCheckTerm s | Right b | Yes (a ** n) = Right (a ** neu2Term n)
-    parseCheckTerm s | Right b | No ctra = Left TypeError
+parseCheckTerm s = do b <- parseNeu s
+                      case synth [] b of 
+                        Yes (a ** n) => Right (a ** neu2Term n)
+                        No _ => Left TypeError
 
 private    
 test0 : parseCheckTerm "(^x.x : *->*)" = Right (TestTy ** ResultTm)
