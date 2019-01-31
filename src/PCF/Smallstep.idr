@@ -3,6 +3,7 @@ module PCF.Smallstep
 import Data.List
 import Iter
 import Subset
+import Lambda.STLC.Ty
 import PCF.Term
 
 %access public export

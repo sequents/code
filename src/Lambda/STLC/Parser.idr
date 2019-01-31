@@ -19,8 +19,8 @@ mutual
 
   data Neu : Type where
     Var : String -> Neu 
-    Cut : Val -> Ty -> Neu 
     App : Neu -> Val -> Neu 
+    Cut : Val -> Ty -> Neu 
 
 type : All (Parser' Ty)
 type =
@@ -42,10 +42,6 @@ cut rec = map (\(v,t) => Cut v t) $
           parens (andbox (Nat.map {a=Parser' _} commit rec)
                          (rand (withSpaces (char ':'))
                               type))
-  where
-    andbox : All (Box (Parser' s) :-> Parser' t :-> Box (Parser' (s, t)))
-    andbox p q =
-      Nat.map2 {a=Parser' _} {b=Parser' _} (\p, q => Combinators.and p q) p q
 
 app : All (Parser' (Neu -> Val -> Neu))
 app = cmap App space

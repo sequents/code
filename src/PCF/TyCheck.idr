@@ -1,11 +1,11 @@
-module Lambda.STLC.TyCheck
+module PCF.TyCheck
 
 import Data.List
 import TParsec
 import Parse
 import Lambda.STLC.Ty
-import Lambda.STLC.Term
-import Lambda.STLC.Parser
+import PCF.Term
+import PCF.Parser
 
 %access public export
 %default total
@@ -37,6 +37,10 @@ nowhere neq ctra (a**There n i) = ctra (a**i)
 mutual
   data Val : Ctx -> Val -> Ty -> Type where
     Lam : Val ((s,a)::g) v b -> Val g (Lam s v) (a~>b)
+    Zero : Val g Zero A
+    Succ : Val g m A -> Val g (Succ m) A
+    If0 : Neu g l A -> Val g m a -> Val ((s,A)::g) n a -> Val g (If0 l m s n) a
+    Fix : Val ((s,a)::g) n a -> Val g (Fix s n) a
     Emb : Neu g m a -> a = b -> Val g (Emb m) b
 
   data Neu : Ctx -> Neu -> Ty -> Type where
@@ -46,6 +50,26 @@ mutual
 
 Uninhabited (Val _ (Lam _ _) A) where
   uninhabited (Lam _) impossible
+  uninhabited  Zero impossible
+  uninhabited (Succ _) impossible
+  uninhabited (If0 _ _ _) impossible
+  uninhabited (Fix  _) impossible
+  uninhabited (Emb _ _) impossible
+
+Uninhabited (Val _ Zero (Imp _ _)) where
+  uninhabited (Lam _) impossible
+  uninhabited  Zero impossible
+  uninhabited (Succ _) impossible
+  uninhabited (If0 _ _ _) impossible
+  uninhabited (Fix  _) impossible
+  uninhabited (Emb _ _) impossible
+
+Uninhabited (Val _ (Succ _) (Imp _ _)) where
+  uninhabited (Lam _) impossible
+  uninhabited  Zero impossible
+  uninhabited (Succ _) impossible
+  uninhabited (If0 _ _ _) impossible
+  uninhabited (Fix  _) impossible
   uninhabited (Emb _ _) impossible
 
 inCtxUniq : InCtx g s a -> InCtx g s b -> a = b  
@@ -89,32 +113,54 @@ mutual
     No ctra => No $ \(_**Cut v) => ctra v
 
   inherit : (g : Ctx) -> (m : Val) -> (a : Ty) -> Dec (Val g m a)
-  inherit g (Lam s v)  A        = No uninhabited
-  inherit g (Lam s v) (Imp a b) = case inherit ((s,a)::g) v b of
+  inherit g (Lam s v)       A        = No uninhabited
+  inherit g (Lam s v)      (Imp a b) = case inherit ((s,a)::g) v b of
     Yes w => Yes $ Lam w
     No ctra => No $ \(Lam w) => ctra w
-  inherit g (Emb n)    a        = case synth g n of
+  inherit g  Zero           A        = Yes Zero
+  inherit g  Zero          (Imp a b) = No uninhabited
+  inherit g (Succ m)        A        = case inherit g m A of 
+    Yes w => Yes $ Succ w
+    No ctra => No $ \(Succ w) => ctra w
+  inherit g (Succ m)       (Imp a b) = No uninhabited
+  inherit g (If0 l m x n)  a        = case synth g l of
+    Yes (A**u) => case inherit g m a of
+      Yes v => case inherit ((x, A) :: g) n a of
+        Yes w => Yes $ If0 u v w
+        No ctra => No $ \(If0 _ _ r) => ctra r
+      No ctra => No $ \(If0 _ q _) => ctra q 
+    Yes ((Imp _ _)**w) => No $ \(If0 p _ _) => uninhabited $ neuUniq w p
+    No ctra => No $ \(If0 p _ _) => ctra (A ** p)
+  inherit g (Fix x n)       a        = case inherit ((x,a)::g) n a of
+    Yes u => Yes $ Fix u
+    No ctra => No $ \(Fix u) => ctra u
+  inherit g (Emb n)         a        = case synth g n of
     Yes (b ** m) => case decEq a b of
       Yes prf => Yes $ Emb m (sym prf)
       No ctra => No $ notSwitch m (ctra . sym)
     No ctra => No $ \(Emb m Refl) => ctra (a ** m)
 
+
 mutual     
   val2Term : Val g m a -> Term (eraseCtx g) a
   val2Term (Lam v)      = Lam $ val2Term v
+  val2Term  Zero        = Zero
+  val2Term (Succ v)     = Succ $ val2Term v
+  val2Term (If0 p t f)  = If0 (neu2Term p) (val2Term t) (val2Term f)
+  val2Term (Fix v)      = Fix $ val2Term v
   val2Term (Emb v Refl) = neu2Term v
 
   neu2Term : Neu g m a -> Term (eraseCtx g) a
   neu2Term (Var i)   = Var $ eraseInCtx i
-  neu2Term (Cut v)   = val2Term v 
   neu2Term (App t u) = App (neu2Term t) (val2Term u)
+  neu2Term (Cut v)   = val2Term v 
 
 parseCheckTerm : String -> Either Error (a ** Term [] a)  
 parseCheckTerm s = do b <- parseNeu s
                       case synth [] b of 
                         Yes (a ** n) => Right (a ** neu2Term n)
                         No _ => Left TypeError
-
+{-
 private    
 test0 : parseCheckTerm "(^x.x : *->*)" = Right (TestTy ** ResultTm)
 test0 = Refl
@@ -126,3 +172,4 @@ test0 = Refl
 --private
 --test2 : parseCheckTerm "(^x.x : ((*->*)->(*->*))) (^x.x : (*->*)->(*->*)) ^x.x" = Right (TestTy ** TestTm2)
 --test2 = Refl
+-}

@@ -3,6 +3,7 @@ module Lambda.STLC.Term
 import Data.Fin
 import Data.List
 import Control.Isomorphism
+import Elem
 import Lambda.STLC.Ty
 import Lambda.Untyped.TermDB
 import Lambda.Untyped.Scoped.Term
@@ -32,23 +33,17 @@ data Term : List Ty -> Ty -> Type where
 
 -- map to untyped by forgetting type indices
 
-elem2Nat : Elem a g -> Nat
-elem2Nat  Here      = Z
-elem2Nat (There el) = S (elem2Nat el)
-
 forget : Term g a -> TermDB.Term
 forget (Var el)    = Var $ elem2Nat el
 forget (Lam t)     = Lam $ forget t
 forget (App t1 t2) = App (forget t1) (forget t2)
 
-elem2Fin : Elem a g -> Fin (length g)
-elem2Fin  Here      = FZ
-elem2Fin (There el) = FS (elem2Fin el)
-
 forgetSco : Term g a -> Term (length g)
 forgetSco (Var el)    = Var $ elem2Fin el
 forgetSco (Lam t)     = Lam $ forgetSco t
 forgetSco (App t1 t2) = App (forgetSco t1) (forgetSco t2)
+
+-- print
 
 Show (Term g a) where
   show (Var n) = show $ elem2Nat n

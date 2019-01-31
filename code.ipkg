@@ -5,6 +5,7 @@ sourcedir = src
 modules = Iter
         , OrdNat
         , Parse
+        , Elem
         , Subset
         , Main
 
@@ -48,6 +49,8 @@ modules = Iter
         , PCF.Smallstep
         , PCF.MachineN
         , PCF.MachineV
+        , PCF.Parser
+        , PCF.TyCheck
 
 executable = run
 

@@ -2,6 +2,7 @@ module PCF.MachineV
 
 import Data.List
 import Iter
+import Lambda.STLC.Ty
 import PCF.Term
 
 %default total
@@ -21,7 +22,7 @@ data Stack : Ty -> Ty -> Type where
   Mt  : Stack a a
   Fun : Term (a::g) b -> Env g -> Stack b c -> Stack a c
   Arg : Clos a -> Stack b c -> Stack (a~>b) c
-  Tst : Term g a -> Term (N::g) a -> Env g -> Stack a c -> Stack N c
+  Tst : Term g a -> Term (A::g) a -> Env g -> Stack a c -> Stack A c
 
 record State (b : Ty) where
   constructor St 
