@@ -12,6 +12,8 @@ import PCF.Parser
 
 -- bidirectional typechecker
 
+-- contexts with names
+
 Ctx : Type
 Ctx = List (String, Ty)
 
@@ -34,6 +36,22 @@ nowhere : Not (x=y) -> Not (a ** InCtx g x a) -> Not (a ** InCtx ((y,b)::g) x a)
 nowhere neq ctra (b**Here)      = neq Refl
 nowhere neq ctra (a**There n i) = ctra (a**i)
 
+lookup : (g : Ctx) -> (x : String) -> Dec (a ** InCtx g x a)
+lookup []           x = No (\(_**e) => uninhabited e)
+lookup ((y,b)::g) x with (decEq x y)
+  lookup ((y,b)::g) y | Yes Refl = Yes (b**Here)
+  lookup ((y,b)::g) x | No ctra with (lookup g x)
+    lookup ((y,b)::g) x | No ctra | Yes (a**el) = Yes (a**There ctra el)
+    lookup ((y,b)::g) x | No ctra | No ctra2 = No $ nowhere ctra ctra2
+
+inCtxUniq : InCtx g s a -> InCtx g s b -> a = b  
+inCtxUniq  Here           Here          = Refl
+inCtxUniq  Here          (There neq2 _) = absurd $ neq2 Refl
+inCtxUniq (There neq1 _)  Here          = absurd $ neq1 Refl
+inCtxUniq (There _ i1)   (There _ i2)   = inCtxUniq i1 i2
+
+-- terms indexed with raw terms
+
 mutual
   data Val : Ctx -> Val -> Ty -> Type where
     Lam : Val ((s,a)::g) v b -> Val g (Lam s v) (a~>b)
@@ -50,46 +68,17 @@ mutual
 
 Uninhabited (Val _ (Lam _ _) A) where
   uninhabited (Lam _) impossible
-  uninhabited  Zero impossible
-  uninhabited (Succ _) impossible
-  uninhabited (If0 _ _ _) impossible
-  uninhabited (Fix  _) impossible
-  uninhabited (Emb _ _) impossible
 
 Uninhabited (Val _ Zero (Imp _ _)) where
-  uninhabited (Lam _) impossible
   uninhabited  Zero impossible
-  uninhabited (Succ _) impossible
-  uninhabited (If0 _ _ _) impossible
-  uninhabited (Fix  _) impossible
-  uninhabited (Emb _ _) impossible
 
 Uninhabited (Val _ (Succ _) (Imp _ _)) where
-  uninhabited (Lam _) impossible
-  uninhabited  Zero impossible
   uninhabited (Succ _) impossible
-  uninhabited (If0 _ _ _) impossible
-  uninhabited (Fix  _) impossible
-  uninhabited (Emb _ _) impossible
-
-inCtxUniq : InCtx g s a -> InCtx g s b -> a = b  
-inCtxUniq  Here           Here          = Refl
-inCtxUniq  Here          (There neq2 _) = absurd $ neq2 Refl
-inCtxUniq (There neq1 _)  Here          = absurd $ neq1 Refl
-inCtxUniq (There _ i1)   (There _ i2)   = inCtxUniq i1 i2
 
 neuUniq : Neu g m a -> Neu g m b -> a = b
 neuUniq (Var i1)   (Var i2)   = inCtxUniq i1 i2
 neuUniq (App t1 _) (App t2 _) = snd $ impInj $ neuUniq t1 t2 
 neuUniq (Cut v1)   (Cut v2)   = Refl
-
-lookup : (g : Ctx) -> (x : String) -> Dec (a ** InCtx g x a)
-lookup []           x = No (\(_**e) => uninhabited e)
-lookup ((y,b)::g) x with (decEq x y)
-  lookup ((y,b)::g) y | Yes Refl = Yes (b**Here)
-  lookup ((y,b)::g) x | No ctra with (lookup g x)
-    lookup ((y,b)::g) x | No ctra | Yes (a**el) = Yes (a**There ctra el)
-    lookup ((y,b)::g) x | No ctra | No ctra2 = No $ nowhere ctra ctra2
 
 notArg : Neu g l (a~>b) -> Not (Val g m a) -> Not (c ** Neu g (App l m) c)
 notArg n nv (c**App t u) = let Refl = fst $ impInj $ neuUniq n t in nv u
@@ -140,7 +129,7 @@ mutual
       No ctra => No $ notSwitch m (ctra . sym)
     No ctra => No $ \(Emb m Refl) => ctra (a ** m)
 
-
+-- projecting to PCF terms
 mutual     
   val2Term : Val g m a -> Term (eraseCtx g) a
   val2Term (Lam v)      = Lam $ val2Term v

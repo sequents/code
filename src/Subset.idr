@@ -8,8 +8,8 @@ import Data.List
 Subset : (g : List a) -> (d : List a) -> Type
 Subset {a} g d = {x : a} -> Elem x g -> Elem x d
 
-nulSubs : Subset [] xs 
-nulSubs = absurd
+nilSubset : Subset [] xs 
+nilSubset = absurd
 
 oneSubs : Subset [1,2] [3,2,1]
 oneSubs Here = There $ There Here

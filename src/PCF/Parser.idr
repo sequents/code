@@ -115,4 +115,3 @@ parseVal s = result Left Left Right $ parseResult s (pval pcf)
 
 parseNeu : String -> Either Error Neu
 parseNeu s = result Left Left Right $ parseResult s (pneu pcf) 
-  

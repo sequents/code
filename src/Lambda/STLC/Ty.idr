@@ -14,7 +14,7 @@ Show Ty where
   show (Imp a b) = "(" ++ show a ++ "->" ++ show b ++ ")" 
 
 Uninhabited (A = Imp _ _) where
-    uninhabited Refl impossible
+  uninhabited Refl impossible
   
 Uninhabited (Imp _ _ = A) where
   uninhabited Refl impossible
