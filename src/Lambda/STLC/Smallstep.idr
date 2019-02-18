@@ -46,5 +46,5 @@ step (App  t1        t2 ) =
     else App <$> (step t1) <*> pure t2
 step  _                   = Nothing
 
-stepIter : Term g a -> Maybe (Term g a)
+stepIter : Term g a -> Term g a
 stepIter = iter step

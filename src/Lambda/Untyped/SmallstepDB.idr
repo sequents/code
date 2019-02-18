@@ -62,14 +62,14 @@ stepV (App t1 t2) =
     else App     t1         <$> (stepV t2) 
 stepV  _          = Nothing  
 
-iterN : Term -> Maybe Term
+iterN : Term -> Term
 iterN = iter step
 
-countN : Term -> (Nat, Maybe Term)
+countN : Term -> (Nat, Term)
 countN = iterCount step
 
-iterV : Term -> Maybe Term
+iterV : Term -> Term
 iterV = iter stepV
 
-countV : Term -> (Nat, Maybe Term)
+countV : Term -> (Nat, Term)
 countV = iterCount stepV

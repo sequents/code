@@ -25,17 +25,17 @@ step (Lam t    ,         e, c::s) = Just (    t, c::e,         s)
 step (App t u  ,         e,    s) = Just (    t,    e, Cl u e::s)
 step  _                           = Nothing
 
-runKAM : Term -> (Nat, Maybe State)
+runKAM : Term -> (Nat, State)
 runKAM t = iterCount step (t, [], [])
 
 private
-test0 : runKAM Term0 = (7, Just (Lam $ Var Z, [], []))
+test0 : runKAM Term0 = (7, (Lam $ Var Z, [], []))
 test0 = Refl
 
 private
-test1 : runKAM Term1 = (6, Just (Lam $ Var Z, [], []))
+test1 : runKAM Term1 = (6, (Lam $ Var Z, [], []))
 test1 = Refl
 
 private
-test2 : runKAM Term2 = (6, Just (Lam $ Var Z, [], []))
+test2 : runKAM Term2 = (6, (Lam $ Var Z, [], []))
 test2 = Refl

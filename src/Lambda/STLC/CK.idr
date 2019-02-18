@@ -28,5 +28,5 @@ step (St (Lam t)   (AS t1 s)) = Just $ St  t1                 (FS t s)
 step (St (Lam t)   (FS t1 s)) = Just $ St (subst1 t1 (Lam t))       s
 step  _                       = Nothing
 
-runCK : Term g a -> (Nat, Maybe (State g a))
+runCK : Term g a -> (Nat, State g a)
 runCK t = iterCount step (St t NS)

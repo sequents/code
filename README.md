@@ -12,3 +12,4 @@ TG chat group: **proof_theory**
 2. Untyped lambda calculus: DeBrujin indices, strong reduction, abstract machines, scoped terms
 3. Simply typed lambda calculus: Nat/Fin/Elem, smallstep reduction, KAM(0) & C(E)K machines
 4. STLC parser & bidirectional typechecker, PCF terms, smallstep & machines
+5. PCF untyped & typed bytecode, simple compiler and virtual machine

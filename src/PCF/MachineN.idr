@@ -42,5 +42,5 @@ step (St (If0 p t f)                e              s  r) = Just $ St  p         
 step (St (Fix t)                    e              s  r) = Just $ St  t       (Cl (Fix t) e::e)                s    r
 step  _                                                  = Nothing  
 
-runMach : Term [] a -> (Nat, Maybe (State a))
+runMach : Term [] a -> (Nat, State a)
 runMach t = iterCount step $ St t [] Mt Z

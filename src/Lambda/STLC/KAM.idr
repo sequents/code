@@ -34,14 +34,14 @@ step (St (Lam t         )           e  (CS c s)) = Just $ St  t       (c::e)    
 step (St (App t u       )           e        s ) = Just $ St  t           e  (Cl u e `CS` s)
 step  _                                          = Nothing  
 
-runKAM : Term [] a -> (Nat, Maybe (State a))
+runKAM : Term [] a -> (Nat, State a)
 runKAM t = iterCount step $ St t [] NS
 
 private
-test1 : runKAM TestTm1 = (6, Just (St {g=[]} {a=TestTy} ResultTm [] NS))
+test1 : runKAM TestTm1 = (6, St {g=[]} {a=TestTy} ResultTm [] NS)
 test1 = Refl
 
 private
-test2 : runKAM TestTm2 = (6, Just (St {g=[]} {a=TestTy} ResultTm [] NS))
+test2 : runKAM TestTm2 = (6, St {g=[]} {a=TestTy} ResultTm [] NS)
 test2 = Refl
 

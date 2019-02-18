@@ -33,17 +33,17 @@ step (R (Cl (Lam t)     e) (    Arg v::s)) = Just $ L t       (v::e)            
 step (L (App t u)       e              s ) = Just $ L u           e             (Fun t e::s)
 step  _                                    = Nothing
 
-runCEK : Term -> (Nat, Maybe State)
+runCEK : Term -> (Nat, State)
 runCEK t = iterCount step $ L t [] []
 
 private
-test0 : runCEK Term0 = (11, Just (R (Cl (Lam (Var 0)) []) []))
+test0 : runCEK Term0 = (11, R (Cl (Lam $ Var 0) []) [])
 test0 = Refl
 
 private
-test1 : runCEK Term1 = (11, Just (R (Cl (Lam (Var 0)) []) []))
+test1 : runCEK Term1 = (11, R (Cl (Lam $ Var 0) []) [])
 test1 = Refl
 
 private
-test2 : runCEK Term2 = (11, Just (R (Cl (Lam (Var 0)) []) []))
+test2 : runCEK Term2 = (11, R (Cl (Lam $ Var 0) []) [])
 test2 = Refl

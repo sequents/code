@@ -70,5 +70,5 @@ step (App  t      u) =
 step (Named a (Mu u)) = Just $ renameN (contract a) u
 step  _ = Nothing
   
-iterStep : Term g a d -> Maybe (Term g a d)
+iterStep : Term g a d -> Term g a d
 iterStep = iter step

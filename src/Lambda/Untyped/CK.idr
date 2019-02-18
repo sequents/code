@@ -25,17 +25,17 @@ step (Lam t  , Fun t1::s) = Just $ (topSubst (Lam t) t1,        s)
 step (App t u,         s) = Just $ (t                  , Arg u::s)
 step  _                   = Nothing
 
-runCK : Term -> (Nat, Maybe State)
+runCK : Term -> (Nat, State)
 runCK t = iterCount step (t, [])
 
 private
-test0 : runCK Term0 = (6, Just $ (Lam $ Var 0, []))
+test0 : runCK Term0 = (6, (Lam $ Var 0, []))
 test0 = Refl
 
 private
-test1 : runCK Term1 = (6, Just $ (Lam $ Var 0, []))
+test1 : runCK Term1 = (6, (Lam $ Var 0, []))
 test1 = Refl
 
 private
-test2 : runCK Term2 = (6, Just $ (Lam $ Var 0, []))
+test2 : runCK Term2 = (6, (Lam $ Var 0, []))
 test2 = Refl

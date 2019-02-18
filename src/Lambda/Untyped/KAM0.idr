@@ -15,5 +15,5 @@ step (App t u,    s) = Just (t, u::s)
 step (Lam t,   u::s) = Just (topSubst u t, s)
 step  _              = Nothing
 
-count0N : Term -> (Nat, Maybe Term)
+count0N : Term -> (Nat, Term)
 count0N = iterCount step

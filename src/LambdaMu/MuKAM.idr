@@ -27,5 +27,5 @@ step (Mu c     ,        (ce,se),    s) =   Just (    c,     (ce,s::se),        [
 step (Named n t,        (ce,se),   []) = (\s => (    t,     (ce,   se),         s)) <$> index' n se 
 step  _                           = Nothing
 
-runMK : Term -> (Nat, Maybe State)
+runMK : Term -> (Nat, State)
 runMK t = iterCount step (t, ([], []), [])

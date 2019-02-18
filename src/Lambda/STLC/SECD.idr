@@ -2,6 +2,7 @@ module Lambda.STLC.SECD
 
 import Data.List
 import Data.List.Quantifiers
+import Path
 import Iter
 import Lambda.STLC.Ty
 import Lambda.STLC.Term
@@ -25,13 +26,8 @@ data Directive : List Ty -> List Ty -> List Ty -> Type where
   Tm : Term g a -> Directive g d (a::d)
   Ap : Directive g ((a~>b)::a::d) (b::d)
 
--- paths in a graph as a sequence of zero or more edges E i j with source nodes and target nodes matching up domino-style
-data Path : (i -> i -> Type) -> i -> i -> Type where
-  Nil  : Path e i i
-  (::) : e i j -> Path e j k -> Path e i k  
-
 Control : List Ty -> List Ty -> List Ty -> Type
-Control g d t = Path (Directive g) d t  
+Control g = Path (Directive g)
 
 record Snapshot (t : List Ty) (a : Ty) where
   constructor Sn
@@ -59,5 +55,5 @@ step (St (Sn              s  e (Tm (App t1 t2)::c))            d ) = Just $ St (
 step (St (Sn (Cl t e1::v::s) e             (Ap::c))            d ) = Just $ St (Sn          []  (v::e1)                [Tm t]) (Sn s e c::d) 
 step _                                                             = Nothing
 
-runSECD : Term [] a -> (Nat, Maybe (State a))
+runSECD : Term [] a -> (Nat, State a)
 runSECD t = iterCount step $ St (Sn [] [] [Tm t]) []

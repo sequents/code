@@ -57,5 +57,5 @@ stepStr (App  t1        t2 ) =
 stepStr (Lam t)              = Lam <$> stepStr t
 stepStr  _                   = Nothing  
 
-iterStr : Term n -> Maybe (Term n)
+iterStr : Term n -> Term n
 iterStr = iter stepStr

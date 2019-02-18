@@ -6,6 +6,7 @@ modules = Iter
         , OrdNat
         , Parse
         , Elem
+        , Path
         , Subset
         , Main
 
@@ -20,7 +21,6 @@ modules = Iter
         , Lambda.Untyped.KAM2
         , Lambda.Untyped.CEK
         , Lambda.Untyped.CK
-        , Lambda.Untyped.CEK1
         , Lambda.Untyped.CEK2
 
         , Lambda.Untyped.Scoped.Term
@@ -35,6 +35,8 @@ modules = Iter
         , Lambda.STLC.SECD
         , Lambda.STLC.CEK
         , Lambda.STLC.CK
+        , Lambda.STLC.CEK1
+        , Lambda.STLC.CEK2
         , Lambda.STLC.Parser
         , Lambda.STLC.TyCheck
 
@@ -51,8 +53,11 @@ modules = Iter
         , PCF.MachineV
         , PCF.Parser
         , PCF.TyCheck
+        , PCF.Untyped.InstructN
+        , PCF.Untyped.InstructV
+        , PCF.InstructN
 
-executable = run
+-- executable = run
 
 main = Main                      
 

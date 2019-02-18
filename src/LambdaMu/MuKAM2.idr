@@ -28,5 +28,5 @@ step (Named n t,                 e,       []) = Just (Var n,          e,  [Cl t 
 step (Var  Z   ,         Left s::_, [Cl t e]) = Just (    t,          e,         s)
 step  _                                       = Nothing
 
-runMK : Term -> (Nat, Maybe State)
+runMK : Term -> (Nat, State)
 runMK t = iterCount step (t, [], [])

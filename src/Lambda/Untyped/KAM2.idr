@@ -23,5 +23,5 @@ step (ClApp (ClTm (Lam t) e) c1) = Just $ ClTm t (c1::e)
 step (ClApp  c0              c1) = ClApp <$> (step c0) <*> Just c1
 step  _                          = Nothing
 
-runKAM : Term -> Maybe Clos
+runKAM : Term -> Clos
 runKAM t = iter step $ ClTm t []

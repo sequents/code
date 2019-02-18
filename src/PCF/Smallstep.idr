@@ -61,5 +61,5 @@ step (If0 p t f)          = (\q => If0 q t f) <$> step p
 step (Fix f)              = Just $ subst1 f (Fix f)
 step  _                   = Nothing
 
-stepIter : Term g a -> (Nat, Maybe (Term g a))
+stepIter : Term g a -> (Nat, Term g a)
 stepIter = iterCount step
