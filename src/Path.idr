@@ -4,6 +4,7 @@ module Path
 %access public export
 
 -- paths in a graph as a sequence of zero or more edges `e i j` with source nodes and target nodes matching up domino-style
+-- aka reflexive-transitive closure
 data Path : (i -> i -> Type) -> i -> i -> Type where
   Nil  : Path e i i
   (::) : e i j -> Path e j k -> Path e i k

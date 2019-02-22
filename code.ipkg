@@ -8,6 +8,8 @@ modules = Iter
         , Elem
         , Path
         , Subset
+        , Str
+        , Binary
         , Main
 
         , Lambda.Untyped.TermNam
@@ -55,7 +57,9 @@ modules = Iter
         , PCF.TyCheck
         , PCF.Untyped.InstructN
         , PCF.Untyped.InstructV
+        , PCF.Bytecode
         , PCF.InstructN
+        , PCF.InstructV
 
 -- executable = run
 

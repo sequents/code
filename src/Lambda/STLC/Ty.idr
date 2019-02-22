@@ -1,5 +1,8 @@
 module Lambda.STLC.Ty
 
+import Str
+import Binary
+
 %access public export
 %default total
 
@@ -30,3 +33,22 @@ DecEq Ty where
     decEq (Imp a b) (Imp c d) | (No ctra, _)         = No $ ctra . fst . impInj
     decEq (Imp a b) (Imp c d) | (_, No ctra2)        = No $ ctra2 . snd . impInj
     decEq (Imp a b) (Imp a b) | (Yes Refl, Yes Refl) = Yes Refl
+
+Codec Ty where
+  toBuf buf t = toBuf buf (fromMaybe 0 $ parseBinStr $ go t)
+  where
+    go : Ty -> String
+    go A = "0"
+    go (Imp a b) = "1" ++ go a ++ go b
+  fromBuf buf = do (i,r) <- fromBuf {a=Integer} buf
+                   case fst <$> (go $ unpack $ toBinStr i) of 
+                     Just t => pure (t, r)
+                     Nothing => throw "Corrupt Ty"
+  where
+    go : List Char -> Maybe (Ty, List Char)
+    go [] = Nothing
+    go ('0'::xs) = Just (A, xs)
+    go ('1'::xs) = do (a, xs0) <- go xs
+                      (b, xs1) <- assert_total $ go xs0
+                      pure $ (Imp a b, xs1)
+    go (_::_) = Nothing
