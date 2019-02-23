@@ -20,7 +20,7 @@ mutual
     Access : Elem a g -> I (g,a) (g,a)
     Grab   : I (g,a~>b) (a::g,b) 
     Push   : Control g a -> I (g,b) (g,a~>b)
-    Nul    : I (g,A) (g,a)
+    Nul    : I (g,A) (g,A)
     Inc    : I (g,A) (g,A)
     Case   : Control g a -> Control (A::g) a -> I (g,a) (g,A)
     Loop   : I (g,a) (a::g,a)
@@ -30,7 +30,6 @@ mutual
     ec   : List Ty
     et   : Ty
     path : Path I (g,a) (ec, et)
-  --Control g a = (d**b**Path I (g,a) (d,b))
 
 infixr 5 +:
 (+:) : I (g,a) (d,b) -> Control d b -> Control g a
@@ -53,57 +52,71 @@ Codec (Control g a) where
                                go b2 (g**a**p)
   where 
     go : Binary -> (s ** c ** Path I (s,c) (d,b)) -> IOE Binary
-    go bf (d**b**[]) = pure bf
-    go bf (s**c**Access e::_) = do b1 <- toBuf bf (the Bits8 10)
-                                   toBuf b1 (toIntegerNat $ elem2Nat e)
+    go bf (d**b**[]) = toBuf bf (the Bits8 30)
+    go bf (s**c**Access e::q) = assert_total $ 
+                                do b1 <- toBuf bf (the Bits8 20)
+                                   b2 <- toBuf b1 (toIntegerNat $ elem2Nat e)
+                                   go b2 (s**c**q)
     go bf (s**e~>f**Grab::q) = assert_total $ 
-                               do b1 <- toBuf buf (the Bits8 11) 
+                               do b1 <- toBuf buf (the Bits8 21) 
                                   go b1 (e::s ** f ** q) 
     go bf (s**c**Push {a=e} u::q) = assert_total $ 
-                                    do b1 <- toBuf bf (the Bits8 12) 
---                                       b2 <- toBuf b1 s
---                                       b3 <- toBuf b2 e
-                                       b4 <- toBuf b1 u
-                                       b5 <- toBuf b4 (the Bits8 13) 
-                                       go b5 (s ** e~>c ** q) 
-    go bf (s**A**Nul::_) = toBuf bf (the Bits8 14)
+                                    do b1 <- toBuf bf (the Bits8 22) 
+                                       b2 <- toBuf b1 e
+                                       b3 <- toBuf b2 u
+                                       go b3 (s ** e~>c ** q) 
+    go bf (s**A**Nul::q) = assert_total $ 
+                           do b1 <- toBuf bf (the Bits8 23)
+                              go b1 (s**A**q)
     go bf (s**A**Inc::q) = assert_total $ 
-                           do b1 <- toBuf bf (the Bits8 15)
+                           do b1 <- toBuf bf (the Bits8 24)
                               go b1 (s**A**q)  
     go bf (s**c**Case t f::q) = assert_total $ 
-                                do b1 <- toBuf bf (the Bits8 16) 
---                                   b1 <- toBuf buf g
---                                   b2 <- toBuf b1 a
+                                do b1 <- toBuf bf (the Bits8 25) 
                                    b2 <- toBuf b1 t
-                                   b3 <- toBuf b2 (the Bits8 17) 
-                                   b4 <- toBuf b3 f
-                                   b5 <- toBuf b4 (the Bits8 18) 
-                                   go b5 (s ** A ** q) 
+                                   b3 <- toBuf b2 f
+                                   go b3 (s ** A ** q) 
     go bf (s**c**Loop::q) = assert_total $ 
-                            do b1 <- toBuf bf (the Bits8 19)
+                            do b1 <- toBuf bf (the Bits8 26)
                                go b1 (c::s**c**q)  
                               
   fromBuf buf = do (d, b1) <- fromBuf buf {a=List Ty}
                    (b, b2) <- fromBuf b1 {a=Ty}
-                   ((s**c**p), b3) <- go {d} {b} b2 
-                   case (decEq g s, decEq a c) of 
-                     (Yes Refl, Yes Refl) => pure (MkCtr d b p, b3)
-                     (_, _) => throw "type mismatch for toplevel path"
+                   (tag, b3) <- fromBuf b2 {a=Bits8}
+                   ((s**c**p), b4) <- go b3 tag g a
+                   case (decEq d s, decEq b c) of 
+                     (Yes Refl, Yes Refl) => pure (MkCtr d b p, b4)
+                     (_, _) => throw "type mismatch at path endpoint"
+                     
   where
-    go : Binary -> IOE ((s ** c ** Path I (s,c) (d,b)), Binary)
-
-{-
-
-    fromBuf buf = do (tag, b1) <- fromBuf buf {a=Bits8}
-                     case tag of 
-                       10 => do (g, b2) <- fromBuf b1 {a=List Ty}
-                                (a, b3) <- fromBuf b2 {a=Ty}   
-                                (n, b4) <- fromBuf b2 {a=Integer}
-                                case nat2Elem {a} {g} (fromIntegerNat n) of 
-                                  Just e => pure $ ((g,a) ** (g,a) ** Bytecode.Access e)
-                                  Nothing => throw "Corrupt elem index"
-                       _ => throw "unknown tag"
-  Codec (Control g a) where
-    toBuf buf c = ?wot
-    fromBuf buf = ?wot2
-  -}
+    go : Binary -> Bits8 -> (s : List Ty) -> (c : Ty) -> IOE ((d**b**Path I (s,c) (d,b)), Binary)
+    go bf 20 s c = do (n, b1) <- fromBuf bf {a=Integer}
+                      case nat2Elem c s (fromIntegerNat n) of 
+                        Just e => do (tag, b2) <- fromBuf b1 {a=Bits8}
+                                     ((d**b**p), b3) <- assert_total $ go b2 tag s c
+                                     pure ((d**b**Access e::p), b3)
+                        Nothing => throw "elem out of bounds"
+    go bf 21 s (Imp c e) = do (tag, b1) <- fromBuf bf {a=Bits8}
+                              ((d**b**p), b2) <- go b1 tag (c::s) e
+                              pure ((d**b**Grab::p), b2) 
+    go bf 22 s c = do (e, b1) <- fromBuf bf {a=Ty}
+                      (u, b2) <- assert_total $ fromBuf b1 {a=Control s e}
+                      (tag, b3) <- fromBuf b2 {a=Bits8}
+                      ((d**b**p), b4) <- assert_total $ go b3 tag s (e~>c)
+                      pure ((d**b**Push u::p), b4) 
+    go bf 23 s A = do (tag, b1) <- fromBuf bf {a=Bits8}
+                      ((d**b**p), b2) <- assert_total $ go b1 tag s A
+                      pure ((d**b**Nul::p), b2)
+    go bf 24 s A = do (tag, b1) <- fromBuf bf {a=Bits8}
+                      ((d**b**p), b2) <- assert_total $ go b1 tag s A
+                      pure ((d**b**Inc::p), b2)
+    go bf 25 s c = do (t, b1) <- assert_total $ fromBuf bf {a=Control s c}
+                      (f, b2) <- assert_total $ fromBuf bf {a=Control (A::s) c}
+                      (tag, b3) <- fromBuf b2 {a=Bits8}
+                      ((d**b**p), b4) <- assert_total $ go b3 tag s A
+                      pure ((d**b**Case t f::p), b4) 
+    go bf 26 s c = do (tag, b1) <- fromBuf bf {a=Bits8}
+                      ((d**b**p), b2) <- assert_total $ go b1 tag (c::s) c
+                      pure ((d**b**Loop::p), b2)
+    go bf 30 s c = pure ((s**c**[]), bf)
+    go bf _  _ _ = throw " tag/type mismatch"
