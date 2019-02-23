@@ -42,7 +42,7 @@ Codec Ty where
     go (Imp a b) = "1" ++ go a ++ go b
   fromBuf buf = do (i,r) <- fromBuf {a=Integer} buf
                    case fst <$> (go $ unpack $ toBinStr i) of 
-                     Just t => pure (t, r)
+                     Just t => pure (t,r)
                      Nothing => throw "Corrupt Ty"
   where
     go : List Char -> Maybe (Ty, List Char)

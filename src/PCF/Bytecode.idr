@@ -31,6 +31,21 @@ mutual
     et   : Ty
     path : Path I (g,a) (ec, et)
 
+Show (Control g a) where
+  show (MkCtr d b p) = "{ " ++ show g ++ " |- " ++ show a ++ " } " 
+                       ++ go g a p {w=d} {z=b}
+                       ++ "{ " ++ show d ++ " |- " ++ show b ++ " }"
+    where
+    go : (s : List Ty) -> (c : Ty) -> Path I (s,c) (w,z) -> String
+    go w z      []                = ""
+    go s c      (Access e::q)     = "ACC" ++ show (elem2Nat e) ++ " " ++ go s c q
+    go s (e~>f) (Grab::q)         = "GRB " ++ go (e::s) f q
+    go s c      (Push {a=e} u::q) = "PSH <" ++ show u ++ "> " ++ go s (e~>c) q
+    go s A      (Nul::q)          = "NUL " ++ go s A q
+    go s A      (Inc::q)          = "INC " ++ go s A q
+    go s c      (Case t f::q)     = "CAS <" ++ show t ++ "> <" ++ show f ++ "> " ++ go s A q
+    go s c      (Loop::q)         = "LOP " ++ go (c::s) c q
+    
 infixr 5 +:
 (+:) : I (g,a) (d,b) -> Control d b -> Control g a
 (+:) i (MkCtr s c p) = MkCtr s c (i::p)
@@ -49,36 +64,36 @@ compile         (Fix t)       = Loop +: compile t
 Codec (Control g a) where
   toBuf buf (MkCtr d b p) = do b1 <- toBuf buf d
                                b2 <- toBuf b1 b
-                               go b2 (g**a**p)
+                               go b2 g a p {w=d} {z=b}
   where 
-    go : Binary -> (s ** c ** Path I (s,c) (d,b)) -> IOE Binary
-    go bf (d**b**[]) = toBuf bf (the Bits8 30)
-    go bf (s**c**Access e::q) = assert_total $ 
-                                do b1 <- toBuf bf (the Bits8 20)
-                                   b2 <- toBuf b1 (toIntegerNat $ elem2Nat e)
-                                   go b2 (s**c**q)
-    go bf (s**e~>f**Grab::q) = assert_total $ 
-                               do b1 <- toBuf buf (the Bits8 21) 
-                                  go b1 (e::s ** f ** q) 
-    go bf (s**c**Push {a=e} u::q) = assert_total $ 
-                                    do b1 <- toBuf bf (the Bits8 22) 
-                                       b2 <- toBuf b1 e
-                                       b3 <- toBuf b2 u
-                                       go b3 (s ** e~>c ** q) 
-    go bf (s**A**Nul::q) = assert_total $ 
-                           do b1 <- toBuf bf (the Bits8 23)
-                              go b1 (s**A**q)
-    go bf (s**A**Inc::q) = assert_total $ 
-                           do b1 <- toBuf bf (the Bits8 24)
-                              go b1 (s**A**q)  
-    go bf (s**c**Case t f::q) = assert_total $ 
-                                do b1 <- toBuf bf (the Bits8 25) 
-                                   b2 <- toBuf b1 t
-                                   b3 <- toBuf b2 f
-                                   go b3 (s ** A ** q) 
-    go bf (s**c**Loop::q) = assert_total $ 
-                            do b1 <- toBuf bf (the Bits8 26)
-                               go b1 (c::s**c**q)  
+    go : Binary -> (s : List Ty) -> (c : Ty) -> Path I (s,c) (w,z) -> IOE Binary
+    go bf w z [] = toBuf bf (the Bits8 30)
+    go bf s c (Access e::q) = assert_total $ 
+                              do b1 <- toBuf bf (the Bits8 20)
+                                 b2 <- toBuf b1 (toIntegerNat $ elem2Nat e)
+                                 go b2 s c q
+    go bf s (e~>f) (Grab::q) = assert_total $ 
+                               do b1 <- toBuf bf (the Bits8 21) 
+                                  go b1 (e::s) f q
+    go bf s c (Push {a=e} u::q) = assert_total $ 
+                                  do b1 <- toBuf bf (the Bits8 22) 
+                                     b2 <- toBuf b1 e
+                                     b3 <- toBuf b2 u
+                                     go b3 s (e~>c) q
+    go bf s A (Nul::q) = assert_total $ 
+                         do b1 <- toBuf bf (the Bits8 23)
+                            go b1 s A q
+    go bf s A (Inc::q) = assert_total $ 
+                         do b1 <- toBuf bf (the Bits8 24)
+                            go b1 s A q
+    go bf s c (Case t f::q) = assert_total $ 
+                              do b1 <- toBuf bf (the Bits8 25) 
+                                 b2 <- toBuf b1 t
+                                 b3 <- toBuf b2 f
+                                 go b3 s A q
+    go bf s c (Loop::q) = assert_total $ 
+                          do b1 <- toBuf bf (the Bits8 26)
+                             go b1 (c::s) c q
                               
   fromBuf buf = do (d, b1) <- fromBuf buf {a=List Ty}
                    (b, b2) <- fromBuf b1 {a=Ty}

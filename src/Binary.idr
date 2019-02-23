@@ -7,6 +7,7 @@ import Data.List
 
 -- stolen from https://github.com/edwinb/Blodwen/blob/master/src/Utils/Binary.idr
 
+export
 record Chunk where
   constructor MkChunk
   buf : Buffer
@@ -35,11 +36,22 @@ incLoc i c = record { loc $= (+i) } c
 export
 data Binary = MkBin (List Chunk) Chunk (List Chunk)
 
+export 
+dumpChunk : Chunk -> IO ()
+dumpChunk (MkChunk buf loc size used) = 
+  do dt <- bufferData buf
+     printLn dt
+     printLn loc
+     printLn size
+     printLn used
+
+export
 dumpBin : Binary -> IO ()
 dumpBin (MkBin done chunk rest)
-   = do printLn !(traverse bufferData (map buf done))
-        printLn !(bufferData (buf chunk))
-        printLn !(traverse bufferData (map buf rest))
+   = do traverse dumpChunk done
+        dumpChunk chunk
+        traverse dumpChunk rest
+        pure ()
 
 nonEmptyRev : NonEmpty (xs ++ y :: ys)
 nonEmptyRev {xs = []} = IsNonEmpty
@@ -212,6 +224,6 @@ Codec Integer where
          case val of
               0 => do (val, rest2) <- fromBuf {a = List Int} rest
                       pure (-(fromLimbs val), rest2)
-              1 => do (val, rest2) <- fromBuf {a = List Int} b
+              1 => do (val, rest2) <- fromBuf {a = List Int} rest
                       pure (fromLimbs val, rest2)
               _ => throw "Corrupt integer"                                 

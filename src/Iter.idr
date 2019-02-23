@@ -1,6 +1,6 @@
 module Iter
 
-import Data.Fuel 
+import public Data.Fuel 
 
 %default total
 %access public export

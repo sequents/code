@@ -61,7 +61,7 @@ modules = Iter
         , PCF.InstructN
         , PCF.InstructV
 
--- executable = run
+executable = run
 
 main = Main                      
 
