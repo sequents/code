@@ -10,7 +10,7 @@ import Lambda.STLC.Term
 %default total
 %access public export
 
--- from https://github.com/Stun17/busido/blob/master/agda/ulaf/Day3.agda
+-- from https://github.com/UlfNorell/agda-summer-school/blob/EJCP-solutions/exercises/SECD/Compiled.agda
 
 mutual
   Env : List Ty -> Type
