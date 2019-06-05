@@ -65,7 +65,7 @@ step (App (Lam u) v) = Just $ subst1 u v
 step (App (Mu u)  v) = Just $ Mu $ appN u v
 step (App  t      u) = 
   if isVal t 
-    then App      t       <$> (step u) 
+    then Nothing
     else App <$> (step t) <*>  pure u
 step (Named a (Mu u)) = Just $ renameN (contract a) u
 step  _ = Nothing

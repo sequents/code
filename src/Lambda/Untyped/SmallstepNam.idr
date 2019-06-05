@@ -47,20 +47,34 @@ step : Term -> Maybe Term
 step (App (Lam x t) sub) = Just $ subst x sub t  -- beta-reduction
 step (App  t1       t2 ) = 
   if isVal t1 
-    then App     t1        <$> (step t2) 
+    then Nothing
     else App <$> (step t1) <*> Just t2
 step  _                  = Nothing  
 
--- call-by-value  
+-- left-to-right call-by-value  
 stepV : Term -> Maybe Term
 stepV (App t1 t2) = 
+  if isVal t1 
+    then 
+      if isVal t2
+      then
+        case t1 of
+          Lam x t => Just $ subst x t2 t  -- beta-reduction
+          _ => Nothing
+      else App t1 <$> (stepV t2)           
+    else App <$> (stepV t1) <*> Just t2
+stepV  _          = Nothing  
+
+-- right-to-left call-by-value  
+stepVR : Term -> Maybe Term
+stepVR (App t1 t2) = 
   if isVal t2 
     then 
       case t1 of
         Lam x t => Just $ subst x t2 t  -- beta-reduction
-        _ => App <$> (stepV t1) <*> Just t2
-    else App     t1         <$> (stepV t2) 
-stepV  _          = Nothing  
+        _ => App <$> (stepVR t1) <*> Just t2
+    else App     t1         <$> (stepVR t2) 
+stepVR  _          = Nothing  
 
 iterN : Term -> Term
 iterN = iter step
@@ -73,3 +87,9 @@ iterV = iter stepV
 
 runV : Term -> (Nat, Term)
 runV = iterCount stepV
+
+iterVR : Term -> Term
+iterVR = iter stepVR
+
+runVR : Term -> (Nat, Term)
+runVR = iterCount stepVR

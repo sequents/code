@@ -42,7 +42,7 @@ step : Term g a -> Maybe (Term g a)
 step (App (Lam body) sub) = Just $ subst1 body sub
 step (App  t1        t2 ) = 
   if isVal t1 
-    then App     t1        <$> (step t2) 
+    then Nothing
     else App <$> (step t1) <*> pure t2
 step  _                   = Nothing
 
