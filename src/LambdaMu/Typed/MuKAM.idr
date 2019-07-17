@@ -43,3 +43,6 @@ step (St (App t u)                        ce   se        s ) = Just $ St  t     
 step (St (Mu t)                           ce   se        s ) = Just $ St  t             ce  (CSE s se)                   NS
 step (St (Named n t)                      ce   se       NS ) = Just $ St  t             ce         se       (findStack n se)
 step  _                                                      = Nothing
+
+runMK : Term [] a [] -> (Nat, State)
+runMK t = iterCount step $ St t NCE NSE NS
