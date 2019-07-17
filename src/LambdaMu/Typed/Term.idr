@@ -34,13 +34,13 @@ callcc : Term g ((a~>b)~>a) (a::d) -> Term g a d
 callcc f =     Mu $ Named Here $ App f          (Lam $ Mu $ Named (There Here) (Var Here))
 
 abort : Term g a (b::a::d) -> Term g b (a::d)
-abort t = Mu $ Named (There Here) t
+abort = Mu . Named (There Here)
 
 set : Term g a (a::d) -> Term g a d 
-set t = Mu $ Named Here t
+set = Mu . Named Here
 
 raise : Term g a (a::d) -> Term g b (a::d)
-raise t = App (Lam $ Mu $ Named (There Here) (Var Here)) t
+raise = App . Lam $ Mu $ Named (There Here) (Var Here)
 
 handle : Term g (a~>b) (b::d) -> Term g b (a::b::d) -> Term g b d
 handle m n = Mu $ Named Here $ App m (Mu $ Named (There Here) n)
