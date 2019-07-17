@@ -6,7 +6,7 @@ module LambdaMu.Term
 data Term = Var Nat 
           | Lam Term
           | App Term Term
-          | Mu Term         -- naming
+          | Mu Term         -- activation 
           | Named Nat Term  -- passification
 
 pierce : Term 

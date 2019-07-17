@@ -15,8 +15,8 @@ data Term : List Ty -> Ty -> List Ty -> Type where
   Var   : Elem a g -> Term g a d
   Lam   : Term (a::g) b d -> Term g (a~>b) d
   App   : Term g (a~>b) d -> Term g a d -> Term g b d
-  Mu    : Term g Bot (a::d) -> Term g a d              -- activate
-  Named : Elem a d -> Term g a d -> Term g Bot d       -- passivate
+  Mu    : Term g Bot (a::d) -> Term g a d              -- activate / catch
+  Named : Elem a d -> Term g a d -> Term g Bot d       -- passivate / throw
 
 dne : Term g (((a~>Bot)~>Bot)~>a) d
 dne = Lam $ Mu $ App (Var Here) (Lam $ Named Here (Var Here))
