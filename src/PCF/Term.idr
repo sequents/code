@@ -6,7 +6,7 @@ import Data.List
 %access public export
 %default total
 
--- type A will stand for a natural nubmer
+-- type A will stand for a natural number
 
 data Term : List Ty -> Ty -> Type where
   Var  : Elem a g -> Term g a 
