@@ -7,9 +7,19 @@ import Data.List
 %hide Language.Reflection.Var
 
 data Ty = A | Bot | Imp Ty Ty
-infix 5 ~>
+
+infixr 5 ~>
 (~>) : Ty -> Ty -> Ty
 (~>) = Imp
+
+NOT : Ty -> Ty
+NOT t = t ~> Bot
+
+OR : Ty -> Ty -> Ty
+OR a b = (NOT a) ~> b
+
+AND : Ty -> Ty -> Ty
+AND a b = NOT (a ~> (NOT b))
 
 data Term : List Ty -> Ty -> List Ty -> Type where
   Var   : Elem a g -> Term g a d
@@ -18,13 +28,50 @@ data Term : List Ty -> Ty -> List Ty -> Type where
   Mu    : Term g Bot (a::d) -> Term g a d              -- activate / catch / bottom elimination / proof by contradiction (a != Bot)
   Named : Elem a d -> Term g a d -> Term g Bot d       -- passivate / throw / bottom introduction / non-contradiction
 
-dne : Term g (((a~>Bot)~>Bot)~>a) d
-dne = Lam $ Mu $ App (Var Here) (Lam $ Named Here (Var Here))
+lift : Elem a d -> Term g (NOT a) d
+lift el = Lam $ Named el (Var Here)
 
-dne' : Term g (((a~>Bot)~>Bot)~>a) d
-dne' = Lam $ Mu $ App (Var Here) (Lam $ App (Var $ There Here) (Lam $ Named Here (Var $ There Here)))
+exfalso : Term g (Bot ~> a) d
+exfalso = Lam $ Mu $ Var Here
 
-contra : Term g ((a~>Bot)~>(a~>b)) (Bot::d)
+orL : Term g (a ~> OR a b) d
+orL = Lam $ Lam $ Mu $ App (Var Here) (Var $ There Here)
+
+orR : Term g (b ~> OR a b) d
+orR = Lam $ Lam $ Var $ There Here
+
+orElim : Term g ((a ~> c) ~> (b ~> c) ~> OR a b ~> c) d
+orElim = Lam $ Lam $ Lam $ Mu $ Named Here $ 
+           App (Var $ There $ There Here) 
+               (Mu $ Named (There Here) $ 
+                  App (Var $ There Here) 
+                      (App (Var Here) (lift Here)))
+
+dne : Term g ((NOT (NOT a))~>a) d
+dne = Lam $ Mu $ App (Var Here) (lift Here)
+
+dne' : Term g ((NOT (NOT a))~>a) d
+dne' = Lam $ Mu $ App (Var Here) 
+                      (Lam $ App (Var $ There Here) 
+                                 (Lam $ Named Here (Var $ There Here)))
+
+lem : Term g (OR (NOT a) a) d
+lem = dne
+
+pair : Term g (a ~> b ~> AND a b) d
+pair = Lam $ Lam $ Lam $ App (App (Var Here) 
+                                  (Var $ There $ There Here)) 
+                             (Var $ There Here)
+
+andFst : Term g (AND a b ~> a) d
+andFst = Lam $ Mu $ App (Var Here) 
+                        (Lam $ Lam $ Named Here (Var $ There Here))
+
+andSnd : Term g (AND a b ~> b) d
+andSnd = Lam $ Mu $ App (Var Here)
+                        (Lam $ lift Here)
+
+contra : Term g ((NOT a)~>(a~>b)) (Bot::d)
 contra = Lam $ Lam $ Mu $ Named (There Here) (App (Var $ There Here) (Var Here))
 
 pierce : Term g (((a~>b)~>a)~>a) d
@@ -45,7 +92,7 @@ raise = App . Lam $ Mu $ Named (There Here) (Var Here)
 handle : Term g (a~>b) (b::d) -> Term g b (a::b::d) -> Term g b d
 handle m n = Mu $ Named Here $ App m (Mu $ Named (There Here) n)
 
-contrapos : Term g (((q~>Bot)~>(p~>Bot))~>(p~>q)) d
+contrapos : Term g (((NOT q)~>(NOT p))~>(p~>q)) d
 contrapos = Lam $ Lam $ Mu $ App (App (Var $ There Here) 
                                       (Lam $ Named Here (Var Here))) 
                                  (Var Here)
