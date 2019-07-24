@@ -106,10 +106,13 @@ Codec (Control g a) where
   where
     go : Binary -> Bits8 -> (s : List Ty) -> (c : Ty) -> IOE ((d**b**Path I (s,c) (d,b)), Binary)
     go bf 20 s c = do (n, b1) <- fromBuf bf {a=Integer}
-                      case nat2Elem c s (fromIntegerNat n) of 
-                        Just e => do (tag, b2) <- fromBuf b1 {a=Bits8}
-                                     ((d**b**p), b3) <- assert_total $ go b2 tag s c
-                                     pure ((d**b**Access e::p), b3)
+                      case indexElem (fromIntegerNat n) s of 
+                        Just (x ** e) => 
+                           case decEq c x of  
+                            Yes Refl => do (tag, b2) <- fromBuf b1 {a=Bits8}
+                                           ((d**b**p), b3) <- assert_total $ go b2 tag s c
+                                           pure ((d**b**Access e::p), b3)
+                            No _ => throw "type mismatch in path"                          
                         Nothing => throw "elem out of bounds"
     go bf 21 s (Imp c e) = do (tag, b1) <- fromBuf bf {a=Bits8}
                               ((d**b**p), b2) <- go b1 tag (c::s) e

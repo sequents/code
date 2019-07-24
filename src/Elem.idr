@@ -10,12 +10,10 @@ elem2Nat : Elem a g -> Nat
 elem2Nat  Here      = Z
 elem2Nat (There el) = S (elem2Nat el)
 
-nat2Elem : DecEq t => (a : t) -> (g : List t) -> Nat -> Maybe (Elem a g)
-nat2Elem _ []      _    = Nothing
-nat2Elem a (b::g)  Z    with (decEq a b)
-  nat2Elem a (a::g) Z | Yes Refl = Just Here
-  nat2Elem a (b::g) Z | No ctra = Nothing
-nat2Elem a (b::g) (S n) = There <$> nat2Elem a g n
+indexElem : Nat -> (xs : List a) -> Maybe (x ** Elem x xs)
+indexElem  _    []        = Nothing
+indexElem  Z    (y :: ys) = Just (y ** Here)
+indexElem (S n) (y :: ys) = map (\(x ** p) => (x ** There p)) (indexElem n ys)
 
 elem2Fin : Elem a g -> Fin (length g)
 elem2Fin  Here      = FZ
