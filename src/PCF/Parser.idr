@@ -38,11 +38,13 @@ type =
 name : All (Parser' String)
 name = alphas
 
+-- neutrals
+
 var : All (Parser' Neu)
 var = map Var name
 
-app : All (Parser' (Neu -> Val -> Neu))
-app = cmap App space
+app : All (Box (Parser' Val) :-> Parser' Val)
+app rec = alt (map Emb var) (parens rec)
 
 cut : All (Box (Parser' Val) :-> Parser' Neu)
 cut rec = map (\(v,t) => Cut v t) $ 
@@ -50,8 +52,17 @@ cut rec = map (\(v,t) => Cut v t) $
                          (rand (withSpaces (char ':'))
                               type))
 
-neu : All (Box (Parser' Val) :-> Parser' Neu)
-neu rec = hchainl (var `alt` (cut rec)) app rec 
+neu : All (Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' Neu)
+neu recv recn = 
+  hchainl 
+    (alts [ var
+          , cut recv
+          , parens recn
+          ]) 
+    (cmap App spaces) 
+    (app recv)
+
+-- values
 
 zero : All (Parser' Val)
 zero = cmap Zero $ char '0'
@@ -63,7 +74,7 @@ succ rec = map (\t => Succ t) $
 
 lam : All (Box (Parser' Val) :-> Parser' Val)
 lam rec = map (\(s,v) => Lam s v) $ 
-          rand (char '^') 
+          rand (char '\\') 
                (and (withSpaces name)
                     (rand (andopt (char '.') spaces) 
                           (Nat.map {a=Parser' _} commit rec)))
@@ -85,16 +96,17 @@ if0 recn recv = map (\(p,t,s,f) => If0 p t s f) $
                                               (and name 
                                                    (rand (char '.') recv))))))
 
-emb : All (Box (Parser' Val) :-> Parser' Val)
-emb rec = map Emb (neu rec)
+emb : All (Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' Val)
+emb recv recn = map Emb (neu recv recn)
         
-val : All (Box (Parser' Neu) :-> Box (Parser' Val) :-> Parser' Val)
-val recn recv = alts [ lam recv
+val : All (Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' Val)
+val recv recn = alts [ lam recv
                      , zero
                      , succ recv
                      , if0 recn recv
                      , fix recv
-                     , emb recv
+                     , emb recv recn
+                     , parens recv
                      ]
 
 record PCF (n : Nat) where
@@ -108,10 +120,10 @@ pcf = fix _ $ \rec =>
     ihv = Nat.map {a=PCF} pval rec 
     ihn = Nat.map {a=PCF} pneu rec 
    in
-  MkPCF (val ihn ihv) (neu ihv)
+  MkPCF (val ihv ihn) (neu ihv ihn)
 
 parseVal : String -> Either Error Val
-parseVal s = result Left Left Right $ parseResult s (pval pcf) 
+parseVal s = result Left Left (maybe (Left EmptyParse) Right) $ parseResult s (pval pcf) 
 
 parseNeu : String -> Either Error Neu
-parseNeu s = result Left Left Right $ parseResult s (pneu pcf) 
+parseNeu s = result Left Left (maybe (Left EmptyParse) Right) $ parseResult s (pneu pcf) 

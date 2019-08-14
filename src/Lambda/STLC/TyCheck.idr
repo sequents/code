@@ -116,13 +116,13 @@ parseCheckTerm s = do b <- parseNeu s
                         No _ => Left TypeError
 
 private    
-test0 : parseCheckTerm "(^x.x : *->*)" = Right (TestTy ** ResultTm)
+test0 : parseCheckTerm "(\\x.x : *->*)" = Right (TestTy ** ResultTm)
 test0 = Refl
 
 --private    
---test1 : parseCheckTerm "((^x.x : ((*->*)->(*->*))->((*->*)->(*->*))) ^x.x : (*->*)->(*->*)) ^x.x" = Right (TestTy ** TestTm1)
+--test1 : parseCheckTerm "((\\x.x : ((*->*)->(*->*))->((*->*)->(*->*))) \\x.x : (*->*)->(*->*)) \\x.x" = Right (TestTy ** TestTm1)
 --test1 = Refl
 
 --private
---test2 : parseCheckTerm "(^x.x : ((*->*)->(*->*))) (^x.x : (*->*)->(*->*)) ^x.x" = Right (TestTy ** TestTm2)
+--test2 : parseCheckTerm "(\\x.x : ((*->*)->(*->*))) (\\x.x : (*->*)->(*->*)) \\x.x" = Right (TestTy ** TestTm2)
 --test2 = Refl

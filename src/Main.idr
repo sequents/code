@@ -29,6 +29,7 @@ untyped =
     case parseDB s of 
       Right t => show t ++ "\n"
       Left (ParseError p) => parseErr p
+      Left EmptyParse => "parse error: empty parse"
       Left TypeError => "type error (can't happen for ULC)\n"
 
 scoped : IO ()
@@ -37,6 +38,7 @@ scoped =
     case parseTerm s of 
       Right (n**t) => show t ++ ": " ++ show n ++ "\n"
       Left (ParseError p) => parseErr p
+      Left EmptyParse => "parse error: empty parse"
       Left TypeError => "type error (can't happen for scoped ULC)\n"
 
 typed : IO ()
@@ -45,6 +47,7 @@ typed =
     case STLC.TyCheck.parseCheckTerm s of 
       Right (ty**t) => show t ++ ": " ++ show ty ++ "\n"
       Left (ParseError p) => parseErr p
+      Left EmptyParse => "parse error: empty parse"
       Left TypeError => "type error\n"
 
 compilePCF : String -> String -> IO ()
@@ -61,6 +64,7 @@ compilePCF fnin fnout =
                                         Left fe => printLn fe
                                         Right () => pure ())
        Left (ParseError p) => printLn $ parseErr p
+       Left EmptyParse => putStrLn "parse error: empty parse\n"
        Left TypeError => putStrLn "type check error\n"
 
 cbnPCF : String -> IO ()

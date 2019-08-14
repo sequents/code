@@ -39,32 +39,48 @@ weakApp pos n ne m va with (ordNat n m)
   weakApp pos  n    ne (n+k) va | LTN k = (n+k ** App pos (weakenNeu k ne)              va )
   weakApp pos (m+k) ne  m    va | GTN k = (m+k ** App pos              ne  (weakenVal k va))
 
+-- neutrals
+
 var : All (Parser' (n ** Neu n))
 var = map (\n => (S n ** Parser.Var $ last {n})) $ decimalNat
+
+app : All (Box (Parser' (n ** Val n)) :-> Parser' (n ** Val n))
+app rec = alt (map (\(p,(n**v)) => (n ** Emb p v)) $ mand getPosition var) (parens rec)
 
 cut : All (Box (Parser' (n ** Val n)) :-> Parser' (n ** Neu n))
 cut rec = map (\((n**v),p) => (n ** Cut p v)) $ 
           andm (parens $ Nat.map {a=Parser' _} commit rec) getPosition
 
-app : All (Parser' ((n ** Neu n) -> (n ** Val n) -> (n ** Neu n)))
-app = map (\pos, (n**x), (m**y) => weakApp pos n x m y) $ randm space getPosition
-
-neu : All (Box (Parser' (n ** Val n)) :-> Parser' (n ** Neu n))
-neu rec = hchainl (var `alt` (cut rec)) app rec 
+neu : All (Box (Parser' (n ** Val n)) :-> Box (Parser' (n ** Neu n)) :-> Parser' (n ** Neu n))
+neu recv recn = 
+  hchainl 
+    (alts [ var
+          , cut recv
+          , parens recn
+          ]) 
+    (Combinators.map (\pos, (n**x), (m**y) => weakApp pos n x m y) $ 
+                     randm space getPosition) 
+    (app recv)
       
+-- values 
+
 lam : All (Box (Parser' (n ** Val n)) :-> Parser' (n ** Val n))
 lam rec = map (\(p,(n**v)) => case n of 
                     Z => (Z ** Lam p (weakenVal 1 v))
                     S n => (n ** Lam p v)) $ 
           mand getPosition 
-              (rand (char '^') 
+              (rand (char '\\') 
                     (Nat.map {a=Parser' _} commit rec))
               
-emb : All (Box (Parser' (n ** Val n)) :-> Parser' (n ** Val n))
-emb rec = map (\(p,(n**v)) => (n ** Emb p v)) $ mand getPosition (neu rec)
+emb : All (Box (Parser' (n ** Val n)) :-> Box (Parser' (n ** Neu n)) :-> Parser' (n ** Val n))
+emb recv recn = map (\(p,(n**v)) => (n ** Emb p v)) $ mand getPosition (neu recv recn)
         
-val : All (Box (Parser' (n ** Val n)) :-> Parser' (n ** Val n))
-val rec = (lam rec) `alt` (emb rec) 
+val : All (Box (Parser' (n ** Val n)) :-> Box (Parser' (n ** Neu n)) :-> Parser' (n ** Val n))
+val recv recn = 
+  alts [ lam recv 
+       , emb recv recn
+       , parens recv
+       ]
 
 -- tying the knot
 
@@ -75,8 +91,11 @@ record ULC (m : Nat) where
 
 ulc : All ULC
 ulc = fix _ $ \rec =>
-  let ihv = Nat.map {a=ULC} val rec in
-  MkULC (val ihv) (neu ihv)
+  let 
+    ihv = Nat.map {a=ULC} val rec 
+    ihn = Nat.map {a=ULC} neu rec 
+   in
+  MkULC (val ihv ihn) (neu ihv ihn)
 
 -- converting to terms  
 
@@ -91,4 +110,4 @@ mutual
   n2t (App _ t1 t2) = App (n2t t1) (v2t t2)  
 
 parseTerm : String -> Either Error (n ** Term n)
-parseTerm s = result Left Left (\(n**v) => Right (n ** v2t v)) $ parseResult s (val ulc) 
+parseTerm s = result Left Left (maybe (Left EmptyParse) (\(n**v) => Right (n ** v2t v))) $ parseResult s (val ulc)
