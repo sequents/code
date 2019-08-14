@@ -36,15 +36,19 @@ type =
   chainr1 base arr
 
 name : All (Parser' String)
-name = alphas
-
--- neutrals
+name = lowerAlphas
 
 var : All (Parser' Neu)
 var = map Var name
 
+zero : All (Parser' Val)
+zero = cmap Zero $ char 'Z'
+
 app : All (Box (Parser' Val) :-> Parser' Val)
-app rec = alt (map Emb var) (parens rec)
+app rec = alts [ map Emb var
+               , zero
+               , parens rec
+               ]
 
 cut : All (Box (Parser' Val) :-> Parser' Neu)
 cut rec = map (\(v,t) => Cut v t) $ 
@@ -62,14 +66,9 @@ neu recv recn =
     (cmap App spaces) 
     (app recv)
 
--- values
-
-zero : All (Parser' Val)
-zero = cmap Zero $ char '0'
-
 succ : All (Box (Parser' Val) :-> Parser' Val)
 succ rec = map (\t => Succ t) $ 
-           rand (char '+') 
+           rand (andopt (char 'S') spaces) 
                 (Nat.map {a=Parser' _} commit rec)
 
 lam : All (Box (Parser' Val) :-> Parser' Val)
@@ -81,20 +80,20 @@ lam rec = map (\(s,v) => Lam s v) $
                 
 fix : All (Box (Parser' Val) :-> Parser' Val)
 fix rec = map (\(s,v) => Fix s v) $ 
-          rand (char '@') 
+          rand (string "FIX") 
                (and (withSpaces name)
                     (rand (andopt (char '.') spaces) 
                           (Nat.map {a=Parser' _} commit rec)))
 
 if0 : All (Box (Parser' Neu) :-> Box (Parser' Val) :-> Parser' Val)                          
 if0 recn recv = map (\(p,t,s,f) => If0 p t s f) $
-                between (char '<') (char '>')
-                  (andbox recn
-                          (rand (char '?')
-                                (andbox recv 
-                                        (rand (char ':')
-                                              (and name 
-                                                   (rand (char '.') recv))))))
+                rand (andopt (string "IFZ") spaces) 
+                     (andbox recn
+                             (rand (withSpaces (string "THEN"))
+                                   (andbox recv 
+                                           (rand (optand spaces (string "ELSE\\"))
+                                                 (and (withSpaces name) 
+                                                      (rand (andopt (char '.') spaces) recv))))))
 
 emb : All (Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' Val)
 emb recv recn = map Emb (neu recv recn)
