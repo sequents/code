@@ -1,6 +1,7 @@
 module Subset
 
 import Data.List
+%hide Prelude.Pairs.Subset
 
 %access public export
 %default total
@@ -8,12 +9,18 @@ import Data.List
 Subset : (g : List a) -> (d : List a) -> Type
 Subset {a} g d = {x : a} -> Elem x g -> Elem x d
 
+subsetId : Subset g g
+subsetId = id
+
+subsetTrans : Subset g d -> Subset d t -> Subset g t
+subsetTrans gd dt = dt . gd
+
 nilSubset : Subset [] xs 
 nilSubset = absurd
 
-oneSubs : Subset [1,2] [3,2,1]
-oneSubs Here = There $ There Here
-oneSubs (There Here) = There Here
+-- oneSubs : Subset [1,2] [3,2,1]
+-- oneSubs Here = There $ There Here
+-- oneSubs (There Here) = There Here
 
 ext : Subset g d -> Subset (b::g) (b::d)
 ext _  Here      = Here
