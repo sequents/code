@@ -10,7 +10,7 @@ data Term = Var Nat
 
 Show Term where
   show (Var n) = show n
-  show (Lam t) = "^" ++ show t
+  show (Lam t) = "\\" ++ show t
   show (App t u) = "(" ++ show t ++ ")(" ++ show u ++ ")"
 
 Term0 : Term

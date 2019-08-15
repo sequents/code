@@ -12,7 +12,7 @@ data Term : Nat -> Type where
 
 Show (Term n) where
   show (Var f) = show $ finToNat f
-  show (Lam t) = "^" ++ show t
+  show (Lam t) = "\\" ++ show t
   show (App t u) = "(" ++ show t ++ ")(" ++ show u ++ ")"
 
 -- convenience  

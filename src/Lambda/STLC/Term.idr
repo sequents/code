@@ -47,7 +47,7 @@ forgetSco (App t1 t2) = App (forgetSco t1) (forgetSco t2)
 
 Show (Term g a) where
   show (Var n) = show $ elem2Nat n
-  show (Lam t) = "^" ++ show t
+  show (Lam t) = "\\" ++ show t
   show (App t u) = "(" ++ show t ++ ")(" ++ show u ++ ")"
 
 -- test terms
