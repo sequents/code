@@ -3,6 +3,7 @@ module LambdaMu.Smallstep
 import Data.List
 import Iter
 import Subset
+import LambdaMu.Ty
 import LambdaMu.Term
 
 %access public export

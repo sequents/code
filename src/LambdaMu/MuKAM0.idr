@@ -3,6 +3,7 @@ module LambdaMu.MuKAM0
 import Data.List
 import Subset
 import Iter
+import LambdaMu.Ty
 import LambdaMu.Term
 import LambdaMu.Smallstep
 

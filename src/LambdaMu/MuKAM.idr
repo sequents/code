@@ -2,7 +2,8 @@ module LambdaMu.MuKAM
 
 import Data.List
 import Iter
-import LambdaMu.Typed.Term
+import LambdaMu.Ty
+import LambdaMu.Term
 import Subset
 
 %access public export

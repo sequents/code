@@ -2,6 +2,7 @@ module PCF.TyCheck
 
 import Data.List
 import TParsec
+import Ctx
 import Parse
 import Lambda.STLC.Ty
 import PCF.Term
@@ -12,48 +13,10 @@ import PCF.Parser
 
 -- bidirectional typechecker
 
--- contexts with names
-
-Ctx : Type
-Ctx = List (String, Ty)
-
-eraseCtx : Ctx -> List Ty     
-eraseCtx = map snd
-
-data InCtx : Ctx -> String -> Ty -> Type where  
-  Here : InCtx ((x,a)::g) x a   
-  There : Not (x=y) -> InCtx g x a -> InCtx ((y,b)::g) x a
-
-eraseInCtx : InCtx c s a -> Elem a (eraseCtx c)  
-eraseInCtx  Here       = Here
-eraseInCtx (There _ i) = There $ eraseInCtx i
-
-Uninhabited (InCtx [] x a) where
-  uninhabited Here impossible  
-  uninhabited (There _ _) impossible  
-
-nowhere : Not (x=y) -> Not (a ** InCtx g x a) -> Not (a ** InCtx ((y,b)::g) x a)
-nowhere neq ctra (b**Here)      = neq Refl
-nowhere neq ctra (a**There n i) = ctra (a**i)
-
-lookup : (g : Ctx) -> (x : String) -> Dec (a ** InCtx g x a)
-lookup []           x = No (\(_**e) => uninhabited e)
-lookup ((y,b)::g) x with (decEq x y)
-  lookup ((y,b)::g) y | Yes Refl = Yes (b**Here)
-  lookup ((y,b)::g) x | No ctra with (lookup g x)
-    lookup ((y,b)::g) x | No ctra | Yes (a**el) = Yes (a**There ctra el)
-    lookup ((y,b)::g) x | No ctra | No ctra2 = No $ nowhere ctra ctra2
-
-inCtxUniq : InCtx g s a -> InCtx g s b -> a = b  
-inCtxUniq  Here           Here          = Refl
-inCtxUniq  Here          (There neq2 _) = absurd $ neq2 Refl
-inCtxUniq (There neq1 _)  Here          = absurd $ neq1 Refl
-inCtxUniq (There _ i1)   (There _ i2)   = inCtxUniq i1 i2
-
 -- terms indexed with raw terms
 
 mutual
-  data Val : Ctx -> Val -> Ty -> Type where
+  data Val : Ctx Ty -> Val -> Ty -> Type where
     Lam : Val ((s,a)::g) v b -> Val g (Lam s v) (a~>b)
     Zero : Val g Zero A
     Succ : Val g m A -> Val g (Succ m) A
@@ -61,7 +24,7 @@ mutual
     Fix : Val ((s,a)::g) n a -> Val g (Fix s n) a
     Emb : Neu g m a -> a = b -> Val g (Emb m) b
 
-  data Neu : Ctx -> Neu -> Ty -> Type where
+  data Neu : Ctx Ty -> Neu -> Ty -> Type where
     Var : InCtx g s a -> Neu g (Var s) a
     App : Neu g l (a~>b) -> Val g m a -> Neu g (App l m) b
     Cut : Val g m a -> Neu g (Cut m a) a
@@ -87,7 +50,7 @@ notSwitch : Neu g m a -> Not (a = b) -> Not (Val g (Emb m) b)
 notSwitch n neq (Emb v eq) = let Refl = neuUniq n v in neq eq
 
 mutual    
-  synth : (g : Ctx) -> (m : Neu) -> Dec (a ** Neu g m a)
+  synth : (g : Ctx Ty) -> (m : Neu) -> Dec (a ** Neu g m a)
   synth g (Var s)   = case lookup g s of
     Yes (a**el) => Yes (a ** Var el)
     No ctra => No $ \(a**Var el) => ctra (a ** el)
@@ -101,7 +64,7 @@ mutual
     Yes val => Yes (t ** Cut val)
     No ctra => No $ \(_**Cut v) => ctra v
 
-  inherit : (g : Ctx) -> (m : Val) -> (a : Ty) -> Dec (Val g m a)
+  inherit : (g : Ctx Ty) -> (m : Val) -> (a : Ty) -> Dec (Val g m a)
   inherit g (Lam s v)       A        = No uninhabited
   inherit g (Lam s v)      (Imp a b) = case inherit ((s,a)::g) v b of
     Yes w => Yes $ Lam w

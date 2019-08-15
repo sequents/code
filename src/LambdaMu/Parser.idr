@@ -4,6 +4,7 @@ import Data.NEList
 import TParsec
 import TParsec.Running
 import Parse
+import LambdaMu.Ty
 import LambdaMu.Term
 
 %access public export

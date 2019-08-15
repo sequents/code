@@ -54,7 +54,9 @@ modules = Iter
         , PCF.InstructN
         , PCF.InstructV
 
+        , LambdaMu.Untyped.Ty
         , LambdaMu.Untyped.Term
+        , LambdaMu.Untyped.MuKAM0
         , LambdaMu.Untyped.MuKAM
         , LambdaMu.Untyped.MuKAM2
         , LambdaMu.Term
@@ -63,6 +65,7 @@ modules = Iter
         , LambdaMu.MuKAM
         , LambdaMu.MuKAM2
         , LambdaMu.Parser
+        , LambdaMu.TyCheck
 
 executable = run
 

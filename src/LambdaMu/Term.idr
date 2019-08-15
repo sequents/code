@@ -1,25 +1,12 @@
 module LambdaMu.Term
 
 import Data.List
+import Elem
+import LambdaMu.Ty
 
 %access public export
 %default total
 %hide Language.Reflection.Var
-
-data Ty = A | Bot | Imp Ty Ty
-
-infixr 5 ~>
-(~>) : Ty -> Ty -> Ty
-(~>) = Imp
-
-NOT : Ty -> Ty
-NOT t = t ~> Bot
-
-OR : Ty -> Ty -> Ty
-OR a b = (NOT a) ~> b
-
-AND : Ty -> Ty -> Ty
-AND a b = NOT (a ~> (NOT b))
 
 data Term : List Ty -> Ty -> List Ty -> Type where
   Var   : Elem a g -> Term g a d
@@ -27,6 +14,13 @@ data Term : List Ty -> Ty -> List Ty -> Type where
   App   : Term g (a~>b) d -> Term g a d -> Term g b d
   Mu    : Term g Bot (a::d) -> Term g a d              -- activate / catch / bottom elimination / proof by contradiction (a != Bot)
   Named : Elem a d -> Term g a d -> Term g Bot d       -- passivate / throw / bottom introduction / non-contradiction
+
+Show (Term g a d) where
+  show (Var n) = show $ elem2Nat n
+  show (Lam t) = "\\" ++ show t
+  show (App t u) = "(" ++ show t ++ ")(" ++ show u ++ ")"
+  show (Mu t) = "MU" ++ show t
+  show (Named n t) = "[" ++ show (elem2Nat n) ++ "]" ++ show t
 
 lift : Elem a d -> Term g (NOT a) d
 lift el = Lam $ Named el (Var Here)

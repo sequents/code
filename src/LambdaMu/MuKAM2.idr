@@ -2,6 +2,7 @@ module LambdaMu.MuKAM2
 
 import Data.List
 import Iter
+import LambdaMu.Ty
 import LambdaMu.Term
 
 %access public export
