@@ -8,7 +8,7 @@ import TParsec
 
 data Error : Type where
   ParseError : Position -> Error
-  EmptyParse : Error
+  IncompleteParse : Error
   TypeError : Error
   
 Parser' : Type -> Nat -> Type

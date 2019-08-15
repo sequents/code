@@ -94,7 +94,7 @@ mutual
   n2t (App _ t1 t2) = App (n2t t1) (v2t t2)
 
 parseNam : String -> Either Error TermNam.Term
-parseNam s = result Left Left (maybe (Left EmptyParse) (Right . v2t)) $ parseResult s (val ulc) 
+parseNam s = result Left Left (maybe (Left IncompleteParse) (Right . v2t)) $ parseResult s (val ulc) 
 
 parseDB : String -> Either Error TermDB.Term
 parseDB s = toDB nameNum <$> parseNam s

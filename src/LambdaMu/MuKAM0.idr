@@ -1,10 +1,10 @@
-module LambdaMu.Typed.MuKAM0
+module LambdaMu.MuKAM0
 
 import Data.List
 import Subset
 import Iter
-import LambdaMu.Typed.Term
-import LambdaMu.Typed.Smallstep
+import LambdaMu.Term
+import LambdaMu.Smallstep
 
 %access public export
 %default total

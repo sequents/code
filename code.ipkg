@@ -42,13 +42,6 @@ modules = Iter
         , Lambda.STLC.Parser
         , Lambda.STLC.TyCheck
 
-        , LambdaMu.Term
-        , LambdaMu.MuKAM
-        , LambdaMu.MuKAM2
-        , LambdaMu.Typed.Term
-        , LambdaMu.Typed.Smallstep
-        , LambdaMu.Typed.MuKAM0
-
         , PCF.Term
         , PCF.Smallstep
         , PCF.MachineN
@@ -60,6 +53,16 @@ modules = Iter
         , PCF.Bytecode
         , PCF.InstructN
         , PCF.InstructV
+
+        , LambdaMu.Untyped.Term
+        , LambdaMu.Untyped.MuKAM
+        , LambdaMu.Untyped.MuKAM2
+        , LambdaMu.Term
+        , LambdaMu.Smallstep
+        , LambdaMu.MuKAM0
+        , LambdaMu.MuKAM
+        , LambdaMu.MuKAM2
+        , LambdaMu.Parser
 
 executable = run
 

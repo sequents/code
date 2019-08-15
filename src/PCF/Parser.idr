@@ -122,7 +122,7 @@ pcf = fix _ $ \rec =>
   MkPCF (val ihv ihn) (neu ihv ihn)
 
 parseVal : String -> Either Error Val
-parseVal s = result Left Left (maybe (Left EmptyParse) Right) $ parseResult s (pval pcf) 
+parseVal s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (pval pcf) 
 
 parseNeu : String -> Either Error Neu
-parseNeu s = result Left Left (maybe (Left EmptyParse) Right) $ parseResult s (pneu pcf) 
+parseNeu s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (pneu pcf) 

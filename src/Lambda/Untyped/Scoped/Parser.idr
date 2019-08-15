@@ -110,4 +110,4 @@ mutual
   n2t (App _ t1 t2) = App (n2t t1) (v2t t2)  
 
 parseTerm : String -> Either Error (n ** Term n)
-parseTerm s = result Left Left (maybe (Left EmptyParse) (\(n**v) => Right (n ** v2t v))) $ parseResult s (val ulc)
+parseTerm s = result Left Left (maybe (Left IncompleteParse) (\(n**v) => Right (n ** v2t v))) $ parseResult s (val ulc)

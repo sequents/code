@@ -1,9 +1,9 @@
-module LambdaMu.Typed.Smallstep
+module LambdaMu.Smallstep
 
 import Data.List
 import Iter
 import Subset
-import LambdaMu.Typed.Term
+import LambdaMu.Term
 
 %access public export
 %default total

@@ -1,10 +1,10 @@
-module LambdaMu.Typed.Parser
+module LambdaMu.Parser
 
 import Data.NEList
 import TParsec
 import TParsec.Running
 import Parse
-import LambdaMu.Typed.Term
+import LambdaMu.Term
 
 %access public export
 %default total
@@ -108,7 +108,7 @@ stlmc = fix _ $ \rec =>
   MkSTLMC (val ihv ihn) (neu ihv ihn)
 
 parseVal : String -> Either Error Val
-parseVal s = result Left Left (maybe (Left EmptyParse) Right) $ parseResult s (lmval stlmc) 
+parseVal s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (lmval stlmc) 
 
 parseNeu : String -> Either Error Neu
-parseNeu s = result Left Left (maybe (Left EmptyParse) Right) $ parseResult s (lmneu stlmc) 
+parseNeu s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (lmneu stlmc) 

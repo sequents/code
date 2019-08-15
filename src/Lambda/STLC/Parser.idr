@@ -91,7 +91,7 @@ stlc = fix _ $ \rec =>
   MkSTLC (val ihv ihn) (neu ihv ihn)
 
 parseVal : String -> Either Error Val
-parseVal s = result Left Left (maybe (Left EmptyParse) Right) $ parseResult s (STLC.val stlc) 
+parseVal s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (STLC.val stlc) 
 
 parseNeu : String -> Either Error Neu
-parseNeu s = result Left Left (maybe (Left EmptyParse) Right) $ parseResult s (STLC.neu stlc) 
+parseNeu s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (STLC.neu stlc) 
