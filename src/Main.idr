@@ -109,7 +109,7 @@ main =
        [_, "pt"] => typed
        [_, "cp", fni, fno] => compilePCF fni fno
        [_, "rn", fni] => cbnPCF fni
-       [_, "rv", fni] => cbnPCF fni
+       [_, "rv", fni] => cbvPCF fni
        _        => do putStrLn "Wrong args, run with:"
                       putStrLn " 'pu' (parse untyped LC, interactive)"
                       putStrLn " 'ps' (parse scoped LC, interactive)"

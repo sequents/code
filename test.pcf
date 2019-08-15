@@ -1,1 +1,1 @@
-(\x.x : *->*) (S S Z)
+(FIX add.\x.\y.IFZ x THEN y ELSE\z.S add z y : *->*->*) (SSZ) (SSSZ)
