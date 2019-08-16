@@ -19,7 +19,7 @@ Show (Term g a d) where
   show (Var n) = show $ elem2Nat n
   show (Lam t) = "\\" ++ show t
   show (App t u) = "(" ++ show t ++ ")(" ++ show u ++ ")"
-  show (Mu t) = "MU" ++ show t
+  show (Mu t) = "M" ++ show t
   show (Named n t) = "[" ++ show (elem2Nat n) ++ "]" ++ show t
 
 lift : Elem a d -> Term g (NOT a) d

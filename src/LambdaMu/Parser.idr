@@ -74,7 +74,7 @@ lam rec = map (\(s,v) => Lam s v) $
                 
 mu : All (Box (Parser' Val) :-> Parser' Val)
 mu rec = map (\(s,v) => Mu s v) $ 
-          rand (string "MU") 
+          rand (string "M") 
                (and (withSpaces name)
                     (rand (andopt (char '.') spaces) 
                           (Nat.map {a=Parser' _} commit rec)))
