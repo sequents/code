@@ -28,7 +28,7 @@ parseErr (MkPosition l r) = "parse error at line " ++ show l ++ " row " ++ show 
 
 untyped : IO ()
 untyped = 
-  repl "u>" $ \s => 
+  repl "u> " $ \s => 
     case parseDB s of 
       Right t => show t ++ "\n"
       Left (ParseError p) => parseErr p
@@ -37,7 +37,7 @@ untyped =
 
 scoped : IO ()
 scoped = 
-  repl "s>" $ \s => 
+  repl "s> " $ \s => 
     case parseTerm s of 
       Right (n**t) => show t ++ ": " ++ show n ++ "\n"
       Left (ParseError p) => parseErr p
@@ -46,7 +46,7 @@ scoped =
 
 typed : IO ()
 typed = 
-  repl "t>" $ \s => 
+  repl "t> " $ \s => 
     case STLC.TyCheck.parseCheckTerm s of 
       Right (ty**t) => show t ++ ": " ++ show ty ++ "\n"
       Left (ParseError p) => parseErr p
@@ -55,7 +55,7 @@ typed =
 
 mu : IO ()
 mu = 
-  repl "m>" $ \s => 
+  repl "m> " $ \s => 
     case LambdaMu.TyCheck.parseCheckTerm s of 
       Right (ty**t) => show t ++ ": " ++ show ty ++ "\n"
       Left (ParseError p) => parseErr p
