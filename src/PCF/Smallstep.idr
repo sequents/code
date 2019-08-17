@@ -52,14 +52,32 @@ step : Term g a -> Maybe (Term g a)
 step (App (Lam body) sub) = Just $ subst1 body sub
 step (App  t1        t2 ) = 
   if isVal t1 
-    then Just $ App t1 t2
-    else App <$> (step t1) <*> pure t2
+    then Nothing
+    else [| App (step t1) (pure t2) |]
 step (Succ m)             = Succ <$> step m
 step (If0 Zero t f)       = Just t
 step (If0 (Succ n) t f)   = Just $ subst1 f n
 step (If0 p t f)          = (\q => If0 q t f) <$> step p
 step (Fix f)              = Just $ subst1 f (Fix f)
 step  _                   = Nothing
+
+stepV : Term g a -> Maybe (Term g a)
+stepV (App t1 t2)        = 
+  if isVal t1 
+    then 
+      if isVal t2
+      then
+        case t1 of
+          Lam u => Just $ subst1 u t2
+          _ => Nothing
+      else App t1 <$> (stepV t2)           
+    else [| App (stepV t1) (pure t2) |]
+stepV (Succ m)           = Succ <$> stepV m
+stepV (If0 Zero t f)     = Just t
+stepV (If0 (Succ n) t f) = Just $ subst1 f n
+stepV (If0 p t f)        = (\q => If0 q t f) <$> step p
+stepV (Fix f)            = Just $ subst1 f (Fix f)
+stepV  _                 = Nothing  
 
 stepIter : Term g a -> (Nat, Term g a)
 stepIter = iterCount step

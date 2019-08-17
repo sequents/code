@@ -62,7 +62,7 @@ stepV (App t1 t2) =
           Lam x t => Just $ subst x t2 t  -- beta-reduction
           _ => Nothing
       else App t1 <$> (stepV t2)           
-    else App <$> (stepV t1) <*> Just t2
+    else [| App (stepV t1) (pure t2) |]
 stepV  _          = Nothing  
 
 -- right-to-left call-by-value  
@@ -72,7 +72,7 @@ stepVR (App t1 t2) =
     then 
       case t1 of
         Lam x t => Just $ subst x t2 t  -- beta-reduction
-        _ => App <$> (stepVR t1) <*> Just t2
+        _ => [| App (stepVR t1) (pure t2) |]
     else App     t1         <$> (stepVR t2) 
 stepVR  _          = Nothing  
 

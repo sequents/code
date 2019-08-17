@@ -43,8 +43,21 @@ step (App (Lam body) sub) = Just $ subst1 body sub
 step (App  t1        t2 ) = 
   if isVal t1 
     then Nothing
-    else App <$> (step t1) <*> pure t2
+    else [| App (step t1) (pure t2) |]
 step  _                   = Nothing
+
+stepV : Term g a -> Maybe (Term g a)
+stepV (App t1 t2) = 
+  if isVal t1 
+    then 
+      if isVal t2
+      then
+        case t1 of
+          Lam u => Just $ subst1 u t2
+          _ => Nothing
+      else App t1 <$> (stepV t2)           
+    else [| App (stepV t1) (pure t2) |]
+stepV  _          = Nothing  
 
 stepIter : Term g a -> Term g a
 stepIter = iter step

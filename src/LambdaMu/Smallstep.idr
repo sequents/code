@@ -47,7 +47,7 @@ subst1 {g} {b} {s} t sub = subst {g=b::g} go t
   go  Here      = sub
   go (There el) = Var el
 
--- commuting conversion
+-- commuting conversion / structural reduction
 appN : Term g c ((a~>b)::d) -> Term g a d -> Term g c (b::d)
 appN (Var e)             v = Var e
 appN (Lam t)             v = Lam $ appN t (rename There v)
@@ -68,7 +68,7 @@ step (App (Mu u)  v) = Just $ Mu $ appN u v
 step (App  t      u) = 
   if isVal t 
     then Nothing
-    else App <$> (step t) <*>  pure u
+    else [| App (step t) (pure u) |]
 step (Named a (Mu u)) = Just $ renameN (contract a) u
 step  _ = Nothing
   

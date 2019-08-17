@@ -1,34 +1,30 @@
-module LambdaMu.Term
+module LambdaMu.Top.Term
 
 import Data.List
-import Elem
 import LambdaMu.Ty
 
 %access public export
 %default total
 
-data Term : List Ty -> Ty -> List Ty -> Type where
-  Var   : Elem a g -> Term g a d
-  Lam   : Term (a::g) b d -> Term g (a~>b) d
-  App   : Term g (a~>b) d -> Term g a d -> Term g b d
-  Mu    : Term g Bot (a::d) -> Term g a d              -- activate / catch / bottom elimination / proof by contradiction (a != Bot)
-  Named : Elem a d -> Term g a d -> Term g Bot d       -- passivate / throw / bottom introduction / non-contradiction
-
-Show (Term g a d) where
-  show (Var n)     = show $ elem2Nat n
-  show (Lam t)     = "\\" ++ show t
-  show (App t u)   = "(" ++ show t ++ ")(" ++ show u ++ ")"
-  show (Mu t)      = "M" ++ show t
-  show (Named n t) = "[" ++ show (elem2Nat n) ++ "]" ++ show t
+mutual
+  data Term : List Ty -> Ty -> List Ty -> Type where
+    Var   : Elem a g -> Term g a d
+    Lam   : Term (a::g) b d -> Term g (a~>b) d
+    App   : Term g (a~>b) d -> Term g a d -> Term g b d
+    Mu    : Cmd g (a::d) -> Term g a d
+  
+  data Cmd : List Ty -> List Ty -> Type where  
+    Named : Elem a d -> Term g a d -> Cmd g d
+    Top : Term g Bot d -> Cmd g d
 
 lift : Elem a d -> Term g (NOT a) d
-lift el = Lam $ Named el (Var Here)
+lift el = Lam $ Mu $ Named (There el) (Var Here)
 
 exfalso : Term g (Bot ~> a) d
-exfalso = Lam $ Mu $ Var Here
+exfalso = Lam $ Mu $ Top $ Var Here
 
 orL : Term g (a ~> OR a b) d
-orL = Lam $ Lam $ Mu $ App (Var Here) (Var $ There Here)
+orL = Lam $ Lam $ Mu $ Top $ App (Var Here) (Var $ There Here)
 
 orR : Term g (b ~> OR a b) d
 orR = Lam $ Lam $ Var $ There Here
@@ -46,41 +42,30 @@ pair = Lam $ Lam $ Lam $ App (App (Var Here)
                              (Var $ There Here)
 
 andFst : Term g (AND a b ~> a) d
-andFst = Lam $ Mu $ App (Var Here) 
-                        (Lam $ Lam $ Named Here (Var $ There Here))
+andFst = Lam $ Mu $ Top $ App (Var Here) 
+                              (Lam $ Lam $ Mu $ Named (There Here) (Var $ There Here))
 
 andSnd : Term g (AND a b ~> b) d
-andSnd = Lam $ Mu $ App (Var Here)
-                        (Lam $ lift Here)
+andSnd = Lam $ Mu $ Top $ App (Var Here) 
+                              (Lam $ lift Here)
 
 noncontradiction : Term g (NOT (AND (NOT a) a)) d 
 noncontradiction = Lam $ App (Var Here) (Lam $ Var Here)
 
 dne : Term g ((NOT (NOT a))~>a) d
-dne = Lam $ Mu $ App (Var Here) (lift Here)
-
-dne' : Term g ((NOT (NOT a))~>a) d
-dne' = Lam $ Mu $ App (Var Here) 
-                      (Lam $ App (Var $ There Here) 
-                                 (Lam $ Named Here (Var $ There Here)))
+dne = Lam $ Mu $ Top $ App (Var Here) (lift Here)
 
 lem : Term g (OR (NOT a) a) d
 lem = dne
 
-contra : Term g (NOT a ~>(a~>b)) (Bot::d)
-contra = Lam $ Lam $ Mu $ Named (There Here) (App (Var $ There Here) (Var Here))
-
 contrapos : Term g (((NOT q)~>(NOT p))~>(p~>q)) d
-contrapos = Lam $ Lam $ Mu $ App (App (Var $ There Here) 
-                                      (Lam $ Named Here (Var Here))) 
-                                 (Var Here)
+contrapos = Lam $ Lam $ Mu $ Top $ App (App (Var $ There Here) 
+                                            (Lam $ Mu $ Named (There Here) (Var Here)))
+                                       (Var Here) 
 
 pierce : Term g (((a~>b)~>a)~>a) d
 pierce = Lam $ Mu $ Named Here $ App (Var Here) (Lam $ Mu $ Named (There Here) (Var Here))
 
--- continuations
-
--- a form of `pierce` above
 callcc : Term g ((a~>b)~>a) (a::d) -> Term g a d
 callcc f =     Mu $ Named Here $ App f          (Lam $ Mu $ Named (There Here) (Var Here))
 

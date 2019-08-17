@@ -53,7 +53,7 @@ stepStr (App (Lam body) sub) = Just $ subst1 body sub
 stepStr (App  t1        t2 ) = 
   if isNeutral t1 
     then App     t1           <$> (stepStr t2) 
-    else App <$> (stepStr t1) <*> Just t2
+    else [| App (stepStr t1) (pure t2) |]
 stepStr (Lam t)              = Lam <$> stepStr t
 stepStr  _                   = Nothing  
 
