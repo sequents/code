@@ -56,12 +56,19 @@ appN (Mu t)              v = Mu $ renameN permute $ assert_total $ appN (renameN
 appN (Named  Here     t) v = Named Here (App (appN t v) (renameN There v))
 appN (Named (There e) t) v = Named (There e) (appN t v)
 
+appNR : Term g c (a::d) -> Term g (a~>b) d -> Term g c (b::d)
+appNR (Var e)             v = Var e
+appNR (Lam t)             v = Lam $ appNR t (rename There v)
+appNR (App t u)           v = App (appNR t v) (appNR u v)
+appNR (Mu t)              v = Mu $ renameN permute $ assert_total $ appNR (renameN permute t) (renameN There v)
+appNR (Named  Here     t) v = Named Here $ App (renameN There v) (appNR t v)
+appNR (Named (There e) t) v = Named (There e) $ appNR t v
+
 isVal : Term g a d -> Bool
 isVal (Lam _) = True
 isVal (Var _) = True
 isVal  _      = False
 
--- TODO is this correct?
 step : Term g a d -> Maybe (Term g a d)
 step (App (Lam u) v) = Just $ subst1 u v
 step (App (Mu u)  v) = Just $ Mu $ appN u v
@@ -71,6 +78,22 @@ step (App  t      u) =
     else [| App (step t) (pure u) |]
 step (Named a (Mu u)) = Just $ renameN (contract a) u
 step  _ = Nothing
-  
+
+stepV : Term g a d -> Maybe (Term g a d)
+stepV (App (Mu u)  v    )   = Just $ Mu $ appN u v
+stepV (App u      (Mu v))   = Just $ Mu $ appNR v u
+stepV (App t1 t2) = 
+  if isVal t1 
+    then 
+      if isVal t2
+      then
+        case t1 of
+          Lam u => Just $ subst1 u t2
+          _ => Nothing
+      else App t1 <$> (stepV t2)           
+    else [| App (stepV t1) (pure t2) |]
+stepV (Named a (Mu u)) = Just $ renameN (contract a) u
+stepV  _                    = Nothing
+
 iterStep : Term g a d -> Term g a d
 iterStep = iter step

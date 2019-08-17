@@ -29,7 +29,7 @@ mutual
   
   renameCmdN : Subset d s -> Cmd g d -> Cmd g s
   renameCmdN r (Named el t) = Named (r el) (renameN r t)
-  renameCmdN r (Top t) = Top $ renameN r t
+  renameCmdN r (Top t)      = Top $ renameN r t
 
 Subst : List Ty -> List Ty -> List Ty -> Type
 Subst g d s = {x : Ty} -> Elem x g -> Term d x s
@@ -50,7 +50,7 @@ mutual
   
   substCmd : Subst g d s -> Cmd g s -> Cmd d s
   substCmd s (Named el t) = Named el $ subst s t
-  substCmd s (Top t) = Top $ subst s t
+  substCmd s (Top t)      = Top $ subst s t
   
 subst1 : Term (b::g) a s -> Term g b s -> Term g a s
 subst1 {g} {b} {s} t sub = subst {g=b::g} go t
