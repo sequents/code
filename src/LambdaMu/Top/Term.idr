@@ -15,7 +15,7 @@ mutual
   
   data Cmd : List Ty -> List Ty -> Type where  
     Named : Elem a d -> Term g a d -> Cmd g d
-    Top : Term g Bot d -> Cmd g d
+    Top   : Term g Bot d -> Cmd g d
 
 lift : Elem a d -> Term g (NOT a) d
 lift el = Lam $ Mu $ Named (There el) (Var Here)

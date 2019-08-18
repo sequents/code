@@ -60,7 +60,9 @@ modules = Iter
         , LambdaMu.Untyped.MuKAM
         , LambdaMu.Untyped.MuKAM2
 
-        , LambdaMu.TermParigot
+        , LambdaMu.Parigot.Term
+        , LambdaMu.Parigot.Term2
+
         , LambdaMu.Term
         , LambdaMu.Smallstep
         , LambdaMu.MuKAM0

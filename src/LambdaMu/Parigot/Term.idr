@@ -1,4 +1,4 @@
-module LambdaMu.TermParigot
+module LambdaMu.Parigot.Term
 
 import Data.List
 import Lambda.STLC.Ty

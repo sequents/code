@@ -118,6 +118,27 @@ stepV (App t1  t2   )       =
     else [| App (stepV t1) (pure t2) |]
 stepV (Mu (Named a (Mu u))) = Just $ Mu $ renameCmdN (contract a) u
 stepV  _                    = Nothing
+
+-- ala Ong-Stewart'97
+stepV2 : Term g a d -> Maybe (Term g a d)
+stepV2 (App u  (Mu v))   = 
+  if isVal u 
+    then Just $ Mu $ appCmdNR v u
+    else [| App (stepV2 u) (pure (Mu v)) |]
+stepV2 (App (Mu u) v)    = Just $ Mu $ appCmdN u t2  
+stepV2 (App t1  t2   )   = 
+  if isVal t11
+    then 
+      if isVal t2
+      then
+        case t1 of
+          Lam u => Just $ subst1 u t2
+          _ => Nothing
+      else App t1 <$> (stepV t2)           
+    else [| App (stepV t1) (pure t2) |]
+stepV2 (Mu (Named a (Mu u))) = Just $ Mu $ renameCmdN (contract a) u
+stepV2  _                    = Nothing
+
   
 iterStep : Term g a d -> Term g a d
 iterStep = iter step

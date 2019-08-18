@@ -9,6 +9,15 @@ infixr 5 ~>
 (~>) : Ty -> Ty -> Ty
 (~>) = Imp
 
+NOT : Ty -> Ty
+NOT t = t ~> Bot
+
+OR : Ty -> Ty -> Ty
+OR a b = (NOT a) ~> b
+
+AND : Ty -> Ty -> Ty
+AND a b = NOT (a ~> (NOT b))
+
 Show Ty where
   show  A        = "*"
   show  Bot      = "_|_"
@@ -48,12 +57,3 @@ DecEq Ty where
     decEq (Imp a b) (Imp c d) | (No ctra, _)         = No $ ctra . fst . impInj
     decEq (Imp a b) (Imp c d) | (_, No ctra2)        = No $ ctra2 . snd . impInj
     decEq (Imp a b) (Imp a b) | (Yes Refl, Yes Refl) = Yes Refl
-
-NOT : Ty -> Ty
-NOT t = t ~> Bot
-
-OR : Ty -> Ty -> Ty
-OR a b = (NOT a) ~> b
-
-AND : Ty -> Ty -> Ty
-AND a b = NOT (a ~> (NOT b))
