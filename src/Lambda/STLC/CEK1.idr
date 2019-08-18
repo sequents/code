@@ -18,8 +18,8 @@ mutual
 
 data Stack : Ty -> Ty -> Type where
   Mt : Stack a a
-  Fun : Clos (a~>b) -> Stack b c -> Stack a c
   Arg : Term g a -> Env g -> Stack b c -> Stack (a~>b) c
+  Fun : Clos (a~>b) -> Stack b c -> Stack a c
 
 record State (b : Ty) where
   constructor St 

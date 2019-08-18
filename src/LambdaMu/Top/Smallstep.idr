@@ -89,6 +89,10 @@ isVal (Lam _) = True
 isVal (Var _) = True
 isVal  _      = False
 
+isMu : Term g a d -> Bool
+isMu (Mu _) = True
+isMu  _     = False
+
 step : Term g a d -> Maybe (Term g a d)
 step (App (Lam u) v)       = Just $ subst1 u v
 step (App (Mu u)  v)       = Just $ Mu $ appCmdN u v
@@ -100,15 +104,15 @@ step (Mu (Named a (Mu u))) = Just $ Mu $ renameCmdN (contract a) u
 step  _                    = Nothing
 
 stepV : Term g a d -> Maybe (Term g a d)
-stepV (App (Mu u)  v    )   = Just $ Mu $ appCmdN u v
-stepV (App u      (Mu v))   = Just $ Mu $ appCmdNR v u
-stepV (App t1 t2) = 
-  if isVal t1 
+stepV (App u  (Mu v))       = Just $ Mu $ appCmdNR v u
+stepV (App t1  t2   )       = 
+  if isVal t1 || isMu t1
     then 
       if isVal t2
       then
         case t1 of
           Lam u => Just $ subst1 u t2
+          Mu u => Just $ Mu $ appCmdN u t2
           _ => Nothing
       else App t1 <$> (stepV t2)           
     else [| App (stepV t1) (pure t2) |]

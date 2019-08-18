@@ -69,6 +69,10 @@ isVal (Lam _) = True
 isVal (Var _) = True
 isVal  _      = False
 
+isMu : Term g a d -> Bool
+isMu (Mu _) = True
+isMu  _     = False
+
 step : Term g a d -> Maybe (Term g a d)
 step (App (Lam u) v) = Just $ subst1 u v
 step (App (Mu u)  v) = Just $ Mu $ appN u v
@@ -80,10 +84,30 @@ step (Named a (Mu u)) = Just $ renameN (contract a) u
 step  _ = Nothing
 
 stepV : Term g a d -> Maybe (Term g a d)
-stepV (App (Mu u)  v    )   = Just $ Mu $ appN u v
-stepV (App u      (Mu v))   = Just $ Mu $ appNR v u
-stepV (App t1 t2) = 
-  if isVal t1 
+stepV (App u  (Mu v))   = Just $ Mu $ appNR v u
+stepV (App t1  t2   )   = 
+  if isVal t1 || isMu t1
+    then 
+      if isVal t2
+      then
+        case t1 of
+          Lam u => Just $ subst1 u t2
+          Mu u => Just $ Mu $ appN u t2
+          _ => Nothing
+      else App t1 <$> (stepV t2)           
+    else [| App (stepV t1) (pure t2) |]
+stepV (Named a (Mu u)) = Just $ renameN (contract a) u
+stepV  _                    = Nothing
+
+-- ala Ong-Stewart'97
+stepV2 : Term g a d -> Maybe (Term g a d)
+stepV2 (App u  (Mu v))   = 
+  if ifVal u 
+    then Just $ Mu $ appNR v u
+    else [| App (stepV2 u) (pure (Mu v)) |]
+stepV2 (App (Mu u) v)    = Just $ Mu $ appN u t2  
+stepV2 (App t1  t2   )   = 
+  if isVal t11
     then 
       if isVal t2
       then
@@ -92,8 +116,8 @@ stepV (App t1 t2) =
           _ => Nothing
       else App t1 <$> (stepV t2)           
     else [| App (stepV t1) (pure t2) |]
-stepV (Named a (Mu u)) = Just $ renameN (contract a) u
-stepV  _                    = Nothing
+stepV2 (Named a (Mu u)) = Just $ renameN (contract a) u
+stepV2  _                    = Nothing
 
 iterStep : Term g a d -> Term g a d
 iterStep = iter step

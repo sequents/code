@@ -14,8 +14,8 @@ import Lambda.STLC.Smallstep
 -- evaluation contexts  
 data Stack : List Ty -> Ty -> Ty -> Type where
   NS : Stack g a a
-  FS : Term (a::g) b -> Stack g b c -> Stack g a c
   AS : Term g a -> Stack g b c -> Stack g (a~>b) c
+  FS : Term (a::g) b -> Stack g b c -> Stack g a c
 
 record State (g : List Ty) (b : Ty) where
   constructor St 
