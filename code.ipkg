@@ -75,6 +75,10 @@ modules = Iter
         , LambdaMu.Top.Smallstep
         , LambdaMu.Top.MuKAM0
 
+        , MuPCF.Term
+        , MuPCF.Parser
+        , MuPCF.TyCheck
+        
 executable = run
 
 main = Main                      
