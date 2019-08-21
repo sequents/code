@@ -31,26 +31,24 @@ record State (b : Ty) where
   ctr : Control g a 
   env : Env g 
   stk : Stack a b 
-  res : Nat
 
 Show (State b) where
-  show (St ctr _ _ res) = "Control: " ++ show ctr ++ ", Accumulator: " ++ show res
+  show (St ctr _ _) = show ctr
 
 indexE : Elem a g -> Env g -> Clos a
 indexE Here       (CE e _)  = e
 indexE (There el) (CE _ es) = indexE el es
 
 step : State b -> Maybe (State b)  
-step (St (MkCtr _ _ (Access n::_)) e             s  r) = let Cl c0 e0 = indexE n e in 
-                                                         Just $ St           c0                                   e0                s    r
-step (St (MkCtr d b     (Grab::i)) e     (Arg cl s) r) = Just $ St (MkCtr d b i)                           (CE cl e)                s    r
-step (St (MkCtr d b  (Push c0::i)) e             s  r) = Just $ St (MkCtr d b i)                                  e  (Arg (Cl c0 e) s)   r
-step (St (MkCtr _ _      (Nul::_)) _ (Tst t _ e1 s) r) = Just $ St            t                                   e1                s    r
-step (St (MkCtr d b      (Inc::i)) e (Tst _ f e1 s) r) = Just $ St            f          (CE (Cl (MkCtr d b i) e) e1)               s    r
-step (St (MkCtr d b      (Inc::i)) e             s  r) = Just $ St (MkCtr d b i)                                  e                 s (S r)
-step (St (MkCtr d b (Case t f::i)) e             s  r) = Just $ St (MkCtr d b i)                                  e      (Tst t f e s)   r
-step (St (MkCtr d b     (Loop::i)) e             s  r) = Just $ St (MkCtr d b i) (CE (Cl (MkCtr d b (Loop::i)) e) e)                s    r
-step  _                                          = Nothing  
+step (St (MkCtr _ _ (Access n::_)) e             s ) = let Cl c0 e0 = indexE n e in 
+                                                       Just $ St           c0                                   e0                s 
+step (St (MkCtr d b     (Grab::i)) e     (Arg cl s)) = Just $ St (MkCtr d b i)                           (CE cl e)                s 
+step (St (MkCtr d b  (Push c0::i)) e             s ) = Just $ St (MkCtr d b i)                                  e  (Arg (Cl c0 e) s)
+step (St (MkCtr _ _      (Nul::_)) _ (Tst t _ e1 s)) = Just $ St            t                                   e1                s 
+step (St (MkCtr d b      (Inc::i)) e (Tst _ f e1 s)) = Just $ St            f          (CE (Cl (MkCtr d b i) e) e1)               s 
+step (St (MkCtr d b (Case t f::i)) e             s ) = Just $ St (MkCtr d b i)                                  e      (Tst t f e s)
+step (St (MkCtr d b     (Loop::i)) e             s ) = Just $ St (MkCtr d b i) (CE (Cl (MkCtr d b (Loop::i)) e) e)                s 
+step  _                                              = Nothing  
 
 init : Control [] a -> State a
-init c = St c NE Mt Z
+init c = St c NE Mt
