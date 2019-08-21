@@ -67,7 +67,7 @@ neu recv recn =
     (app recv)
 
 succ : All (Box (Parser' Val) :-> Parser' Val)
-succ rec = map (\t => Succ t) $ 
+succ rec = map Succ $ 
            rand (andopt (char 'S') spaces) 
                 (Nat.map {a=Parser' _} commit rec)
 

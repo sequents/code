@@ -42,7 +42,7 @@ step (St  Zero                     e        (Fun t1 e1 s)) = Just $ St t1       
 step (St (Succ n)                  e        (Fun t1 e1 s)) = Just $ St t1      (Cl (Succ n) e::e1)               s 
 step (St (If0 p t f)               e                   s ) = Just $ St p                       e      (Tst t f e s)
 step (St (Fix t)                   e                   s ) = Just $ St t        (Cl (Fix t) e::e)                s 
-step  _                                                      = Nothing  
+step  _                                                    = Nothing  
 
 runMach : Term [] a -> (Nat, State a)
 runMach t = iterCount step $ St t [] Mt
