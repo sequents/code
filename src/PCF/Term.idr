@@ -17,6 +17,10 @@ data Term : List Ty -> Ty -> Type where
   If0  : Term g A -> Term g a -> Term (A::g) a -> Term g a
   Fix  : Term (a::g) a -> Term g a
 
+fromN : Nat -> Term g A
+fromN  Z    = Zero
+fromN (S n) = Succ $ fromN n
+
 idid : Term [] (A~>A)
 idid = App (Lam $ Var Here) (Lam $ Var Here)  
 

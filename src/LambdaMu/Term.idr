@@ -84,16 +84,10 @@ pierce = Lam $ Mu $ Named Here $ App (Var Here) (Lam $ Mu $ Named (There Here) (
 callcc : Term g ((a~>b)~>a) (a::d) -> Term g a d
 callcc f =     Mu $ Named Here $ App f          (Lam $ Mu $ Named (There Here) (Var Here))
 
-abort : Elem a d -> Term g a (b::d) -> Term g b d
-abort el = Mu . Named (There el)
-
-set : Term g a (a::d) -> Term g a d 
-set = Mu . Named Here
-
 -- exceptions
 
-raise : Elem a d -> Term g a d -> Term g b d
-raise el = App (Lam $ Mu $ Named (There el) (Var Here))
+raise : Term g a (b::a::d) -> Term g b (a::d)
+raise = Mu . Named (There Here)
 
 handle : Term g (a~>b) (b::d) -> Term g b (a::b::d) -> Term g b d
 handle m n = Mu $ Named Here $ App m (Mu $ Named (There Here) n)
