@@ -24,6 +24,7 @@ Show (Term g a d) where
 lift : Elem a d -> Term g (NOT a) d
 lift el = Lam $ Named el (Var Here)
 
+-- aka A operator
 exfalso : Term g (Bot ~> a) d
 exfalso = Lam $ Mu $ Var Here
 
@@ -56,6 +57,7 @@ andSnd = Lam $ Mu $ App (Var Here)
 noncontradiction : Term g (NOT (AND (NOT a) a)) d 
 noncontradiction = Lam $ App (Var Here) (Lam $ Var Here)
 
+-- aka C operator
 dne : Term g ((NOT (NOT a))~>a) d
 dne = Lam $ Mu $ App (Var Here) (lift Here)
 
@@ -91,3 +93,14 @@ raise = Mu . Named (There Here)
 
 handle : Term g (a~>b) (b::d) -> Term g b (a::b::d) -> Term g b d
 handle m n = Mu $ Named Here $ App m (Mu $ Named (There Here) n)
+
+-- testing
+
+test : Term [] (A~>A) []
+test = Mu $ Named Here $ Mu $ Named Here $ Lam $ Var Here
+
+test1 : Term [] (A~>A) []
+test1 = Mu $ Named Here $ Mu $ Named (There Here) $ Lam $ Var Here
+
+test2 : Term [] (A~>A) []
+test2 = Mu (Named Here (App (Lam (Var Here)) (Mu (Named (There Here) (Lam $ Var Here)))))

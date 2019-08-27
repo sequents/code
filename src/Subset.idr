@@ -34,3 +34,16 @@ permute : Subset (a::b::g) (b::a::g)
 permute  Here              = There Here
 permute (There  Here     ) = Here
 permute (There (There el)) = There (There el)
+
+-- partial subsets
+
+SubsetM : (g : List a) -> (d : List a) -> Type
+SubsetM {a} g d = {x : a} -> Elem x g -> Maybe (Elem x d)
+
+extM : SubsetM g d -> SubsetM (b::g) (b::d)
+extM _  Here      = Just Here
+extM r (There el) = There <$> r el
+
+contractM : SubsetM (x::d) d
+contractM  Here     = Nothing
+contractM (There s) = Just s

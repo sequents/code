@@ -23,6 +23,13 @@ renameN r (App t u)    = App (renameN r t) (renameN r u)
 renameN r (Mu t)       = Mu $ renameN (ext r) t
 renameN r (Named el t) = Named (r el) (renameN r t)
 
+renameMN : SubsetM d s -> Term g a d -> Maybe (Term g a s)
+renameMN r (Var el)     = Just $ Var el
+renameMN r (Lam t)      = Lam <$> renameMN r t
+renameMN r (App t u)    = [| App (renameMN r t) (renameMN r u) |]
+renameMN r (Mu t)       = Mu <$> renameMN (extM r) t
+renameMN r (Named el t) = [| Named (r el) (renameMN r t) |]
+
 Subst : List Ty -> List Ty -> List Ty -> Type
 Subst g d s = {x : Ty} -> Elem x g -> Term d x s
 
@@ -76,8 +83,12 @@ step (App  t      u) =
   if isVal t 
     then Nothing
     else [| App (step t) (pure u) |]
-step (Named a (Mu u)) = Just $ renameN (contract a) u
-step  _ = Nothing
+step (Mu (Named a (Mu u))) = Just $ Mu $ renameN (contract a) u
+step (Mu (Named Here t)) = 
+  case renameMN contractM t of
+    Just t => Just t
+    Nothing => (Mu . Named Here) <$> step t 
+step  _               = Nothing
 
 isMu : Term g a d -> Bool
 isMu (Mu _) = True
@@ -96,8 +107,12 @@ stepV (App t1  t2   )   =
           _ => Nothing
       else App t1 <$> (stepV t2)           
     else [| App (stepV t1) (pure t2) |]
-stepV (Named a (Mu u)) = Just $ renameN (contract a) u
-stepV  _                    = Nothing
+stepV (Mu (Named a (Mu u))) = Just $ Mu $ renameN (contract a) u
+stepV (Mu (Named Here t)) = 
+  case renameMN contractM t of
+    Just t => Just t
+    Nothing => (Mu . Named Here) <$> stepV t 
+stepV  _               = Nothing
 
 -- ala Ong-Stewart'97
 stepV2 : Term g a d -> Maybe (Term g a d)
@@ -106,7 +121,7 @@ stepV2 (App u  (Mu v))   =
     then Just $ Mu $ appNR v u
     else [| App (stepV2 u) (pure (Mu v)) |]
 stepV2 (App (Mu u) v)    = Just $ Mu $ appN u v
-stepV2 (App t1  t2   )   = 
+stepV2 (App t1     t2)   = 
   if isVal t1
     then 
       if isVal t2
@@ -116,5 +131,10 @@ stepV2 (App t1  t2   )   =
           _ => Nothing
       else App t1 <$> (stepV t2)           
     else [| App (stepV t1) (pure t2) |]
-stepV2 (Named a (Mu u)) = Just $ renameN (contract a) u
-stepV2  _                    = Nothing
+stepV2 (Mu (Named a (Mu u))) = Just $ Mu $ renameN (contract a) u
+stepV2 (Mu (Named Here t)) = 
+  case renameMN contractM t of
+    Just t => Just t
+    Nothing => (Mu . Named Here) <$> stepV2 t 
+stepV2  _               = Nothing
+

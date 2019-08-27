@@ -15,11 +15,12 @@ mutual
   
   data Cmd : List Ty -> List Ty -> Type where  
     Named : Elem a d -> Term g a d -> Cmd g d
-    Top   : Term g Bot d -> Cmd g d
+    Top   : Term g Bot d -> Cmd g d             -- aborting, i.e. clearing the stack
 
 lift : Elem a d -> Term g (NOT a) d
 lift el = Lam $ Mu $ Named (There el) (Var Here)
 
+-- aka A operator
 exfalso : Term g (Bot ~> a) d
 exfalso = Lam $ Mu $ Top $ Var Here
 
@@ -52,6 +53,7 @@ andSnd = Lam $ Mu $ Top $ App (Var Here)
 noncontradiction : Term g (NOT (AND (NOT a) a)) d 
 noncontradiction = Lam $ App (Var Here) (Lam $ Var Here)
 
+-- aka C operator
 dne : Term g ((NOT (NOT a))~>a) d
 dne = Lam $ Mu $ Top $ App (Var Here) (lift Here)
 
@@ -69,16 +71,21 @@ pierce = Lam $ Mu $ Named Here $ App (Var Here) (Lam $ Mu $ Named (There Here) (
 callcc : Term g ((a~>b)~>a) (a::d) -> Term g a d
 callcc f =     Mu $ Named Here $ App f          (Lam $ Mu $ Named (There Here) (Var Here))
 
-abort : Elem a d -> Term g a (b::d) -> Term g b d
-abort el = Mu . Named (There el)
-
-set : Term g a (a::d) -> Term g a d 
-set = Mu . Named Here
-
 -- exceptions
 
-raise : Elem a d -> Term g a d -> Term g b d
-raise el = App (Lam $ Mu $ Named (There el) (Var Here))
+raise : Term g a (b::a::d) -> Term g b (a::d)
+raise = Mu . Named (There Here)
 
 handle : Term g (a~>b) (b::d) -> Term g b (a::b::d) -> Term g b d
 handle m n = Mu $ Named Here $ App m (Mu $ Named (There Here) n)
+
+-- testing
+
+test : Term [] (A~>A) []
+test = Mu $ Named Here $ Mu $ Named Here $ Lam $ Var Here
+
+test1 : Term [] (A~>A) []
+test1 = Mu $ Named Here $ Mu $ Named (There Here) $ Lam $ Var Here
+
+test2 : Term [] (A~>A) []
+test2 = Mu (Named Here (App (Lam (Var Here)) (Mu (Named (There Here) (Lam $ Var Here)))))

@@ -31,6 +31,17 @@ mutual
   renameCmdN r (Named el t) = Named (r el) (renameN r t)
   renameCmdN r (Top t)      = Top $ renameN r t
 
+mutual
+  renameMN : SubsetM d s -> Term g a d -> Maybe (Term g a s)
+  renameMN r (Var el)     = Just $ Var el
+  renameMN r (Lam t)      = Lam <$> renameMN r t
+  renameMN r (App t u)    = [| App (renameMN r t) (renameMN r u) |]
+  renameMN r (Mu t)       = Mu <$> renameCmdMN (extM r) t
+  
+  renameCmdMN : SubsetM d s -> Cmd g d -> Maybe (Cmd g s)
+  renameCmdMN r (Named el t) = [| Named (r el) (renameMN r t) |]
+  renameCmdMN r (Top t)      = Top <$> renameMN r t
+
 Subst : List Ty -> List Ty -> List Ty -> Type
 Subst g d s = {x : Ty} -> Elem x g -> Term d x s
 
@@ -84,6 +95,18 @@ mutual
   appCmdNR (Named (There e) t) v = Named (There e) $ appNR t v
   appCmdNR (Top t)             v = Top $ appNR t v
 
+mutual
+  substTop : Term g a (Bot::d) -> Term g a d
+  substTop (Var el)  = Var el
+  substTop (Lam t)   = Lam $ substTop t
+  substTop (App t u) = App (substTop t) (substTop u)
+  substTop (Mu t)    = Mu $ assert_total $ substTopCmd $ renameCmdN permute t
+
+  substTopCmd : Cmd g (Bot::d) -> Cmd g d
+  substTopCmd (Named Here t) = Top $ substTop t
+  substTopCmd (Named (There el) t) = Named el $ substTop t
+  substTopCmd (Top t) = Top $ substTop t
+
 isVal : Term g a d -> Bool
 isVal (Lam _) = True
 isVal (Var _) = True
@@ -101,6 +124,11 @@ step (App  t      u)       =
     then Nothing
     else [| App (step t) (pure u) |]
 step (Mu (Named a (Mu u))) = Just $ Mu $ renameCmdN (contract a) u
+step (Mu (Top (Mu u)))     = Just $ Mu $ substTopCmd u
+step (Mu (Named Here t))   = 
+  case renameMN contractM t of
+    Just t => Just t
+    Nothing => (Mu . Named Here) <$> step t 
 step  _                    = Nothing
 
 stepV : Term g a d -> Maybe (Term g a d)
@@ -117,6 +145,11 @@ stepV (App t1  t2   )       =
       else App t1 <$> (stepV t2)           
     else [| App (stepV t1) (pure t2) |]
 stepV (Mu (Named a (Mu u))) = Just $ Mu $ renameCmdN (contract a) u
+stepV (Mu (Top (Mu u)))     = Just $ Mu $ substTopCmd u
+stepV (Mu (Named Here t))   = 
+  case renameMN contractM t of
+    Just t => Just t
+    Nothing => (Mu . Named Here) <$> stepV t 
 stepV  _                    = Nothing
 
 -- ala Ong-Stewart'97
@@ -125,9 +158,9 @@ stepV2 (App u  (Mu v))   =
   if isVal u 
     then Just $ Mu $ appCmdNR v u
     else [| App (stepV2 u) (pure (Mu v)) |]
-stepV2 (App (Mu u) v)    = Just $ Mu $ appCmdN u t2  
+stepV2 (App (Mu u)  v)   = Just $ Mu $ appCmdN u v  
 stepV2 (App t1  t2   )   = 
-  if isVal t11
+  if isVal t1
     then 
       if isVal t2
       then
@@ -137,9 +170,13 @@ stepV2 (App t1  t2   )   =
       else App t1 <$> (stepV t2)           
     else [| App (stepV t1) (pure t2) |]
 stepV2 (Mu (Named a (Mu u))) = Just $ Mu $ renameCmdN (contract a) u
+stepV2 (Mu (Top (Mu u)))     = Just $ Mu $ substTopCmd u
+stepV2 (Mu (Named Here t))   = 
+  case renameMN contractM t of
+    Just t => Just t
+    Nothing => (Mu . Named Here) <$> stepV2 t 
 stepV2  _                    = Nothing
 
-  
 iterStep : Term g a d -> Term g a d
 iterStep = iter step
 
