@@ -75,7 +75,7 @@ stepV (App t1 t2)        =
 stepV (Succ m)           = Succ <$> stepV m
 stepV (If0 Zero t f)     = Just t
 stepV (If0 (Succ n) t f) = Just $ subst1 f n
-stepV (If0 p t f)        = (\q => If0 q t f) <$> step p
+stepV (If0 p t f)        = (\q => If0 q t f) <$> stepV p
 stepV (Fix f)            = Just $ subst1 f (Fix f)
 stepV  _                 = Nothing  
 

@@ -112,10 +112,6 @@ isVal (Lam _) = True
 isVal (Var _) = True
 isVal  _      = False
 
-isMu : Term g a d -> Bool
-isMu (Mu _) = True
-isMu  _     = False
-
 step : Term g a d -> Maybe (Term g a d)
 step (App (Lam u) v)       = Just $ subst1 u v
 step (App (Mu u)  v)       = Just $ Mu $ appCmdN u v
@@ -130,6 +126,10 @@ step (Mu (Named Here t))   =
     Just t => Just t
     Nothing => (Mu . Named Here) <$> step t 
 step  _                    = Nothing
+
+isMu : Term g a d -> Bool
+isMu (Mu _) = True
+isMu  _     = False
 
 stepV : Term g a d -> Maybe (Term g a d)
 stepV (App u  (Mu v))       = Just $ Mu $ appCmdNR v u
@@ -154,12 +154,12 @@ stepV  _                    = Nothing
 
 -- ala Ong-Stewart'97
 stepV2 : Term g a d -> Maybe (Term g a d)
-stepV2 (App u  (Mu v))   = 
+stepV2 (App u  (Mu v))       = 
   if isVal u 
     then Just $ Mu $ appCmdNR v u
     else [| App (stepV2 u) (pure (Mu v)) |]
-stepV2 (App (Mu u)  v)   = Just $ Mu $ appCmdN u v  
-stepV2 (App t1  t2   )   = 
+stepV2 (App (Mu u)  v)       = Just $ Mu $ appCmdN u v  
+stepV2 (App t1  t2   )       = 
   if isVal t1
     then 
       if isVal t2
