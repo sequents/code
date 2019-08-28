@@ -54,11 +54,12 @@ modules = Iter
         , PCF.InstructN
         , PCF.InstructV
 
-        , LambdaMu.Untyped.Ty
         , LambdaMu.Untyped.Term
         , LambdaMu.Untyped.MuKAM0
         , LambdaMu.Untyped.MuKAM
         , LambdaMu.Untyped.MuKAM2
+
+        , LambdaMu.Ty
 
         , LambdaMu.Parigot.Term
         , LambdaMu.Parigot.Term2
@@ -74,11 +75,18 @@ modules = Iter
         , LambdaMu.Top.Term
         , LambdaMu.Top.Smallstep
         , LambdaMu.Top.MuKAM0
+        , LambdaMu.Top.MuKAM
+        , LambdaMu.Top.Parser
+        , LambdaMu.Top.TyCheck
 
         , MuPCF.Term
+        , MuPCF.Smallstep
+        , MuPCF.MachineN
         , MuPCF.Parser
         , MuPCF.TyCheck
-        
+
+        , MuPCF.Top.Term
+
 executable = run
 
 main = Main                      
