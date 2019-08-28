@@ -5,7 +5,6 @@ import TParsec
 import TParsec.Running
 import Parse
 import Lambda.STLC.Ty
-import Lambda.STLC.Term
 
 %access public export
 %default total

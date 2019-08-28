@@ -27,19 +27,15 @@ mutual
 
 Uninhabited (Val _ (Lam _ _) A _) where
   uninhabited (Lam _) impossible
-  uninhabited (Emb _ _) impossible
 
 Uninhabited (Val _ (Lam _ _) Bot _) where
   uninhabited (Lam _) impossible
-  uninhabited (Emb _ _) impossible
 
 Uninhabited (Val _ (Named _ _) A _) where
   uninhabited (Named _ _) impossible
-  uninhabited (Emb _ _) impossible
 
 Uninhabited (Val _ (Named _ _) (Imp _ _) _) where
   uninhabited (Named _ _) impossible
-  uninhabited (Emb _ _) impossible
 
 neuUniq : Neu g m a d -> Neu g m b d -> a = b
 neuUniq (Var i1)   (Var i2)   = inCtxUniq i1 i2
