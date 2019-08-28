@@ -35,7 +35,7 @@ step (St1 (Mu t)                       e                 s ) = Just $ St1  t    
 step (St1 (Named n t)                  e                Tp ) = Just $ St2  n            e  (Arg (Cl t e) Tp)
 step (St2 (There n)              (SE _ e)                s ) = Just $ St2  n            e                 s
 step (St2  Here                  (SE s _) (Arg (Cl t e) Tp)) = Just $ St1  t            e                 s
-step  _                                                     = Nothing
+step  _                                                      = Nothing
 
 runMK : Term [] a [] -> (Nat, State a)
 runMK t = iterCount step (St1 t NE Mt)

@@ -1,12 +1,12 @@
-module LambdaMu.Top.TyCheck
+module MuPCF.Top.TyCheck
 
 import Data.List
 import TParsec
 import Ctx
 import Parse
 import LambdaMu.Ty
-import LambdaMu.Top.Term
-import LambdaMu.Top.Parser
+import MuPCF.Top.Term
+import MuPCF.Top.Parser
 
 %access public export
 %default total
@@ -17,6 +17,10 @@ mutual
   data Val : Ctx Ty -> Val -> Ty -> Ctx Ty -> Type where
     Lam : Val ((s,a)::g) v b d -> Val g (Lam s v) (a~>b) d
     Mu : ValC g v ((s,a)::d) -> Val g (Mu s v) a d
+    Zero : Val g Zero A d
+    Succ : Val g m A d -> Val g (Succ m) A d
+    If0 : Neu g l A d -> Val g m a d -> Val ((s,A)::g) n a d -> Val g (If0 l m s n) a d
+    Fix : Val ((s,a)::g) n a d -> Val g (Fix s n) a d
     Emb : Neu g m a d -> a = b -> Val g (Emb m) b d
 
   data ValC : Ctx Ty -> Val -> Ctx Ty -> Type where
@@ -39,6 +43,18 @@ Uninhabited (Val g (Named s t) a d) where
   uninhabited (Mu _) impossible
   uninhabited (Emb _ _) impossible
 
+Uninhabited (Val g Zero Bot d) where
+  uninhabited  Zero impossible
+
+Uninhabited (Val g Zero (Imp a b) d) where
+  uninhabited  Zero impossible
+
+Uninhabited (Val g (Succ s) Bot d) where
+  uninhabited (Succ _) impossible  
+
+Uninhabited (Val g (Succ s) (Imp a b) d) where
+  uninhabited (Succ _) impossible  
+
 Uninhabited (Val g (Top t) a d) where
   uninhabited (Lam _) impossible
   uninhabited (Mu _) impossible
@@ -49,6 +65,22 @@ Uninhabited (ValC g (Lam s t) d) where
   uninhabited (Top _) impossible
 
 Uninhabited (ValC g (Mu s t) d) where
+  uninhabited (Named _ _) impossible
+  uninhabited (Top _) impossible
+
+Uninhabited (ValC g Zero d) where
+  uninhabited (Named _ _) impossible
+  uninhabited (Top _) impossible
+
+Uninhabited (ValC g (Succ t) d) where
+  uninhabited (Named _ _) impossible
+  uninhabited (Top _) impossible
+
+Uninhabited (ValC g (If0 p t x f) d) where
+  uninhabited (Named _ _) impossible
+  uninhabited (Top _) impossible
+
+Uninhabited (ValC g (Fix x t) d) where
   uninhabited (Named _ _) impossible
   uninhabited (Top _) impossible
 
@@ -90,32 +122,56 @@ mutual
     No ctra => No $ \(_**Cut v) => ctra v
 
   inherit : (g : Ctx Ty) -> (m : Val) -> (a : Ty) -> (d : Ctx Ty) -> Dec (Val g m a d)
-  inherit g (Lam s v)    A        d = No uninhabited
-  inherit g (Lam s v)    Bot      d = No uninhabited
-  inherit g (Lam s v)   (Imp a b) d = case inherit ((s,a)::g) v b d of
+  inherit g (Lam s v)      A        d = No uninhabited
+  inherit g (Lam s v)      Bot      d = No uninhabited
+  inherit g (Lam s v)     (Imp a b) d = case inherit ((s,a)::g) v b d of
     Yes w => Yes $ Lam w
     No ctra => No $ \(Lam w) => ctra w
-  inherit g (Mu s v)     a        d = case inheritC g v ((s,a)::d) of 
+  inherit g (Mu s v)       a        d = case inheritC g v ((s,a)::d) of 
     Yes w => Yes $ Mu w
     No ctra => No $ \(Mu w) => ctra w
-  inherit g (Named s v)  a        d = No uninhabited
-  inherit g (Top v)      a        d = No uninhabited
-  inherit g (Emb n)      a        d = case synth g n d of
+  inherit g (Named s v)    a        d = No uninhabited
+  inherit g (Top v)        a        d = No uninhabited
+  inherit g  Zero          A        d = Yes Zero
+  inherit g  Zero          Bot      d = No uninhabited
+  inherit g  Zero         (Imp a b) d = No uninhabited
+  inherit g (Succ m)       A        d = case inherit g m A d of 
+    Yes w => Yes $ Succ w
+    No ctra => No $ \(Succ w) => ctra w
+  inherit g (Succ m)       Bot      d = No uninhabited
+  inherit g (Succ m)      (Imp a b) d = No uninhabited
+  inherit g (If0 l m x n)  a        d = case synth g l d of
+    Yes (A**u) => case inherit g m a d of
+      Yes v => case inherit ((x, A) :: g) n a d of
+        Yes w => Yes $ If0 u v w
+        No ctra => No $ \(If0 _ _ r) => ctra r
+      No ctra => No $ \(If0 _ q _) => ctra q 
+    Yes (Bot**u) => No $ \(If0 p _ _) => uninhabited $ neuUniq u p
+    Yes ((Imp _ _)**w) => No $ \(If0 p _ _) => uninhabited $ neuUniq w p
+    No ctra => No $ \(If0 p _ _) => ctra (A ** p)
+  inherit g (Fix x n)       a       d = case inherit ((x,a)::g) n a d of
+    Yes u => Yes $ Fix u
+    No ctra => No $ \(Fix u) => ctra u
+  inherit g (Emb n)         a        d = case synth g n d of
     Yes (b ** m) => case decEq a b of
       Yes prf => Yes $ Emb m (sym prf)
       No ctra => No $ notSwitch m (ctra . sym)
     No ctra => No $ \(Emb m Refl) => ctra (a ** m)
 
   inheritC : (g : Ctx Ty) -> (m : Val) -> (d : Ctx Ty) -> Dec (ValC g m d)
-  inheritC g (Lam s v)    d = No uninhabited
-  inheritC g (Mu s v)     d = No uninhabited
-  inheritC g (Emb n)      d = No uninhabited
-  inheritC g (Named s v)  d = case lookup d s of
+  inheritC g (Lam s v)     d = No uninhabited
+  inheritC g (Mu s v)      d = No uninhabited
+  inheritC g (Emb n)       d = No uninhabited
+  inheritC g  Zero         d = No uninhabited
+  inheritC g (Succ s)      d = No uninhabited
+  inheritC g (If0 p t x f) d = No uninhabited
+  inheritC g (Fix s v)     d = No uninhabited
+  inheritC g (Named s v)   d = case lookup d s of
     Yes (a**el) => case inherit g v a d of
       Yes w => Yes $ Named el w
       No ctra => No $ notNamed el ctra
     No ctra => No $ \(Named {a} e _) => ctra (a ** e)    
-  inheritC g (Top v)      d = case inherit g v Bot d of
+  inheritC g (Top v)       d = case inherit g v Bot d of
     Yes w => Yes $ Top w
     No ctra => No $ notTop ctra
 
@@ -123,6 +179,10 @@ mutual
   val2Term : Val g m a d -> Term (eraseCtx g) a (eraseCtx d)
   val2Term (Lam v)      = Lam $ val2Term v
   val2Term (Mu v)       = Mu $ valc2Cmd v
+  val2Term  Zero        = Zero
+  val2Term (Succ v)     = Succ $ val2Term v
+  val2Term (If0 p t f)  = If0 (neu2Term p) (val2Term t) (val2Term f)
+  val2Term (Fix v)      = Fix $ val2Term v    
   val2Term (Emb v Refl) = neu2Term v
 
   valc2Cmd : ValC g m d -> Cmd (eraseCtx g) (eraseCtx d)

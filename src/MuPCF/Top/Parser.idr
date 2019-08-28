@@ -1,4 +1,4 @@
-module MuPCF.Parser
+module MuPCF.Top.Parser
 
 import Data.NEList
 import TParsec
@@ -16,6 +16,7 @@ mutual
     Lam : String -> Val -> Val 
     Mu : String -> Val -> Val
     Named : String -> Val -> Val
+    Top : Val -> Val
     Zero : Val 
     Succ : Val -> Val 
     If0 : Neu -> Val -> String -> Val -> Val 
@@ -91,6 +92,11 @@ named rec = map (\(s,v) => Named s v) $
             and (between (char '[') (char ']') $ withSpaces name)
                 (roptandbox spaces (Nat.map {a=Parser' _} commit rec))
 
+top : All (Box (Parser' Val) :-> Parser' Val)
+top rec = map Top $ 
+          rand (string "[]")
+               (roptandbox spaces (Nat.map {a=Parser' _} commit rec))
+
 fix : All (Box (Parser' Val) :-> Parser' Val)
 fix rec = map (\(s,v) => Fix s v) $ 
           rand (string "FIX") 
@@ -115,6 +121,7 @@ val : All (Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' Val)
 val recv recn = alts [ lam recv
                      , mu recv
                      , named recv
+                     , top recv
                      , zero
                      , succ recv
                      , if0 recn recv
@@ -123,21 +130,21 @@ val recv recn = alts [ lam recv
                      , parens recv
                      ]
 
-record MPCF (n : Nat) where
-  constructor MkMPCF
-  mpval : Parser' Val n
-  mpneu : Parser' Neu n
+record MtpPCF (n : Nat) where
+  constructor MkMtpPCF
+  mtppval : Parser' Val n
+  mtppneu : Parser' Neu n
 
-mpcf : All MPCF
-mpcf = fix _ $ \rec =>
+mtppcf : All MtpPCF
+mtppcf = fix _ $ \rec =>
   let 
-    ihv = Nat.map {a=MPCF} mpval rec 
-    ihn = Nat.map {a=MPCF} mpneu rec 
+    ihv = Nat.map {a=MtpPCF} mtppval rec 
+    ihn = Nat.map {a=MtpPCF} mtppneu rec 
    in
-  MkMPCF (val ihv ihn) (neu ihv ihn)
+  MkMtpPCF (val ihv ihn) (neu ihv ihn)
 
 parseVal : String -> Either Error Val
-parseVal s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (mpval mpcf) 
+parseVal s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (mtppval mtppcf) 
 
 parseNeu : String -> Either Error Neu
-parseNeu s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (mpneu mpcf) 
+parseNeu s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (mtppneu mtppcf) 

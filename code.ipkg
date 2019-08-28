@@ -87,6 +87,9 @@ modules = Iter
 
         , MuPCF.Top.Term
         , MuPCF.Top.Smallstep
+        , MuPCF.Top.MachineN
+        , MuPCF.Top.Parser
+        , MuPCF.Top.TyCheck
 
 executable = run
 

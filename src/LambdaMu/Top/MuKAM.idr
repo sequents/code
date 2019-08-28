@@ -46,9 +46,3 @@ step  _                                                      = Nothing
 
 runMK : Term [] a [] -> (Nat, State a)
 runMK t = iterCount step $ Ev t NCE NSE Mt
-
-test1 : Term [] (A~>A) []
-test1 = App andFst (App (App pair (Lam {a=A} {b=A} $ Var Here)) (Lam {a=A} $ Lam {a=A} $ Var Here))
-
-test2 : Term [] (A~>A~>A) []
-test2 = App andSnd (App (App pair (Lam {a=A} {b=A} $ Var Here)) (Lam {a=A} $ Lam {a=A} $ Var Here))
