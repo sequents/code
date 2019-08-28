@@ -94,7 +94,6 @@ appNR (Succ n)            v = Succ $ appNR n v
 appNR (If0 p t f)         v = If0 (appNR p v) (appNR t v) (appNR f (rename There v))
 appNR (Fix f)             v = Fix $ appNR f (rename There v)
 
-
 isVal : Term g a d -> Bool
 isVal (Lam _)  = True
 isVal (Var _)  = True

@@ -86,6 +86,7 @@ modules = Iter
         , MuPCF.TyCheck
 
         , MuPCF.Top.Term
+        , MuPCF.Top.Smallstep
 
 executable = run
 
