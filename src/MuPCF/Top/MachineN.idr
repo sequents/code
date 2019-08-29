@@ -34,7 +34,7 @@ findStack (There e) (CSE _ se) = findStack e se
 
 data State : Ty -> Type where
   Ev : Term g a d -> CEnv g t -> SEnv d t -> Stack a t -> State t
-  Cm : Cmd g d -> CEnv g t -> SEnv d t -> Stack Bot t -> State t  
+  Cm : Cmd g d -> CEnv g t -> SEnv d t -> State t  
   Rw : Term g A d -> CEnv g t -> SEnv d t -> Stack A t -> State t  
 
 step : State t -> Maybe (State t)
@@ -42,9 +42,9 @@ step (Ev (Var  Here)     (CCE (Cl t ce se) _)  _                   s ) = Just $ 
 step (Ev (Var (There n))           (CCE _ ce)  se                  s ) = Just $ Ev (Var n)                        ce         se                     s
 step (Ev (Lam t)                          ce   se           (Arg c s)) = Just $ Ev  t                      (CCE c ce)        se                     s
 step (Ev (App t u)                        ce   se                  s ) = Just $ Ev  t                             ce         se   (Arg (Cl u ce se) s)
-step (Ev (Mu t)                           ce   se                  s ) = Just $ Cm  t                             ce  (CSE s se)                   Tp
-step (Cm (Top t)                          ce   se                 Tp ) = Just $ Ev  t                             ce         se                    Tp
-step (Cm (Named n t)                      ce   se                 Tp ) = Just $ Ev  t                             ce         se       (findStack n se)
+step (Ev (Mu t)                           ce   se                  s ) = Just $ Cm  t                             ce  (CSE s se)                   
+step (Cm (Top t)                          ce   se)                     = Just $ Ev  t                             ce         se                    Tp
+step (Cm (Named n t)                      ce   se)                     = Just $ Ev  t                             ce         se       (findStack n se)
 step (Ev  Zero                             _   _  (Tst t _ ce1 se1 s)) = Just $ Ev  t                             ce1        se1                    s 
 step (Ev (Succ n)                         ce   se (Tst _ f ce1 se1 s)) = Just $ Ev  f           (CCE (Cl n ce se) ce1)       se1                    s 
 step (Ev  Zero                            ce   se                  s ) = Just $ Rw  Zero                          ce         se                     s 

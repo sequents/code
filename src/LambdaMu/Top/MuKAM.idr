@@ -32,16 +32,16 @@ findStack (There e) (CSE _ se) = findStack e se
 
 data State : Ty -> Type where
   Ev : Term g a d -> CEnv g t -> SEnv d t -> Stack a t -> State t
-  Cm : Cmd g d -> CEnv g t -> SEnv d t -> Stack Bot t -> State t  
+  Cm : Cmd g d -> CEnv g t -> SEnv d t -> State t  
 
 step : State t -> Maybe (State t)
 step (Ev (Var  Here)     (CCE (Cl t ce se) _)  _         s ) = Just $ Ev  t             ce         se                     s
 step (Ev (Var (There n))           (CCE _ ce)  se        s ) = Just $ Ev (Var n)        ce         se                     s
 step (Ev (Lam t)                          ce   se (Arg c s)) = Just $ Ev  t      (CCE c ce)        se                     s
 step (Ev (App t u)                        ce   se        s ) = Just $ Ev  t             ce         se   (Arg (Cl u ce se) s)
-step (Ev (Mu t)                           ce   se        s ) = Just $ Cm  t             ce  (CSE s se)                   Tp
-step (Cm (Top t)                          ce   se       Tp ) = Just $ Ev  t             ce         se                    Tp
-step (Cm (Named n t)                      ce   se       Tp ) = Just $ Ev  t             ce         se       (findStack n se)
+step (Ev (Mu t)                           ce   se        s ) = Just $ Cm  t             ce  (CSE s se)                   
+step (Cm (Top t)                          ce   se)           = Just $ Ev  t             ce         se                    Tp
+step (Cm (Named n t)                      ce   se)           = Just $ Ev  t             ce         se       (findStack n se)
 step  _                                                      = Nothing
 
 runMK : Term [] a [] -> (Nat, State a)
