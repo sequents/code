@@ -11,20 +11,27 @@ import LambdaMu.Smallstep
 %default total
 
 data Stack : List Ty -> Ty -> Ty -> List Ty -> Type where
-  NS : Stack g a a d
-  CS : Term g a d -> Stack g b c d -> Stack g (a~>b) c d
+  Mt  : Stack g a a d
+  Arg : Term g a d -> Stack g b c d -> Stack g (a~>b) c d
+  MuN : Stack g a b d -> Stack g a b (a::d)
 
-record State (g : List Ty) (b : Ty) (d : List Ty) where
-  constructor St 
-  tm : Term g a d
-  stk : Stack g a b d
+data State : List Ty -> Ty -> Type where
+  St : Term g a d -> Stack g a b d -> State g b
+  Rw : Term g a d -> Stack g a b d -> State g b
 
-step : State g b d -> Maybe (State g b d)  
-step (St (App t u)              s ) = Just $ St  t                       (CS u s)
-step (St (Lam t)          (CS u s)) = Just $ St (subst1 t u)                   s
-step (St (Mu t)           (CS u s)) = Just $ St (Mu $ appN t u)                s
-step (St (Named n (Mu t))       s ) = Just $ St (renameN (contract n) t)       s
-step  _                             = Nothing
+step : State g b -> Maybe (State g b)  
+step (St (App t u)                    s ) = Just $ St  t                            (Arg u s)
+step (St (Lam t)               (Arg u s)) = Just $ St (subst1 t u)                         s
+step (St (Mu t)                (Arg u s)) = Just $ St (Mu $ appN t u)                      s
+step (St (Mu (Named n (Mu t)))        s ) = Just $ St (Mu $ renameN (contract n) t)        s
+step (St (Mu (Named Here t))          s ) = 
+               case renameMN contractM t of
+                 Just t =>                  Just $ St  t                                   s
+                 Nothing =>                 Just $ St  t                              (MuN s)
+step (St  t                      (MuN s)) = Just $ Rw  t                              (MuN s)
+step (Rw  t                      (MuN s)) = Just $ Rw (Mu (Named Here t))                  s
+step (Rw  t                           s ) = Just $ St  t                                   s
+step  _                                   = Nothing
 
-runMK0 : Term g a d -> (Nat, State g a d)
-runMK0 t = iterCount step (St t NS)
+runMK0 : Term g a [] -> (Nat, State g a)
+runMK0 t = iterCount step (St t Mt)
