@@ -55,7 +55,6 @@ modules = Iter
         , PCF.InstructV
 
         , LambdaMu.Untyped.Term
-        , LambdaMu.Untyped.MuKAM0
         , LambdaMu.Untyped.MuKAM
         , LambdaMu.Untyped.MuKAM2
 

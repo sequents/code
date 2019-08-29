@@ -141,14 +141,14 @@ isVal (Var _) = True
 isVal  _      = False
 
 step : Term g a d -> Maybe (Term g a d)
-step (App (Lam u) v)       = Just $ subst1 u v
-step (App (Mu u)  v)       = Just $ Mu $ appCmdN u v
+step (App (Lam t) u)       = Just $ subst1 t u
+step (App (Mu c)  u)       = Just $ Mu $ appCmdN c u
 step (App  t      u)       = 
   if isVal t 
     then Nothing
     else [| App (step t) (pure u) |]
-step (Mu (Named a (Mu u))) = Just $ Mu $ renameCmdN (contract a) u
-step (Mu (Top (Mu u)))     = Just $ Mu $ substTopCmd u
+step (Mu (Named e (Mu c))) = Just $ Mu $ renameCmdN (contract e) c
+step (Mu (Top (Mu c)))     = Just $ Mu $ substTopCmd c
 step (Mu (Named Here t))   = 
   case renameMN contractM t of
     Just t => Just t
@@ -165,20 +165,20 @@ isMu (Mu _) = True
 isMu  _     = False
 
 stepV : Term g a d -> Maybe (Term g a d)
-stepV (App u  (Mu v))       = Just $ Mu $ appCmdNR v u
-stepV (App t1  t2   )       = 
-  if isVal t1 || isMu t1
+stepV (App u  (Mu c))       = Just $ Mu $ appCmdNR c u
+stepV (App t   u    )       = 
+  if isVal t || isMu t
     then 
-      if isVal t2
+      if isVal u
       then
-        case t1 of
-          Lam u => Just $ subst1 u t2
-          Mu u => Just $ Mu $ appCmdN u t2
+        case t of
+          Lam v => Just $ subst1 v u
+          Mu c => Just $ Mu $ appCmdN c u
           _ => Nothing
-      else App t1 <$> (stepV t2)           
-    else [| App (stepV t1) (pure t2) |]
-stepV (Mu (Named a (Mu u))) = Just $ Mu $ renameCmdN (contract a) u
-stepV (Mu (Top (Mu u)))     = Just $ Mu $ substTopCmd u
+      else App t <$> (stepV u)           
+    else [| App (stepV t) (pure u) |]
+stepV (Mu (Named e (Mu c))) = Just $ Mu $ renameCmdN (contract e) c
+stepV (Mu (Top (Mu c)))     = Just $ Mu $ substTopCmd c
 stepV (Mu (Named Here t))   = 
   case renameMN contractM t of
     Just t => Just t
@@ -192,23 +192,23 @@ stepV  _                    = Nothing
 
 -- ala Ong-Stewart'97
 stepV2 : Term g a d -> Maybe (Term g a d)
-stepV2 (App u  (Mu v))       = 
-  if isVal u 
-    then Just $ Mu $ appCmdNR v u
-    else [| App (stepV2 u) (pure (Mu v)) |]
-stepV2 (App (Mu u)  v)       = Just $ Mu $ appCmdN u v  
-stepV2 (App t1  t2   )       = 
-  if isVal t1
+stepV2 (App  t     (Mu c))   = 
+  if isVal t 
+    then Just $ Mu $ appCmdNR c t
+    else [| App (stepV2 t) (pure (Mu c)) |]
+stepV2 (App (Mu c)  u    )   = Just $ Mu $ appCmdN c u
+stepV2 (App  t      u   )   = 
+  if isVal t
     then 
-      if isVal t2
+      if isVal u
       then
-        case t1 of
-          Lam u => Just $ subst1 u t2
+        case t of
+          Lam v => Just $ subst1 v u
           _ => Nothing
-      else App t1 <$> (stepV t2)           
-    else [| App (stepV t1) (pure t2) |]
-stepV2 (Mu (Named a (Mu u))) = Just $ Mu $ renameCmdN (contract a) u
-stepV2 (Mu (Top (Mu u)))     = Just $ Mu $ substTopCmd u
+      else App t <$> (stepV u)           
+    else [| App (stepV t) (pure u) |]
+stepV2 (Mu (Named e (Mu c))) = Just $ Mu $ renameCmdN (contract e) c
+stepV2 (Mu (Top (Mu c)))     = Just $ Mu $ substTopCmd c
 stepV2 (Mu (Named Here t))   = 
   case renameMN contractM t of
     Just t => Just t

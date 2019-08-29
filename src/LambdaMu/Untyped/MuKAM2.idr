@@ -1,7 +1,7 @@
 module LambdaMu.Untyped.MuKAM2
 
 import Iter
-import LambdaMu.Term
+import LambdaMu.Untyped.Term
 
 %access public export
 %default total
