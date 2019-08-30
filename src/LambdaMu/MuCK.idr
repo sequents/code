@@ -38,5 +38,5 @@ step (Rw  t                            (MuN s)) = Just $ Rw (Mu (Named Here t)) 
 step (Rw  t                                 s ) = Just $ St  t                                   s
 step  _                                         = Nothing
 
-runCK : Term g a [] -> (Nat, State g a)
-runCK t = iterCount step (St t Mt)
+runMCK : Term g a [] -> (Nat, State g a)
+runMCK t = iterCount step (St t Mt)

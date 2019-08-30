@@ -1,6 +1,7 @@
 module LambdaMu.Top.Term
 
 import Data.List
+import Elem
 import LambdaMu.Ty
 
 %access public export
@@ -12,10 +13,21 @@ mutual
     Lam   : Term (a::g) b d -> Term g (a~>b) d
     App   : Term g (a~>b) d -> Term g a d -> Term g b d
     Mu    : Cmd g (a::d) -> Term g a d
-  
-  data Cmd : List Ty -> List Ty -> Type where  
+
+  data Cmd : List Ty -> List Ty -> Type where
     Named : Elem a d -> Term g a d -> Cmd g d
     Top   : Term g Bot d -> Cmd g d             -- aborting, i.e. clearing the stack
+
+mutual
+  Show (Term g a d) where
+    show (Var n)     = show $ elem2Nat n
+    show (Lam t)     = "\\." ++ show t
+    show (App t u)   = "(" ++ show t ++ ")(" ++ show u ++ ")"
+    show (Mu c)      = "M." ++ show c
+
+  Show (Cmd g d) where
+    show (Named n t) = "[" ++ show (elem2Nat n) ++ "]" ++ show t
+    show (Top t)     = "[]" ++ show t
 
 lift : Elem a d -> Term g (NOT a) d
 lift el = Lam $ Mu $ Named (There el) (Var Here)
@@ -31,26 +43,26 @@ orR : Term g (b ~> OR a b) d
 orR = Lam $ Lam $ Var $ There Here
 
 orElim : Term g ((a ~> c) ~> (b ~> c) ~> OR a b ~> c) d
-orElim = Lam $ Lam $ Lam $ Mu $ Named Here $ 
-           App (Var $ There $ There Here) 
-               (Mu $ Named (There Here) $ 
-                  App (Var $ There Here) 
+orElim = Lam $ Lam $ Lam $ Mu $ Named Here $
+           App (Var $ There $ There Here)
+               (Mu $ Named (There Here) $
+                  App (Var $ There Here)
                       (App (Var Here) (lift Here)))
 
 pair : Term g (a ~> b ~> AND a b) d
-pair = Lam $ Lam $ Lam $ App (App (Var Here) 
-                                  (Var $ There $ There Here)) 
+pair = Lam $ Lam $ Lam $ App (App (Var Here)
+                                  (Var $ There $ There Here))
                              (Var $ There Here)
 
 andFst : Term g (AND a b ~> a) d
-andFst = Lam $ Mu $ Top $ App (Var Here) 
+andFst = Lam $ Mu $ Top $ App (Var Here)
                               (Lam $ Lam $ Mu $ Named (There Here) (Var $ There Here))
 
 andSnd : Term g (AND a b ~> b) d
-andSnd = Lam $ Mu $ Top $ App (Var Here) 
+andSnd = Lam $ Mu $ Top $ App (Var Here)
                               (Lam $ lift Here)
 
-noncontradiction : Term g (NOT (AND (NOT a) a)) d 
+noncontradiction : Term g (NOT (AND (NOT a) a)) d
 noncontradiction = Lam $ App (Var Here) (Lam $ Var Here)
 
 -- aka C operator
@@ -61,9 +73,9 @@ lem : Term g (OR (NOT a) a) d
 lem = dne
 
 contrapos : Term g (((NOT q)~>(NOT p))~>(p~>q)) d
-contrapos = Lam $ Lam $ Mu $ Top $ App (App (Var $ There Here) 
+contrapos = Lam $ Lam $ Mu $ Top $ App (App (Var $ There Here)
                                             (Lam $ Mu $ Named (There Here) (Var Here)))
-                                       (Var Here) 
+                                       (Var Here)
 
 pierce : Term g (((a~>b)~>a)~>a) d
 pierce = Lam $ Mu $ Named Here $ App (Var Here) (Lam $ Mu $ Named (There Here) (Var Here))
