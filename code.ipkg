@@ -28,7 +28,7 @@ modules = Iter
         , Lambda.Untyped.Scoped.Term
         , Lambda.Untyped.Scoped.Smallstep
         , Lambda.Untyped.Scoped.Parser
-        
+
         , Lambda.STLC.Ty
         , Lambda.STLC.Term
         , Lambda.STLC.Smallstep
@@ -61,20 +61,22 @@ modules = Iter
         , LambdaMu.Ty
 
         , LambdaMu.Parigot.Term
-        , LambdaMu.Parigot.Term2
+        , LambdaMu.Parigot.TermExplicit
 
         , LambdaMu.Term
         , LambdaMu.Smallstep
         , LambdaMu.MuKAM0
         , LambdaMu.MuKAM
         , LambdaMu.MuKAM2
+        , LambdaMu.MuCK
         , LambdaMu.Parser
         , LambdaMu.TyCheck
-        
+
         , LambdaMu.Top.Term
         , LambdaMu.Top.Smallstep
         , LambdaMu.Top.MuKAM0
         , LambdaMu.Top.MuKAM
+        , LambdaMu.Top.MuCK
         , LambdaMu.Top.Parser
         , LambdaMu.Top.TyCheck
 
@@ -92,7 +94,7 @@ modules = Iter
 
 executable = run
 
-main = Main                      
+main = Main
 
 opts = "--total"
 

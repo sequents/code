@@ -11,7 +11,7 @@ import LambdaMu.Smallstep
 %access public export
 
 data Stack : List Ty -> Ty -> Ty -> List Ty -> Type where
-  Mt : Stack g a a d
+  Mt  : Stack g a a d
   Arg : Term g a d -> Stack g b c d -> Stack g (a~>b) c d
   Fun : Term (a::g) b d -> Stack g b c d -> Stack g a c d
   Con : Term g Bot ((a~>b)::d) -> Stack g b c d -> Stack g a c d
