@@ -6,7 +6,8 @@ import Binary
 %access public export
 %default total
 
-data Ty = A | Imp Ty Ty
+data Ty = A
+        | Imp Ty Ty
 
 infixr 5 ~>
 (~>) : Ty -> Ty -> Ty
@@ -14,15 +15,15 @@ infixr 5 ~>
 
 Show Ty where
   show  A        = "*"
-  show (Imp a b) = "(" ++ show a ++ "->" ++ show b ++ ")" 
+  show (Imp a b) = "(" ++ show a ++ "->" ++ show b ++ ")"
 
 Uninhabited (A = Imp _ _) where
   uninhabited Refl impossible
-  
+
 Uninhabited (Imp _ _ = A) where
   uninhabited Refl impossible
 
-impInj : Imp a b = Imp c d -> (a=c, b=d) 
+impInj : Imp a b = Imp c d -> (a=c, b=d)
 impInj Refl = (Refl, Refl)
 
 DecEq Ty where
@@ -41,7 +42,7 @@ Codec Ty where
     go A = "0"
     go (Imp a b) = "1" ++ go a ++ go b
   fromBuf buf = do (i,r) <- fromBuf {a=Integer} buf
-                   case fst <$> (go $ unpack $ toBinStr i) of 
+                   case fst <$> (go $ unpack $ toBinStr i) of
                      Just t => pure (t,r)
                      Nothing => throw "Corrupt Ty"
   where
