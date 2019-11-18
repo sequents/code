@@ -34,7 +34,7 @@ subst s (Succ n)    = Succ $ subst s n
 subst s (If0 p t f) = If0 (subst s p) (subst s t) (subst (exts s) f)
 subst s (Fix f)     = Fix $ subst (exts s) f
 
-subst1 : Term (b::g) a -> Term g b -> Term g a 
+subst1 : Term (b::g) a -> Term g b -> Term g a
 subst1 {g} {b} t s = subst {g=b::g} go t
   where
   go : Subst (b::g) g
@@ -46,12 +46,12 @@ isVal (Lam _)  = True
 isVal (Var _)  = True
 isVal  Zero    = True
 isVal (Succ n) = isVal n
-isVal  _       = False  
+isVal  _       = False
 
 step : Term g a -> Maybe (Term g a)
 step (App (Lam body) sub) = Just $ subst1 body sub
-step (App  t1        t2 ) = 
-  if isVal t1 
+step (App  t1        t2 ) =
+  if isVal t1
     then Nothing
     else [| App (step t1) (pure t2) |]
 step (Succ m)             = Succ <$> step m
@@ -62,22 +62,22 @@ step (Fix f)              = Just $ subst1 f (Fix f)
 step  _                   = Nothing
 
 stepV : Term g a -> Maybe (Term g a)
-stepV (App t1 t2)        = 
-  if isVal t1 
-    then 
+stepV (App t1 t2)        =
+  if isVal t1
+    then
       if isVal t2
       then
         case t1 of
           Lam u => Just $ subst1 u t2
           _ => Nothing
-      else App t1 <$> (stepV t2)           
+      else App t1 <$> (stepV t2)
     else [| App (stepV t1) (pure t2) |]
 stepV (Succ m)           = Succ <$> stepV m
 stepV (If0 Zero t f)     = Just t
 stepV (If0 (Succ n) t f) = Just $ subst1 f n
 stepV (If0 p t f)        = (\q => If0 q t f) <$> stepV p
 stepV (Fix f)            = Just $ subst1 f (Fix f)
-stepV  _                 = Nothing  
+stepV  _                 = Nothing
 
 stepIter : Term g a -> (Nat, Term g a)
 stepIter = iterCount step

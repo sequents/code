@@ -44,3 +44,11 @@ step  _                                                = Nothing
 
 runMach : Term [] a -> (Nat, State a)
 runMach t = iterCount step $ Ev t [] Mt
+
+private
+test1 : runMach Term.twotwoN = (51, Rw (Term.fromN 4) [] Mt)
+test1 = Refl
+
+private
+test2 : runMach Term.twotwoC = (63, Rw (Term.fromN 4) [] Mt)
+test2 = Refl

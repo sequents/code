@@ -37,8 +37,7 @@ modules = Iter
         , Lambda.STLC.SECD
         , Lambda.STLC.CEK
         , Lambda.STLC.CK
-        , Lambda.STLC.CEK1
-        , Lambda.STLC.CEK2
+        , Lambda.STLC.LAM
         , Lambda.STLC.Parser
         , Lambda.STLC.TyCheck
 
