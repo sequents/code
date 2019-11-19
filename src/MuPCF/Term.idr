@@ -21,6 +21,22 @@ fromN : Nat -> Term g A d
 fromN  Z    = Zero
 fromN (S n) = Succ $ fromN n
 
+lift : Elem a d -> Term g (NOT a) d
+lift el = Lam $ Named el (Var Here)
+
+pair : Term g (a ~> b ~> AND a b) d
+pair = Lam $ Lam $ Lam $ App (App (Var Here)
+                                  (Var $ There $ There Here))
+                             (Var $ There Here)
+
+andFst : Term g (AND a b ~> a) d
+andFst = Lam $ Mu $ App (Var Here)
+                        (Lam $ Lam $ Named Here (Var $ There Here))
+
+andSnd : Term g (AND a b ~> b) d
+andSnd = Lam $ Mu $ App (Var Here)
+                        (Lam $ lift Here)
+
 raise : Term g a (b::a::d) -> Term g b (a::d)
 raise = Mu . Named (There Here)
 
@@ -34,6 +50,9 @@ foo = handle (Lam $ Succ $ Var Here) (raise $ Succ $ Succ Zero)
 
 bar : Term [] A []
 bar = handle (Lam $ Succ $ Var Here) (Succ $ Succ Zero)
+
+baz : Term [] A []
+baz = App andSnd (App (App pair (fromN 2)) (fromN 3))
 
 plus : Term [] (A~>A~>A) []
 plus = Fix $ Lam $ Lam $ If0 (Var $ There Here)
