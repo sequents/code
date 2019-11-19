@@ -27,7 +27,7 @@ raise = Mu . Named (There Here)
 handle : Term g (a~>b) (b::d) -> Term g b (a::b::d) -> Term g b d
 handle m n = Mu $ Named Here $ App m (Mu $ Named (There Here) n)
 
--- test 
+-- test
 
 foo : Term [] A []
 foo = handle (Lam $ Succ $ Var Here) (raise $ Succ $ Succ Zero)
@@ -35,8 +35,21 @@ foo = handle (Lam $ Succ $ Var Here) (raise $ Succ $ Succ Zero)
 bar : Term [] A []
 bar = handle (Lam $ Succ $ Var Here) (Succ $ Succ Zero)
 
-minus : Term g (A~>A~>A) [A,A] 
-minus = Fix (Lam (Lam (If0 (Var Here) (Var (There Here)) (If0 (Var (There (There Here))) (raise $ Var $ There Here) (App (App (Var (There (There (There (There Here))))) (Var Here)) (Var (There Here)))))))
+plus : Term [] (A~>A~>A) []
+plus = Fix $ Lam $ Lam $ If0 (Var $ There Here)
+                               (Var Here)
+                               (Succ $ App (App (Var $ There $ There $ There Here)
+                                                (Var Here))
+                                           (Var $ There Here))
+
+minus : Term g (A~>A~>A) [A,A]
+minus = Fix (Lam (Lam (If0 (Var Here)
+                        (Var (There Here))
+                        (If0 (Var (There (There Here)))
+                               (raise $ Var $ There Here)
+                               (App (App (Var (There (There (There (There Here)))))
+                                         (Var Here))
+                                         (Var (There Here)))))))
 
 minus' : Term [] (A~>A~>A) []
-minus' = Lam $ Lam $ handle (Lam $ Var Here) (App (App minus (Var Here)) (Var $ There Here)) 
+minus' = Lam $ Lam $ handle (Lam $ Var Here) (App (App minus (Var Here)) (Var $ There Here))

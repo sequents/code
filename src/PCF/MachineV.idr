@@ -27,7 +27,7 @@ data Stack : Ty -> Ty -> Type where
 
 data State : Ty -> Type where
   Ev : Term g a -> Env g -> Stack a t -> State t
-  Rw : Term g A -> Stack A t -> State t
+  Rw : Term [] A -> Stack A t -> State t
 
 step : State t -> Maybe (State t)
 step (Ev (Var  Here)      (Cl t e::_)                       s ) = Just $ Ev  t                      e                 s
@@ -48,9 +48,9 @@ runMach : Term [] a -> (Nat, State a)
 runMach t = iterCount step $ Ev t [] Mt
 
 private
-test1 : runMach Term.twotwoN = (57, Rw (Term.fromN 4) [] Mt)
+test1 : runMach Term.twotwoN = (57, Rw (Term.fromN 4) Mt)
 test1 = Refl
 
 private
-test2 : runMach Term.twotwoC = (71, Rw (Succ (Succ (Succ (Succ Zero)))) [] Mt)
+test2 : runMach Term.twotwoC = (71, Rw (Succ (Succ (Succ (Succ Zero)))) Mt)
 test2 = Refl
