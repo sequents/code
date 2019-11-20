@@ -1,9 +1,9 @@
 (FIX sub.\x.\y.
-  IFZ y 
-    THEN x 
-    ELSE\yy.IFZ x 
-             THEN Z 
-             ELSE\xx.sub xx yy 
- : *->*->*) 
-  (SSSSZ) 
+  IFZ y
+    THEN x
+    ELSE\yy.IFZ x
+             THEN Z
+             ELSE\xx.sub xx yy
+ : *->*->*)
+  (SSSSZ)
   (SSZ)

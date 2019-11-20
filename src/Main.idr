@@ -73,7 +73,7 @@ compilePCF fnin fnout =
        Right (ty**t) => ioe_run (do buf <- initBinary
                                     b1 <- toBuf buf (the (List STLC.Ty) [])
                                     b2 <- toBuf b1 ty
-                                    toBuf b2 (compile t))
+                                    toBuf b2 (PCF.Bytecode.compile t))
                           putStrLn
                           (\bin => do res <- writeToFile fnout bin
                                       case res of
@@ -90,7 +90,8 @@ compileMuPCF fnin fnout =
        Right (ty**t) => ioe_run (do buf <- initBinary
                                     b1 <- toBuf buf (the (List STLMC.Ty) [])
                                     b2 <- toBuf b1 ty
-                                    toBuf b2 (compile t))
+                                    b3 <- toBuf b2 (the (List STLMC.Ty) [])
+                                    toBuf b3 (MuPCF.Bytecode.compile t))
                           putStrLn
                           (\bin => do res <- writeToFile fnout bin
                                       case res of
@@ -106,10 +107,10 @@ stepLim = 1000
 cbnPCF : String -> IO ()
 cbnPCF fnin =
   do Right buf <- readFromFile fnin | Left err => printLn err
-     ioe_run {a=(s**c**Control s c)}
+     ioe_run {a=(s**c**PCF.Bytecode.Control s c)}
         (do (g, b1) <- fromBuf buf {a = List STLC.Ty}
             (a, b2) <- fromBuf b1  {a = STLC.Ty}
-            (ctr, _) <- fromBuf b2 {a = Control g a}
+            (ctr, _) <- fromBuf b2 {a = PCF.Bytecode.Control g a}
             pure (g**a**ctr))
         putStrLn
         (\(s**c**ctr) =>
@@ -122,10 +123,10 @@ cbnPCF fnin =
 cbvPCF : String -> IO ()
 cbvPCF fnin =
   do Right buf <- readFromFile fnin | Left err => printLn err
-     ioe_run {a=(s**c**Control s c)}
-        (do (g, b1) <- fromBuf buf {a = List STLC.Ty}
-            (a, b2) <- fromBuf b1  {a = STLC.Ty}
-            (ctr, _) <- fromBuf b2 {a = Control g a}
+     ioe_run {a=(s**c**PCF.Bytecode.Control s c)}
+        (do (g, b1)  <- fromBuf buf {a = List STLC.Ty}
+            (a, b2)  <- fromBuf b1  {a = STLC.Ty}
+            (ctr, _) <- fromBuf b2 {a = PCF.Bytecode.Control g a}
             pure (g**a**ctr))
         putStrLn
         (\(s**c**ctr) =>
@@ -138,11 +139,11 @@ cbvPCF fnin =
 cbnMuPCF : String -> IO ()
 cbnMuPCF fnin =
   do Right buf <- readFromFile fnin | Left err => printLn err
-     ioe_run {a=(s**c**t**Control s c t)}
-        (do (g, b1) <- fromBuf buf {a = List STLMC.Ty}
-            (a, b2) <- fromBuf b1  {a = STLMC.Ty}
-            (d, b3) <- fromBuf b2  {a = List STLMC.Ty}
-            (ctr, _) <- fromBuf b3 {a = Control g a d}
+     ioe_run {a=(s**c**t**MuPCF.Bytecode.Control s c t)}
+        (do (g, b1)  <- fromBuf buf {a = List STLMC.Ty}
+            (a, b2)  <- fromBuf b1  {a = STLMC.Ty}
+            (d, b3)  <- fromBuf b2  {a = List STLMC.Ty}
+            (ctr, _) <- fromBuf b3  {a = MuPCF.Bytecode.Control g a d}
             pure (g**a**d**ctr))
         putStrLn
         (\(s**c**t**ctr) =>

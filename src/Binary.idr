@@ -1,4 +1,4 @@
-module Binary 
+module Binary
 
 import public Control.IOExcept
 import public Control.Catchable
@@ -36,9 +36,9 @@ incLoc i c = record { loc $= (+i) } c
 export
 data Binary = MkBin (List Chunk) Chunk (List Chunk)
 
-export 
+export
 dumpChunk : Chunk -> IO ()
-dumpChunk (MkChunk buf loc size used) = 
+dumpChunk (MkChunk buf loc size used) =
   do dt <- bufferData buf
      printLn dt
      printLn loc
@@ -58,11 +58,11 @@ nonEmptyRev {xs = []} = IsNonEmpty
 nonEmptyRev {xs = (x :: xs)} = IsNonEmpty
 
 reset : Binary -> Binary
-reset (MkBin done cur rest) 
+reset (MkBin done cur rest)
     = setBin (reverse done ++ cur :: rest) nonEmptyRev
   where
     setBin : (xs : List Chunk) -> (prf : NonEmpty xs) -> Binary
-    setBin (chunk :: rest) IsNonEmpty 
+    setBin (chunk :: rest) IsNonEmpty
         = MkBin [] (record { loc = 0 } chunk)
                    (map (record { loc = 0 }) rest)
 
@@ -121,7 +121,7 @@ readFromFile fname
          pure $ Right $ MkBin [] (MkChunk b 0 max max) []
 
 public export
-IOE : Type -> Type 
+IOE : Type -> Type
 IOE = IOExcept String
 
 -- Create a new list of chunks, initialised with one 64k chunk
@@ -133,18 +133,18 @@ initBinary
          pure $ MkBin [] (newChunk buf) []
 
 public export
-interface Codec a where 
+interface Codec a where
   toBuf : Binary -> a -> IOE Binary
   fromBuf : Binary -> IOE (a, Binary)
 
 export
 Codec Bits8 where
-  toBuf (MkBin done chunk rest) val = 
+  toBuf (MkBin done chunk rest) val =
          if avail chunk >= 1
             then
               do ioe_lift $ setByte (buf chunk) (loc chunk) val
                  pure $ MkBin done (appended 1 chunk) rest
-            else 
+            else
               do Just newbuf <- ioe_lift $ newBuffer 65536
                     | Nothing => throw "Buffer expansion failed"
                  ioe_lift $ setByte newbuf 0 val
@@ -164,9 +164,9 @@ Codec Bits8 where
                         do val <- ioe_lift $ getByte (buf next) 0
                            pure (val, MkBin (chunk :: done) (incLoc 1 next) rest)
 
-export  
+export
 Codec Int where
-  toBuf (MkBin done chunk rest) val = 
+  toBuf (MkBin done chunk rest) val =
        if avail chunk >= 4
          then do ioe_lift $ setInt (buf chunk) (loc chunk) val
                  pure $ MkBin done (appended 4 chunk) rest
@@ -176,7 +176,7 @@ Codec Int where
                  pure $ MkBin (chunk :: done)
                               (MkChunk newbuf 4 (size newbuf) 4)
                               rest
-  fromBuf (MkBin done chunk rest) = 
+  fromBuf (MkBin done chunk rest) =
        if toRead chunk >= 4
           then do val <- ioe_lift $ getInt (buf chunk) (loc chunk)
                   pure (val, MkBin done (incLoc 4 chunk) rest)
@@ -186,22 +186,57 @@ Codec Int where
               do val <- ioe_lift $ getInt (buf next) 0
                  pure (val, MkBin (chunk :: done) (incLoc 4 next) rest)
 
-export                 
+strBytelen : String -> IO Int
+strBytelen = foreign FFI_C "strlen" (String -> IO Int)
+
+export
+Codec String where
+  toBuf b val =
+      -- To support UTF-8 strings, this has to get the length of the C string
+      -- in bytes, not the length in characters.
+        do req <- ioe_lift $ strBytelen val
+           MkBin done chunk rest <- toBuf b req
+           if avail chunk >= req
+             then
+               do ioe_lift $ setString (buf chunk) (loc chunk) val
+                  pure $ MkBin done (appended req chunk) rest
+             else do res <- ioe_lift (newBuffer 65536)
+                     case res of
+                       Just newbuf => do ioe_lift $ setString newbuf 0 val
+                                         pure (MkBin (chunk :: done) (MkChunk newbuf req (size newbuf) req) rest)
+                       Nothing => throw $ "InternalError: Buffer expansion failed"
+                     --
+
+  fromBuf b
+      = do (len, MkBin done chunk rest) <- fromBuf {a = Int} b
+           if toRead chunk >= len
+              then
+                do val <- ioe_lift $ getString (buf chunk) (loc chunk) len
+                   pure (val, MkBin done (incLoc len chunk) rest)
+              else
+                case rest of
+                  [] => throw $ "EndOfBuffer: String"
+                  (next :: rest) =>
+                     do val <- ioe_lift $ getString (buf next) 0 len
+                        pure (val, MkBin (chunk :: done)
+                                       (incLoc len next) rest)
+
+export
 Codec a => Codec (List a) where
-  toBuf bf xs = do bu <- toBuf bf (cast {to=Int} (length xs)) 
+  toBuf bf xs = do bu <- toBuf bf (cast {to=Int} (length xs))
                    foldlM (\b, x => toBuf b x) bu xs
   fromBuf bf = do (len, rest) <- fromBuf bf {a=Int}
                   readElems [] (cast len) rest
     where
-      readElems : List a -> Nat -> Binary -> IOE (List a, Binary) 
+      readElems : List a -> Nat -> Binary -> IOE (List a, Binary)
       readElems xs  Z    bi = pure (reverse xs, bi)
       readElems xs (S k) bi = do (val, rest) <- fromBuf {a} bi
                                  readElems (val :: xs) k rest
 
-covering                                 
+covering
 toLimbs : Integer -> List Int
 toLimbs x
-    = if x == 0 
+    = if x == 0
          then []
          else if x == -1 then [-1]
               else fromInteger (prim__andBigInt x 0xff) ::
@@ -219,11 +254,11 @@ Codec Integer where
                  toBuf b1 (toLimbs (-val))
          else do b1 <- toBuf b (the Bits8 1)
                  toBuf b1 (toLimbs val)
-  fromBuf b 
+  fromBuf b
     = do (val, rest) <- fromBuf b {a = Bits8}
          case val of
               0 => do (val, rest2) <- fromBuf {a = List Int} rest
                       pure (-(fromLimbs val), rest2)
               1 => do (val, rest2) <- fromBuf {a = List Int} rest
                       pure (fromLimbs val, rest2)
-              _ => throw "Corrupt integer"                                 
+              _ => throw $ "Corrupt integer: sign bit " ++ show val

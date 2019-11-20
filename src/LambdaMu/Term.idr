@@ -7,6 +7,8 @@ import LambdaMu.Ty
 %access public export
 %default total
 
+-- deGroote-Saurin's Λμ-calculus
+
 data Term : List Ty -> Ty -> List Ty -> Type where
   Var   : Elem a g -> Term g a d
   Lam   : Term (a::g) b d -> Term g (a~>b) d

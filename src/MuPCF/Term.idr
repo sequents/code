@@ -1,5 +1,6 @@
 module MuPCF.Term
 
+import Elem
 import Data.List
 import LambdaMu.Ty
 
@@ -16,6 +17,17 @@ data Term : List Ty -> Ty -> List Ty -> Type where
   Succ  : Term g A d -> Term g A d
   If0   : Term g A d -> Term g a d -> Term (A::g) a d -> Term g a d
   Fix   : Term (a::g) a d -> Term g a d
+
+Show (Term g a d) where
+  show (Var n)     = show $ elem2Nat n
+  show (Lam t)     = "\\." ++ show t
+  show (App t u)   = "(" ++ show t ++ ")(" ++ show u ++ ")"
+  show (Mu t)      = "M." ++ show t
+  show (Named n t) = "[" ++ show (elem2Nat n) ++ "]" ++ show t
+  show  Zero       = "Z"
+  show (Succ n)    = "S" ++ show n
+  show (If0 c t f) = "IFZ(" ++ show c ++ ") THEN (" ++ show t ++ ") ELSE.(" ++ show f ++ ")"
+  show (Fix t)     = "FIX." ++ show t
 
 fromN : Nat -> Term g A d
 fromN  Z    = Zero
@@ -52,7 +64,7 @@ bar : Term [] A []
 bar = handle (Lam $ Succ $ Var Here) (Succ $ Succ Zero)
 
 baz : Term [] A []
-baz = App andSnd (App (App pair (fromN 2)) (fromN 3))
+baz = App andFst (App (App pair (fromN 5)) (fromN 3))
 
 plus : Term [] (A~>A~>A) []
 plus = Fix $ Lam $ Lam $ If0 (Var $ There Here)

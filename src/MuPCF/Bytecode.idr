@@ -4,9 +4,9 @@ import Data.List
 import Iter
 import Path
 import Elem
+import Binary
 import LambdaMu.Ty
 import MuPCF.Term
-import Binary
 
 import Data.Vect
 
@@ -34,22 +34,26 @@ mutual
     ed   : List Ty
     path : Path I (g,a,d) (ec,et,ed)
 
+mutual
+  showCtrl : Control g a d -> String
+  showCtrl (MkCtr k b z p) = "{ " ++ show g ++ " |- " ++ show a ++ " | " ++ show d ++ " } "
+                          ++ showPath g a d p {w=k} {x=b} {j=z}
+                          ++ "{ " ++ show k ++ " |- " ++ show b ++ " | " ++ show z ++ " }"
+
+  showPath : (s : List Ty) -> (c : Ty) -> (t : List Ty) -> Path I (s,c,t) (w,x,j) -> String
+  showPath w  x     j []                 = ""
+  showPath s  c     t (Access e::q)      = "ACC" ++ show (elem2Nat e) ++ " " ++ showPath s c t q
+  showPath s (e~>f) t (Grab::q)          = "GRB " ++ showPath (e::s) f t q
+  showPath s  c     t (Push {a=e} u::q)  = "PSH <" ++ showCtrl u ++ "> " ++ showPath s (e~>c) t q
+  showPath s  c     t (Catch::q)         = "CAT " ++ showPath s Bot (c::t) q
+  showPath s  Bot   t (Throw {a=o} e::q) = "THR" ++ show (elem2Nat e) ++ " " ++ showPath s o t q
+  showPath s  A     t (Nul::q)           = "NUL " ++ showPath s A t q
+  showPath s  A     t (Inc::q)           = "INC " ++ showPath s A t q
+  showPath s  c     t (Case tr fa::q)    = "CAS <" ++ showCtrl tr ++ "> <" ++ showCtrl fa ++ "> " ++ showPath s A t q
+  showPath s  c     t (Loop::q)          = "LOP " ++ showPath (c::s) c t q
+
 Show (Control g a d) where
-  show (MkCtr k b z p) = "{ " ++ show g ++ " |- " ++ show a ++ " | " ++ show d ++ " } "
-                       ++ go g a d p {w=k} {x=b} {j=z}
-                       ++ "{ " ++ show k ++ " |- " ++ show b ++ " | " ++ show z ++ " }"
-    where
-    go : (s : List Ty) -> (c : Ty) -> (t : List Ty) -> Path I (s,c,t) (w,x,j) -> String
-    go w  x     j []                 = ""
-    go s  c     t (Access e::q)      = "ACC" ++ show (elem2Nat e) ++ " " ++ go s c t q
-    go s (e~>f) t (Grab::q)          = "GRB " ++ go (e::s) f t q
-    go s  c     t (Push {a=e} u::q)  = "PSH <" ++ show u ++ "> " ++ go s (e~>c) t q
-    go s  c     t (Catch::q)         = "CAT " ++ go s Bot (c::t) q
-    go s  Bot   t (Throw {a=o} e::q) = "THR" ++ show (elem2Nat e) ++ " " ++ go s o t q
-    go s  A     t (Nul::q)           = "NUL " ++ go s A t q
-    go s  A     t (Inc::q)           = "INC " ++ go s A t q
-    go s  c     t (Case tr fa::q)    = "CAS <" ++ show tr ++ "> <" ++ show fa ++ "> " ++ go s A t q
-    go s  c     t (Loop::q)          = "LOP " ++ go (c::s) c t q
+  show = showCtrl
 
 infixr 5 +:
 (+:) : I (g,a,d) (k,b,z) -> Control k b z -> Control g a d

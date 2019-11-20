@@ -12,8 +12,9 @@ mutual
     Lam   : Term (a::g) b d -> Term g (a~>b) d
     App   : Term g (a~>b) d -> Term g a d -> Term g b d
     Mu    : Cmd g (a::d) -> Term g a d
-  
-  data Cmd : List Ty -> List Ty -> Type where  
+
+  -- can be viewed as a degenerate cut
+  data Cmd : List Ty -> List Ty -> Type where
     Named : Elem a d -> Term g a d -> Cmd g d
 
 lift : Elem a d -> Term g (a~>b) d   -- since we don't have `Bot`, we "implicitly" use `exfalso`
@@ -30,7 +31,7 @@ callcc f =     Mu $ Named Here $ App f          (Lam $ Mu $ Named (There Here) (
 abort : Elem a d -> Term g a (b::d) -> Term g b d
 abort el = Mu . Named (There el)
 
-set : Term g a (a::d) -> Term g a d 
+set : Term g a (a::d) -> Term g a d
 set = Mu . Named Here
 
 -- exceptions

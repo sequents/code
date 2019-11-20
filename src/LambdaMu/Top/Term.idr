@@ -7,6 +7,8 @@ import LambdaMu.Ty
 %access public export
 %default total
 
+-- Ariola-Herbelin's λμtop-calculus
+
 mutual
   data Term : List Ty -> Ty -> List Ty -> Type where
     Var   : Elem a g -> Term g a d

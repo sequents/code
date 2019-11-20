@@ -1,6 +1,5 @@
 module LambdaMu.Ty
 
-import Str
 import Binary
 
 %access public export
@@ -62,14 +61,15 @@ DecEq Ty where
     decEq (Imp a b) (Imp a b) | (Yes Refl, Yes Refl) = Yes Refl
 
 Codec Ty where
-  toBuf buf t = toBuf buf (fromMaybe 0 $ parseBinStr $ go t)
+  toBuf buf t = toBuf buf $ go t
   where
     go : Ty -> String
     go  A        = "0"
     go  Bot      = "1"
     go (Imp a b) = "2" ++ go a ++ go b
-  fromBuf buf = do (i,r) <- fromBuf {a=Integer} buf
-                   case fst <$> (go $ unpack $ toBinStr i) of
+
+  fromBuf buf = do (i,r) <- fromBuf {a=String} buf
+                   case fst <$> (go $ unpack i) of
                      Just t => pure (t,r)
                      Nothing => throw "Corrupt Ty"
   where

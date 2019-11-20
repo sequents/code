@@ -8,7 +8,6 @@ modules = Iter
         , Elem
         , Path
         , Subset
-        , Str
         , Binary
         , Main
 
