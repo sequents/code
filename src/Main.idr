@@ -1,7 +1,8 @@
 module Main
 
 import Data.Fuel
-import TParsec.Position
+import TParsec
+import Parse
 import Iter
 import Binary
 import Lambda.Untyped.TermDB
@@ -20,12 +21,14 @@ import PCF.InstructV
 import LambdaMu.Ty as STLMC
 import LambdaMu.Term
 import LambdaMu.TyCheck
+import MuPCF.Term
+import MuPCF.Parser
+import MuPCF.TyCheck
+import MuPCF.Bytecode
+import MuPCF.InstructN
+--import MuPCF.InstructV
 
 %default covering
-
-total
-parseErr : Position -> String
-parseErr (MkPosition l r) = "parse error at line " ++ show l ++ " row " ++ show r ++ "\n"
 
 untyped : IO ()
 untyped =
@@ -76,7 +79,24 @@ compilePCF fnin fnout =
                                       case res of
                                         Left fe => printLn fe
                                         Right () => pure ())
-       Left (ParseError p) => printLn $ parseErr p
+       Left (ParseError p) => putStrLn $ parseErr p
+       Left IncompleteParse => putStrLn "parse error: incomplete parse\n"
+       Left TypeError => putStrLn "type check error\n"
+
+compileMuPCF : String -> String -> IO ()
+compileMuPCF fnin fnout =
+  do Right prog <- readFile fnin | Left err => printLn err
+     case MuPCF.TyCheck.parseCheckTerm prog of
+       Right (ty**t) => ioe_run (do buf <- initBinary
+                                    b1 <- toBuf buf (the (List STLMC.Ty) [])
+                                    b2 <- toBuf b1 ty
+                                    toBuf b2 (compile t))
+                          putStrLn
+                          (\bin => do res <- writeToFile fnout bin
+                                      case res of
+                                        Left fe => printLn fe
+                                        Right () => pure ())
+       Left (ParseError p) => putStrLn $ parseErr p
        Left IncompleteParse => putStrLn "parse error: incomplete parse\n"
        Left TypeError => putStrLn "type check error\n"
 
@@ -94,7 +114,7 @@ cbnPCF fnin =
         putStrLn
         (\(s**c**ctr) =>
            putStrLn $ case s of
-            [] => case iterFuel (limit stepLim) InstructN.step (init ctr) of
+            [] => case iterFuel (limit stepLim) PCF.InstructN.step (init ctr) of
                     (Just n, st) => "Reached in " ++ show n ++ " steps: " ++ show st
                     (Nothing, st) => "Timed out after " ++ show stepLim ++ " steps, last state: " ++ show st
             _ => "Computing open terms is not supported")
@@ -115,6 +135,24 @@ cbvPCF fnin =
                     (Nothing, st) => "Timed out after " ++ show stepLim ++ " steps, last state: " ++ show st
             _ => "Computing open terms is not supported")
 
+cbnMuPCF : String -> IO ()
+cbnMuPCF fnin =
+  do Right buf <- readFromFile fnin | Left err => printLn err
+     ioe_run {a=(s**c**t**Control s c t)}
+        (do (g, b1) <- fromBuf buf {a = List STLMC.Ty}
+            (a, b2) <- fromBuf b1  {a = STLMC.Ty}
+            (d, b3) <- fromBuf b2  {a = List STLMC.Ty}
+            (ctr, _) <- fromBuf b3 {a = Control g a d}
+            pure (g**a**d**ctr))
+        putStrLn
+        (\(s**c**t**ctr) =>
+           putStrLn $ case (decEq s [], decEq t []) of
+            (Yes Refl, Yes Refl) =>
+              case iterFuel (limit stepLim) MuPCF.InstructN.step (init ctr) of
+                (Just n, st) => "Reached in " ++ show n ++ " steps: " ++ show st
+                (Nothing, st) => "Timed out after " ++ show stepLim ++ " steps, last state: " ++ show st
+            (_, _) => "Computing open terms is not supported")
+
 main : IO ()
 main =
   do args <- getArgs
@@ -124,13 +162,17 @@ main =
        [_, "pt"] => typed
        [_, "pm"] => mu
        [_, "cp", fni, fno] => compilePCF fni fno
+       [_, "cpm", fni, fno] => compileMuPCF fni fno
        [_, "rn", fni] => cbnPCF fni
        [_, "rv", fni] => cbvPCF fni
+       [_, "rnm", fni] => cbnMuPCF fni
        _        => do putStrLn "Wrong args, run with:"
                       putStrLn " 'pu' (parse untyped lambda, interactive)"
                       putStrLn " 'ps' (parse scoped lambda, interactive)"
                       putStrLn " 'pt' (parse typed lambda, interactive)"
                       putStrLn " 'pm' (parse typed lambda-mu, interactive)"
                       putStrLn " 'cp <infile> <outfile>' (compile typed PCF term)"
+                      putStrLn " 'cpm <infile> <outfile>' (compile typed MuPCF term)"
                       putStrLn " 'rn <infile>' (run compiled PCF term in call-by-name VM)"
                       putStrLn " 'rv <infile>' (run compiled PCF term in call-by-value VM)"
+                      putStrLn " 'rnm <infile>' (run compiled MuPCF term in call-by-name VM)"

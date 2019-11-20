@@ -10,10 +10,13 @@ data Error : Type where
   ParseError : Position -> Error
   IncompleteParse : Error
   TypeError : Error
-  
+
+parseErr : Position -> String
+parseErr (MkPosition l r) = "parse error at line " ++ show l ++ " row " ++ show r ++ "\n"
+
 Parser' : Type -> Nat -> Type
 Parser' = Parser (TParsecM Error Void) chars
- 
+
 Subset (Position, List Void) Error where
   into = ParseError . fst
 

@@ -84,6 +84,8 @@ modules = Iter
         , MuPCF.MachineN
         , MuPCF.Parser
         , MuPCF.TyCheck
+        , MuPCF.Bytecode
+        , MuPCF.InstructN
 
         , MuPCF.Top.Term
         , MuPCF.Top.Smallstep
