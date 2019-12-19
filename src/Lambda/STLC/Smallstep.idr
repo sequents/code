@@ -14,6 +14,9 @@ rename r (Var el)    = Var $ r el
 rename r (Lam t)     = Lam $ rename (ext r) t
 rename r (App t1 t2) = App (rename r t1) (rename r t2)
 
+invert : Term g (a~>b) -> Term (a::g) b
+invert t = App (rename There t) (Var Here)
+
 Subst : List Ty -> List Ty -> Type
 Subst g d = {x : Ty} -> Elem x g -> Term d x
 

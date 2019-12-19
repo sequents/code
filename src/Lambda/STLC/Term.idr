@@ -12,9 +12,9 @@ import Lambda.Untyped.Scoped.Term
 %access public export
 
 isoNatUnits : Iso Nat (List ())
-isoNatUnits = 
-  MkIso 
-    (\n => replicate n ()) 
+isoNatUnits =
+  MkIso
+    (\n => replicate n ())
     length
     lem1
     lem2
@@ -27,7 +27,7 @@ isoNatUnits =
   lem2 (S x) = cong $ lem2 x
 
 data Term : List Ty -> Ty -> Type where
-  Var : Elem a g -> Term g a 
+  Var : Elem a g -> Term g a
   Lam : Term (a::g) b -> Term g (a~>b)
   App : Term g (a~>b) -> Term g a -> Term g b
 
@@ -56,7 +56,10 @@ TestTy : Ty
 TestTy = A~>A
 
 ResultTm : Term [] TestTy
-ResultTm = Lam $ Var Here  
+ResultTm = Lam $ Var Here
+
+TestTm0 : Term [] TestTy
+TestTm0 = App (Lam $ Var Here) (Lam $ Var Here)
 
 TestTm1 : Term [] TestTy
 TestTm1 = App (App (Lam $ Var Here) (Lam $ Var Here)) (Lam $ Var Here)
