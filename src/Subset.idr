@@ -26,14 +26,42 @@ ext : Subset g d -> Subset (b::g) (b::d)
 ext _  Here      = Here
 ext r (There el) = There (r el)
 
-contract : Elem x d -> Subset (x::d) d
+weaken : Subset g (x::g)
+weaken = There
+
+contract : Elem x g -> Subset (x::g) g
 contract el  Here     = el
 contract _  (There s) = s
 
-permute : Subset (a::b::g) (b::a::g)
-permute  Here              = There Here
-permute (There  Here     ) = Here
-permute (There (There el)) = There (There el)
+permute : (g : List t) -> Subset (g ++ a::b::d) (g ++ b::a::d)
+permute  []      Here              = There Here
+permute  []     (There Here)       = Here
+permute  []     (There (There el)) = There $ There el
+permute (g::gs)  Here              = Here
+permute (g::gs) (There el)         = There $ permute gs el
+
+permute0 : Subset (a::b::g) (b::a::g)
+permute0 = permute []
+
+-- 3 structural rules are enough
+
+data Struct : List a -> List a -> Type where
+  Id       : Struct g g
+  Weak     : Struct g d -> Struct g (x::d)
+  Contract : Struct g d -> Struct (x::x::g) (x::d)
+  Permute  : (s : List a) -> Struct g d -> Struct (s ++ x::y::g) (s ++ y::x::d)
+
+struct : Struct g d -> Subset g d
+struct  Id                  el                = el
+struct (Weak t)             el                = There $ struct t el
+struct (Contract _)         Here              = Here
+struct (Contract _)        (There  Here)      = Here
+struct (Contract t)        (There (There el)) = There $ struct t el
+struct (Permute []      _)  Here              = There Here
+struct (Permute []      _) (There  Here)      = Here
+struct (Permute []      t) (There (There el)) = There $ There $ struct t el
+struct (Permute (s::_)  _)  Here              = Here
+struct (Permute (s::ss) t) (There el)         = There $ struct (Permute ss t) el
 
 -- inductive subset relation (useful for auto search)
 
