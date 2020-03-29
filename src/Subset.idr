@@ -43,31 +43,11 @@ permute (g::gs) (There el)         = There $ permute gs el
 permute0 : Subset (a::b::g) (b::a::g)
 permute0 = permute []
 
--- 3 structural rules are enough
-
-data Struct : List a -> List a -> Type where
-  Id       : Struct g g
-  Weak     : Struct g d -> Struct g (x::d)
-  Contract : Struct g d -> Struct (x::x::g) (x::d)
-  Permute  : (s : List a) -> Struct g d -> Struct (s ++ x::y::g) (s ++ y::x::d)
-
-struct : Struct g d -> Subset g d
-struct  Id                  el                = el
-struct (Weak t)             el                = There $ struct t el
-struct (Contract _)         Here              = Here
-struct (Contract _)        (There  Here)      = Here
-struct (Contract t)        (There (There el)) = There $ struct t el
-struct (Permute []      _)  Here              = There Here
-struct (Permute []      _) (There  Here)      = Here
-struct (Permute []      t) (There (There el)) = There $ There $ struct t el
-struct (Permute (s::_)  _)  Here              = Here
-struct (Permute (s::ss) t) (There el)         = There $ struct (Permute ss t) el
-
 -- inductive subset relation (useful for auto search)
 
 data IsSubset : List a -> List a -> Type where
   Id    :                      IsSubset           l            l
-  ConsR : IsSubset     l  m -> IsSubset           l  (      a::m)
+  Weak  : IsSubset     l  m -> IsSubset           l  (      a::m)
   Cons2 : IsSubset     l  m -> IsSubset (      a::l) (      a::m)
   Swap  : IsSubset     l  m -> IsSubset (   a::b::l) (   b::a::m)
   Rot   : IsSubset     l  m -> IsSubset (a::b::c::l) (c::a::b::m)
@@ -80,7 +60,7 @@ ctr (There el) = CtrT $ ctr el
 
 shift : IsSubset l m -> Subset l m
 shift  Id        el                        = el
-shift (ConsR s)  el                        = There $ shift s el
+shift (Weak s)   el                        = There $ shift s el
 shift (Cons2 s)  Here                      = Here
 shift (Cons2 s) (There  el)                = There $ shift s el
 shift (Swap s)   Here                      = There Here
