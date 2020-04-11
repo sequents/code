@@ -9,7 +9,7 @@ import Data.List
 -- type A will stand for a natural number
 
 data Term : List Ty -> Ty -> Type where
-  Var  : Elem a g -> Term g a 
+  Var  : Elem a g -> Term g a
   Lam  : Term (a::g) b -> Term g (a~>b)
   App  : Term g (a~>b) -> Term g a -> Term g b
   Zero : Term g A
@@ -22,32 +22,35 @@ fromN  Z    = Zero
 fromN (S n) = Succ $ fromN n
 
 idid : Term [] (A~>A)
-idid = App (Lam $ Var Here) (Lam $ Var Here)  
+idid = App (Lam $ Var Here) (Lam $ Var Here)
 
 bam : Term [] A
 bam = App (Lam Zero) (Fix $ Succ $ Var Here)
 
 Ch : Ty -> Ty
-Ch a = (a~>a)~>(a~>a)  
+Ch a = (a~>a)~>(a~>a)
 
 twoC : Term g (Ch a)
 twoC = Lam $ Lam $ App (Var $ There Here) (App (Var $ There Here) (Var Here))
 
 plusC : Term g (Ch a ~> Ch a ~> Ch a)
-plusC = Lam $ Lam $ Lam $ Lam $ App (App (Var $ There $ There $ There Here) 
-                                         (Var $ There Here)) 
-                                    (App (App (Var $ There $ There Here) 
-                                              (Var $ There Here)) 
-                                         (Var Here)) 
+plusC = Lam $ Lam $ Lam $ Lam $ App (App (Var $ There $ There $ There Here)
+                                         (Var $ There Here))
+                                    (App (App (Var $ There $ There Here)
+                                              (Var $ There Here))
+                                         (Var Here))
 
 twoN : Term g A
 twoN = Succ $ Succ Zero
 
+threeN : Term g A
+threeN = Succ $ Succ $ Succ Zero
+
 plusN : Term g (A~>A~>A)
-plusN = Fix $ Lam $ Lam $ If0 (Var $ There Here) 
-                              (Var Here) 
-                              (Succ $ App (App (Var $ There $ There $ There Here) 
-                                               (Var Here)) 
+plusN = Fix $ Lam $ Lam $ If0 (Var $ There Here)
+                              (Var Here)
+                              (Succ $ App (App (Var $ There $ There $ There Here)
+                                               (Var Here))
                                           (Var $ There Here))
 
 twotwoN : Term [] A
@@ -61,3 +64,15 @@ twotwoC = App (App (App (App plusC twoC) twoC) sucN) Zero
 
 mkTwo : Term [] A
 mkTwo = App (App twoC sucN) Zero
+
+minusN : Term g (A~>A~>A)
+minusN = Fix $ Lam $ Lam $ If0 (Var Here)
+                               (Var $ There Here)
+                               (If0 (Var $ There $ There Here)
+                                     Zero
+                                    (App (App (Var $ There $ There $ There $ There Here)
+                                              (Var Here))
+                                         (Var $ There Here)))
+
+threeMinusTwoN : Term [] A
+threeMinusTwoN = App (App minusN threeN) twoN

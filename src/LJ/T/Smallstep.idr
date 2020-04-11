@@ -14,22 +14,22 @@ import LJ.T.Term
 -- structural rules
 
 mutual
-  renameTerm : Subset g d -> TermJ g a -> TermJ d a
-  renameTerm sub (Var el k) = Var (sub el) (renameSpine sub k)
-  renameTerm sub (Lam t)    = Lam (renameTerm (ext sub) t)
-  renameTerm sub (Cut t c)  = Cut (renameTerm sub t) (renameSpine sub c)
+  renameT : Subset g d -> TermJ g a -> TermJ d a
+  renameT s (Var el k) = Var (s el) (renameS s k)
+  renameT s (Lam t)    = Lam (renameT (ext s) t)
+  renameT s (Cut t k)  = Cut (renameT s t) (renameS s k)
 
-  renameSpine : Subset g d -> Spine g a b -> Spine d a b
-  renameSpine sub  Nil       = Nil
-  renameSpine sub (Cons t c) = Cons (renameTerm sub t) (renameSpine sub c)
+  renameS : Subset g d -> Spine g a b -> Spine d a b
+  renameS s  Nil       = Nil
+  renameS s (Cons t k) = Cons (renameT s t) (renameS s k)
 
 shiftTerm : {auto is : IsSubset g d} -> TermJ g a -> TermJ d a
-shiftTerm {is} = renameTerm (shift is)
+shiftTerm {is} = renameT (shift is)
 
 shiftSpine : {auto is : IsSubset g d} -> Spine g a b -> Spine d a b
-shiftSpine {is} = renameSpine (shift is)
+shiftSpine {is} = renameS (shift is)
 
--- substitution
+-- sstitution
 {-
 Subst : List Ty -> List Ty -> Type
 Subst g d = {x, a : Ty} -> Elem x g -> Spine d x a -> TermJ d a
@@ -66,7 +66,7 @@ mutual
   subst1T : TermJ (a::g) b -> TermJ g a -> TermJ g b
   subst1T (Var  Here      k) u = Cut u (subst1S k u)
   subst1T (Var (There el) k) u = Var el (subst1S k u)
-  subst1T (Lam t)            u = Lam $ assert_total $ subst1T (shiftTerm t) (shiftTerm u) -- (renameTerm permute0 t) (renameTerm weaken u)
+  subst1T (Lam t)            u = Lam $ assert_total $ subst1T (shiftTerm t) (shiftTerm u) -- (renameT permute0 t) (renameT weaken u)
   subst1T (Cut t k)          u = Cut (subst1T t u) (subst1S k u)
 
   subst1S : Spine (a::g) b c -> TermJ g a -> Spine g b c

@@ -22,7 +22,7 @@ data Stack : Ty -> Ty -> Type where
   Mt  : Stack a a
   Arg : Clos a -> Stack b c -> Stack (a~>b) c
   Tst : Term g a -> Term (A::g) a -> Env g -> Stack a c -> Stack A c
-  Suc : Stack a c -> Stack a c
+  Suc : Stack A c -> Stack A c
 
 data State : Ty -> Type where
   Ev : Term g a -> Env g -> Stack a t -> State t
