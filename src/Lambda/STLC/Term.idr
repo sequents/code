@@ -102,3 +102,6 @@ one' = Lam $ Lam $ App (Var $ There Here) (Var Here)
 
 succ' : Term [] (NumTy' ~> NumTy')
 succ' = Lam $ Lam $ Lam $ App (Var $ There Here) (App (App (Var $ There $ There Here) (Var $ There Here)) (Var Here))
+
+add' : Term [] (NumTy' ~> NumTy' ~> NumTy')
+add' = Lam $ Lam $ Lam $ Lam $ App (App (Var $ There $ There $ There Here) (Var $ There Here)) (App (App (Var $ There $ There Here) (Var $ There Here)) (Var Here))

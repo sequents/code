@@ -92,11 +92,18 @@ modules = Iter
         , MuPCF.Top.Parser
         , MuPCF.Top.TyCheck
 
-        , LJ.LJT.Term
-        , LJ.LJT.Smallstep
-        , LJ.LJT.TJAM
+        , LJ.LJ
+
+        , LJ.T.Term
+        , LJ.T.Smallstep
+
+        , LJ.T.ES.Term
+        , LJ.T.ES.Smallstep
+        , LJ.T.ES.TJAM
+
         , LJ.LambdaC.Term
         , LJ.LambdaC.Smallstep
+
         , LJ.LJQ.Term
         , LJ.LJQ.Smallstep
         , LJ.LJQ.QJAM

@@ -59,7 +59,7 @@ appN : Term g c ((a~>b)::d) -> Term g a d -> Term g c (b::d)
 appN (Var e)             v = Var e
 appN (Lam t)             v = Lam $ appN t (rename There v)
 appN (App t u)           v = App (appN t v) (appN u v)
-appN (Mu t)              v = Mu $ renameN permute $ assert_total $ appN (renameN permute t) (renameN There v)
+appN (Mu t)              v = Mu $ renameN permute0 $ assert_total $ appN (renameN permute0 t) (renameN weaken v)
 appN (Named  Here     t) v = Named Here (App (appN t v) (renameN There v))
 appN (Named (There e) t) v = Named (There e) (appN t v)
 
@@ -67,8 +67,8 @@ appNR : Term g c (a::d) -> Term g (a~>b) d -> Term g c (b::d)
 appNR (Var e)             v = Var e
 appNR (Lam t)             v = Lam $ appNR t (rename There v)
 appNR (App t u)           v = App (appNR t v) (appNR u v)
-appNR (Mu t)              v = Mu $ renameN permute $ assert_total $ appNR (renameN permute t) (renameN There v)
-appNR (Named  Here     t) v = Named Here $ App (renameN There v) (appNR t v)
+appNR (Mu t)              v = Mu $ renameN permute0 $ assert_total $ appNR (renameN permute0 t) (renameN weaken v)
+appNR (Named  Here     t) v = Named Here $ App (renameN weaken v) (appNR t v)
 appNR (Named (There e) t) v = Named (There e) $ appNR t v
 
 isVal : Term g a d -> Bool
@@ -79,15 +79,15 @@ isVal  _      = False
 step : Term g a d -> Maybe (Term g a d)
 step (App (Lam t) u)       = Just $ subst1 t u
 step (App (Mu t)  u)       = Just $ Mu $ appN t u
-step (App  t      u)       = 
-  if isVal t 
+step (App  t      u)       =
+  if isVal t
     then Nothing
     else [| App (step t) (pure u) |]
 step (Mu (Named e (Mu t))) = Just $ Mu $ renameN (contract e) t
-step (Mu (Named Here t))   = 
+step (Mu (Named Here t))   =
   case renameMN contractM t of
     Just t => Just t
-    Nothing => (Mu . Named Here) <$> step t 
+    Nothing => (Mu . Named Here) <$> step t
 step  _                    = Nothing
 
 isMu : Term g a d -> Bool
@@ -96,44 +96,44 @@ isMu  _     = False
 
 stepV : Term g a d -> Maybe (Term g a d)
 stepV (App u  (Mu v))       = Just $ Mu $ appNR v u
-stepV (App t   u    )       = 
+stepV (App t   u    )       =
   if isVal t || isMu t
-    then 
+    then
       if isVal u
       then
         case t of
           Lam v => Just $ subst1 v u
           Mu v => Just $ Mu $ appN v u
           _ => Nothing
-      else App t <$> (stepV u)           
+      else App t <$> (stepV u)
     else [| App (stepV t) (pure u) |]
 stepV (Mu (Named e (Mu t))) = Just $ Mu $ renameN (contract e) t
-stepV (Mu (Named Here t))   = 
+stepV (Mu (Named Here t))   =
   case renameMN contractM t of
     Just t => Just t
-    Nothing => (Mu . Named Here) <$> stepV t 
+    Nothing => (Mu . Named Here) <$> stepV t
 stepV  _                    = Nothing
 
 -- ala Ong-Stewart'97
 stepV2 : Term g a d -> Maybe (Term g a d)
-stepV2 (App u      (Mu v))   = 
-  if isVal u 
+stepV2 (App u      (Mu v))   =
+  if isVal u
     then Just $ Mu $ appNR v u
     else [| App (stepV2 u) (pure (Mu v)) |]
 stepV2 (App (Mu u)  v    )   = Just $ Mu $ appN u v
-stepV2 (App  t      u   )   = 
+stepV2 (App  t      u   )   =
   if isVal t
-    then 
+    then
       if isVal u
       then
         case t of
           Lam v => Just $ subst1 v u
           _ => Nothing
-      else App t <$> (stepV u)           
+      else App t <$> (stepV u)
     else [| App (stepV t) (pure u) |]
 stepV2 (Mu (Named e (Mu t))) = Just $ Mu $ renameN (contract e) t
-stepV2 (Mu (Named Here t))   = 
+stepV2 (Mu (Named Here t))   =
   case renameMN contractM t of
     Just t => Just t
-    Nothing => (Mu . Named Here) <$> stepV2 t 
+    Nothing => (Mu . Named Here) <$> stepV2 t
 stepV2  _                    = Nothing

@@ -3,11 +3,14 @@ module Lambda.STLC.Smallstep
 import Data.List
 import Iter
 import Subset
+
 import Lambda.STLC.Ty
 import Lambda.STLC.Term
 
 %access public export
 %default total
+
+-- structural rule
 
 rename : Subset g d -> Term g a -> Term d a
 rename r (Var el)    = Var $ r el
@@ -16,6 +19,8 @@ rename r (App t1 t2) = App (rename r t1) (rename r t2)
 
 invert : Term g (a~>b) -> Term (a::g) b
 invert t = App (rename There t) (Var Here)
+
+-- substitution
 
 Subst : List Ty -> List Ty -> Type
 Subst g d = {x : Ty} -> Elem x g -> Term d x
@@ -29,17 +34,21 @@ subst s (Var el)    = s el
 subst s (Lam t)     = Lam $ subst (exts s) t
 subst s (App t1 t2) = App (subst s t1) (subst s t2)
 
-subst1 : Term (b::g) a -> Term g b -> Term g a
-subst1 {g} {b} t s = subst {g=b::g} go t
+subst1 : Term (a::g) b -> Term g a -> Term g b
+subst1 {g} {a} t s = subst {g=a::g} go t
   where
-  go : Subst (b::g) g
+  go : Subst (a::g) g
   go  Here      = s
   go (There el) = Var el
+
+-- values
 
 isVal : Term g a -> Bool
 isVal (Lam _) = True
 isVal (Var _) = True
 isVal  _      = False
+
+-- small-step interpreters
 
 step : Term g a -> Maybe (Term g a)
 step (App (Lam body) sub) = Just $ subst1 body sub

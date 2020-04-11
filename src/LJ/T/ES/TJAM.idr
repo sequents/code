@@ -1,4 +1,4 @@
-module LJ.LJT.TJAM
+module LJ.T.ES.TJAM
 
 import Data.List
 import Data.List.Quantifiers
@@ -6,9 +6,8 @@ import Elem
 import Iter
 
 import Lambda.STLC.Ty
-import LJ.LJT.Term
-
 import Lambda.STLC.Term
+import LJ.T.ES.Term
 
 %default total
 %access public export
@@ -18,7 +17,7 @@ mutual
   Env = All Clos
 
   data Clos : Ty -> Type where
-    Cl : Async g a -> Env g -> Clos a
+    Cl : TermJ g a -> Env g -> Clos a
 
 data Stack : Ty -> Ty -> Type where
   Mt  : Stack a a
@@ -33,17 +32,17 @@ append  Mt        s2 = s2
 append (Arg c s1) s2 = Arg c (append s1 s2)
 
 data State : Ty -> Type where
-  S1 : Async g a -> Env g -> Stack a z -> State z
-  S2 : Async g a -> Env g -> Stack a b -> LSync d b c -> Env d -> Stack c z -> State z
+  S1 : TermJ g a -> Env g -> Stack a z -> State z
+  S2 : TermJ g a -> Env g -> Stack a b -> Spine d b c -> Env d -> Stack c z -> State z
 
-initState : Async [] a -> State a
+initState : TermJ [] a -> State a
 initState a = S1 a [] Mt
 
 step : State b -> Maybe (State b)
 step (S1 (Var el k) e         c ) = let Cl t g = indexAll el e in
                                     Just $ S2 t g Mt k e c
 step (S1 (Lam t   ) e (Arg ug c)) = Just $ S1 t (ug::e) c
-step (S1 (Beta t k) e         c ) = Just $ S2 t e Mt k e c
+step (S1 (Cut t k ) e         c ) = Just $ S2 t e Mt k e c
 step (S2 t e b  Nil       _   c ) = Just $ S1 t e (append b c)
 step (S2 t e b (Cons u k) g   c ) = Just $ S2 t e (snoc b (Cl u g)) k g c
 step  _                           = Nothing
