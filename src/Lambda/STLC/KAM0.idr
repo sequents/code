@@ -15,8 +15,8 @@ data Stack : List Ty -> Ty -> Ty -> Type where
   CS : Term g a -> Stack g b c -> Stack g (a~>b) c
 
 record State (g : List Ty) (b : Ty) where
-  constructor St 
-  tm : Term g a 
+  constructor St
+  tm : Term g a
   stk : Stack g a b
 
 step : State g b -> Maybe (State g b)

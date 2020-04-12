@@ -73,6 +73,7 @@ stepT  _                            = Stuck
 
 readback : TermJ g a -> Maybe (TermJ g a)
 readback (Cut t (Inc s)) = Just $ Cut (Succ t) s
+readback (Cut t  Nil   ) = Just t
 readback  _              = Nothing
 
 stepIter : Term [] a -> (Nat, TermJ [] a)
