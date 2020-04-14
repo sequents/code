@@ -29,7 +29,7 @@ shiftTerm {is} = renameT (shift is)
 shiftSpine : {auto is : IsSubset g d} -> Spine g a b -> Spine d a b
 shiftSpine {is} = renameS (shift is)
 
--- sstitution
+-- substitution
 {-
 Subst : List Ty -> List Ty -> Type
 Subst g d = {x, a : Ty} -> Elem x g -> Spine d x a -> TermJ d a
