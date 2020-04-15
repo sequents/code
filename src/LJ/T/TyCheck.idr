@@ -57,10 +57,10 @@ mutual
     Yes (a**el) => case synthS g a k of
       Yes (b**q) => Yes (b ** Var el q)
       No ctra => No $ notVarArg el ctra
-    No ctra => No $ \(x ** Var {a} el k) => ctra (a**el)
+    No ctra => No $ \(_**Var {a} el _) => ctra (a**el)
   synth g (Cut m k) = case synth g m of
-    Yes (a ** t) => case synthS g a k of
-      Yes (b ** q) => Yes (b ** Cut t q)
+    Yes (a**t) => case synthS g a k of
+      Yes (b**q) => Yes (b ** Cut t q)
       No ctra => No $ notCutArg t ctra
     No ctra => No $ \(_**Cut {a} t _) => ctra (a**t)
   synth g (Ann v t) = case inherit g v t of
@@ -72,17 +72,17 @@ mutual
   synthS g  A        (Cons m k) = No $ \(_**c) => absurd c
   synthS g (Imp a b) (Cons m k) = case inherit g m a of
     Yes t => case synthS g b k of
-      Yes (c ** q) => Yes (c ** Cons t q)
-      No ctra => No $ \(c**Cons _ q) => ctra (c ** q)
-    No ctra => No $ \(a**Cons t _) => ctra t
+      Yes (c**q) => Yes (c ** Cons t q)
+      No ctra => No $ \(c**Cons _ q) => ctra (c**q)
+    No ctra => No $ \(_**Cons t _) => ctra t
 
   inherit : (g : Ctx Ty) -> (m : Val) -> (a : Ty) -> Dec (Val g m a)
-  inherit g (Lam s v)      A        = No uninhabited
+  inherit _ (Lam _ _)      A        = No uninhabited
   inherit g (Lam s v)     (Imp a b) = case inherit ((s,a)::g) v b of
     Yes w => Yes $ Lam w
     No ctra => No $ \(Lam w) => ctra w
   inherit g (Emb n)        a        = case synth g n of
-    Yes (b ** m) => case decEq a b of
+    Yes (b**m) => case decEq a b of
       Yes prf => Yes $ Emb m (sym prf)
       No ctra => No $ notSwitch m (ctra . sym)
     No ctra => No $ \(Emb m Refl) => ctra (a ** m)
