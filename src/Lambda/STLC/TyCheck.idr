@@ -29,7 +29,7 @@ Uninhabited (Val _ (Lam _ _) A) where
 
 neuUniq : Neu g m a -> Neu g m b -> a = b
 neuUniq (Var i1)   (Var i2)   = inCtxUniq i1 i2
-neuUniq (App t1 _) (App t2 _) = snd $ impInj $ neuUniq t1 t2 
+neuUniq (App t1 _) (App t2 _) = snd $ impInj $ neuUniq t1 t2
 neuUniq (Cut v1)   (Cut v2)   = Refl
 
 notArg : Neu g l (a~>b) -> Not (Val g m a) -> Not (c ** Neu g (App l m) c)
@@ -38,14 +38,14 @@ notArg n nv (c**App t u) = let Refl = fst $ impInj $ neuUniq n t in nv u
 notSwitch : Neu g m a -> Not (a = b) -> Not (Val g (Emb m) b)
 notSwitch n neq (Emb v eq) = let Refl = neuUniq n v in neq eq
 
-mutual    
+mutual
   synth : (g : Ctx Ty) -> (m : Neu) -> Dec (a ** Neu g m a)
   synth g (Var s)   = case lookup g s of
     Yes (a**el) => Yes (a ** Var el)
     No ctra => No $ \(a**Var el) => ctra (a ** el)
   synth g (App t u) = case synth g t of
-    Yes (A**n) => No $ \(_**App v _) => uninhabited $ neuUniq v n 
-    Yes ((Imp a b)**n) => case inherit g u a of 
+    Yes (A**n) => No $ \(_**App v _) => uninhabited $ neuUniq v n
+    Yes ((Imp a b)**n) => case inherit g u a of
       Yes m => Yes (b ** App n m)
       No ctra => No $ notArg n ctra
     No ctra => No $ \(b**App {a} v _) => ctra ((a~>b) ** v)
@@ -64,30 +64,30 @@ mutual
       No ctra => No $ notSwitch m (ctra . sym)
     No ctra => No $ \(Emb m Refl) => ctra (a ** m)
 
-mutual     
+mutual
   val2Term : Val g m a -> Term (eraseCtx g) a
   val2Term (Lam v)      = Lam $ val2Term v
   val2Term (Emb v Refl) = neu2Term v
 
   neu2Term : Neu g m a -> Term (eraseCtx g) a
   neu2Term (Var i)   = Var $ eraseInCtx i
-  neu2Term (Cut v)   = val2Term v 
+  neu2Term (Cut v)   = val2Term v
   neu2Term (App t u) = App (neu2Term t) (val2Term u)
 
-parseCheckTerm : String -> Either Error (a ** Term [] a)  
+parseCheckTerm : String -> Either Error (a ** Term [] a)
 parseCheckTerm s = do b <- parseNeu s
-                      case synth [] b of 
+                      case synth [] b of
                         Yes (a ** n) => Right (a ** neu2Term n)
                         No _ => Left TypeError
 
-private    
+private
 test0 : parseCheckTerm "(\\x.x : *->*)" = Right (TestTy ** ResultTm)
 test0 = Refl
 
---private    
---test1 : parseCheckTerm "((\\x.x : ((*->*)->(*->*))->((*->*)->(*->*))) \\x.x : (*->*)->(*->*)) \\x.x" = Right (TestTy ** TestTm1)
+--private
+--test1 : parseCheckTerm "((\\x.x : ((*->*)->(*->*))->((*->*)->(*->*))) (\\x.x) : (*->*)->(*->*)) (\\x.x)" = Right (TestTy ** TestTm1)
 --test1 = Refl
 
 --private
---test2 : parseCheckTerm "(\\x.x : ((*->*)->(*->*))) (\\x.x : (*->*)->(*->*)) \\x.x" = Right (TestTy ** TestTm2)
+--test2 : parseCheckTerm "(\\x.x : ((*->*)->(*->*))) ((\\x.x : (*->*)->(*->*)) (\\x.x))" = Right (TestTy ** TestTm2)
 --test2 = Refl

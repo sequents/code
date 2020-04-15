@@ -1,4 +1,4 @@
-module LJPCF.T.Parser
+module LJ.T.Parser
 
 import Data.NEList
 import TParsec
@@ -13,17 +13,12 @@ import Lambda.STLC.Ty
 
 mutual
   data Val : Type where
-    Lam  : String -> Val -> Val
-    Zero : Val
-    Succ : Val -> Val
-    Fix  : String -> Val -> Val
-    Emb  : Neu -> Val
+    Lam : String -> Val -> Val
+    Emb : Neu -> Val
 
   data Spn : Type where
     Nil  : Spn
     Cons : Val -> Spn -> Spn
-    Tst  : Val -> String -> Val -> Spn -> Spn
-    Inc  : Spn -> Spn
 
   data Neu : Type where
     Var : String -> Spn -> Neu
@@ -47,19 +42,11 @@ var recs = map (\(n,k) => Var n k) $
            between (char '<') (char '>') $
            andbox name (rand spaces recs)
 
-zero : All (Parser' Val)
-zero = cmap Zero $ char 'Z'
-
 ann : All (Box (Parser' Val) :-> Parser' Neu)
 ann rec = map (\(v,t) => Ann v t) $
           parens (andbox (Nat.map {a=Parser' _} commit rec)
                          (rand (withSpaces (char ':'))
                               type))
-
-succ : All (Box (Parser' Val) :-> Parser' Val)
-succ rec = map Succ $
-           rand (andopt (char 'S') spaces)
-                (Nat.map {a=Parser' _} commit rec)
 
 lam : All (Box (Parser' Val) :-> Parser' Val)
 lam recv = map (\(s,v) => Lam s v) $
@@ -68,30 +55,12 @@ lam recv = map (\(s,v) => Lam s v) $
                      (rand (andopt (char '.') spaces)
                            (Nat.map {a=Parser' _} commit recv)))
 
-fix : All (Box (Parser' Val) :-> Parser' Val)
-fix recv = map (\(s,v) => Fix s v) $
-          rand (string "FIX")
-               (and (withSpaces name)
-                    (rand (andopt (char '.') spaces)
-                          (Nat.map {a=Parser' _} commit recv)))
-
-tst : All (Box (Parser' Val) :-> Parser' (Spn -> Spn))
-tst recv = map (\(t,s,f) => Tst t s f) $
-           rand (andopt (string "TST") spaces)
-                (andbox recv
-                        (rand (optand spaces (string "ELSE\\"))
-                              (and (withSpaces name)
-                                   (rand (andopt (char '.') spaces) (Nat.map {a=Parser' _} commit recv)))))
-
 spn : All (Box (Parser' Val) :-> Parser' Spn)
 spn recv = alt (cmap Nil $ string "[]") $
            between (char '[') (char ']') $
            Combinators.map (flip apply Nil) $
            chainl1
-             (alts [ cmap Inc $ char '$'
-                   , tst recv
-                   , map Cons $ rand (char '`') recv
-                   ])
+             (map Cons $ rand (char '`') recv)
              (cmap (.) $ withSpaces $ char ',')
 
 neu : All (Box (Parser' Spn) :-> Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' Neu)
@@ -109,9 +78,6 @@ emb recs recv recn = map Emb (neu recs recv recn)
 
 val : All (Box (Parser' Spn) :-> Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' Val)
 val recs recv recn = alts [ lam recv
-                          , zero
-                          , succ recv
-                          , fix recv
                           , emb recs recv recn
                           , parens recv
                           ]

@@ -96,6 +96,12 @@ modules = Iter
 
         , LJ.T.Term
         , LJ.T.Smallstep
+        , LJ.T.Parser
+        , LJ.T.TyCheck
+
+        , LJPCF.T.Term
+        , LJPCF.T.Smallstep
+        , LJPCF.T.Parser
 
         , LJ.T.ES.Term
         , LJ.T.ES.Smallstep
