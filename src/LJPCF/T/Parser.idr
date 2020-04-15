@@ -22,7 +22,7 @@ mutual
   data Spn : Type where
     Nil  : Spn
     Cons : Val -> Spn -> Spn
-    Tst  : Val -> String -> Val -> Spn -> Spn
+    Tst  : Neu -> String -> Val -> Spn -> Spn
     Inc  : Spn -> Spn
 
   data Neu : Type where
@@ -75,24 +75,24 @@ fix recv = map (\(s,v) => Fix s v) $
                     (rand (andopt (char '.') spaces)
                           (Nat.map {a=Parser' _} commit recv)))
 
-tst : All (Box (Parser' Val) :-> Parser' (Spn -> Spn))
-tst recv = map (\(t,s,f) => Tst t s f) $
-           rand (andopt (string "TST") spaces)
-                (andbox recv
-                        (rand (optand spaces (string "ELSE\\"))
-                              (and (withSpaces name)
-                                   (rand (andopt (char '.') spaces) (Nat.map {a=Parser' _} commit recv)))))
+tst : All (Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' (Spn -> Spn))
+tst recv recn = map (\(t,s,f) => Tst t s f) $
+                rand (andopt (string "TST") spaces)
+                     (andbox recn
+                             (rand (optand spaces (string "ELSE\\"))
+                                   (and (withSpaces name)
+                                        (rand (andopt (char '.') spaces) (Nat.map {a=Parser' _} commit recv)))))
 
-spn : All (Box (Parser' Val) :-> Parser' Spn)
-spn recv = alt (cmap Nil $ string "[]") $
-           between (char '[') (char ']') $
-           Combinators.map (flip apply Nil) $
-           chainl1
-             (alts [ cmap Inc $ char '$'
-                   , tst recv
-                   , map Cons $ rand (char '`') recv
-                   ])
-             (cmap (.) $ withSpaces $ char ',')
+spn : All (Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' Spn)
+spn recv recn = alt (cmap Nil $ string "[]") $
+                between (char '[') (char ']') $
+                Combinators.map (flip apply Nil) $
+                chainl1
+                  (alts [ cmap Inc $ char '$'
+                        , tst recv recn
+                        , map Cons $ rand (char '`') recv
+                        ])
+                  (cmap (.) $ withSpaces $ char ',')
 
 neu : All (Box (Parser' Spn) :-> Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' Neu)
 neu recs recv recn =
@@ -102,7 +102,7 @@ neu recs recv recn =
           , parens recn
           ])
     (cmap Cut spaces)
-    (spn recv)
+    (spn recv recn)
 
 emb : All (Box (Parser' Spn) :-> Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' Val)
 emb recs recv recn = map Emb (neu recs recv recn)
@@ -129,7 +129,7 @@ pcf = fix _ $ \rec =>
     ihs = Nat.map {a=PCF} pspn rec
     ihn = Nat.map {a=PCF} pneu rec
    in
-  MkPCF (val ihs ihv ihn) (spn ihv) (neu ihs ihv ihn)
+  MkPCF (val ihs ihv ihn) (spn ihv ihn) (neu ihs ihv ihn)
 
 parseVal : String -> Either Error Val
 parseVal s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (pval pcf)
