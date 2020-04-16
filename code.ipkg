@@ -103,6 +103,11 @@ modules = Iter
         , LJPCF.T.Smallstep
         , LJPCF.T.Parser
 
+        , LambdaUps.Term
+        , LambdaUps.Smallstep
+        , LambdaUps.UMN
+        , LambdaUps.UMV
+
         , LJ.T.ES.Term
         , LJ.T.ES.Smallstep
         , LJ.T.ES.TJAM

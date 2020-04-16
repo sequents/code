@@ -28,6 +28,10 @@ runKAM : Term g a -> (Nat, State g a)
 runKAM t = iterCount step (St t NS)
 
 private
+test0 : runKAM TestTm0 = (2, St ResultTm NS)
+test0 = Refl
+
+private
 test1 : runKAM TestTm1 = (4, St ResultTm NS)
 test1 = Refl
 
