@@ -35,36 +35,27 @@ shiftTerm {is} = renameTerm (shift is)
 shiftSpine : {auto is : IsSubset g d} -> Spine g a b -> Spine d a b
 shiftSpine {is} = renameSpine (shift is)
 
-mutual
-  stepT : TermJ g a -> Maybe (TermJ g a)
+stepT : TermJ g a -> Maybe (TermJ g a)
 
-  stepT (Cut (Var el k)  m        ) = Just $ Var el (Cat k m)
-  stepT (Cut (Lam t)    (Cons u k)) = Just $ Cut (Sub u t) k
-  stepT (Cut (Lam t)     Nil      ) = Just $ Lam t
---stepT (Cut (Cut t k)   m        ) = Just $ Cut t (Cat k m)
-  stepT (Cut  k          m        ) = [| Cut (stepT k) (pure m) |] <|> [| Cut (pure k) (stepS m) |]
+stepT (Cut (Var el k)                  m                         ) = Just $ Var el (Cat k m)
+stepT (Cut (Lam t)                    (Cons u k)                 ) = Just $ Cut (Sub u t) k
+stepT (Cut (Lam t)                     Nil                       ) = Just $ Lam t
+stepT (Cut (Cut t k)                   m                         ) = Just $ Cut t (Cat k m)
 
-  stepT (Sub  u (Var  Here      k)) = Just $ Cut u (SubL u k)
-  stepT (Sub  u (Var (There el) k)) = Just $ Var el (SubL u k)
-  stepT (Sub  u (Lam t)           ) = Just $ Lam $ Sub (shiftTerm u) (shiftTerm t)
---stepT (Sub  u (Cut k l)         ) = Just $ Cut (Sub u k) (SubL u l)
-  stepT (Sub  u  k                ) = [| Sub (stepT u) (pure k) |] <|> [| Sub (pure u) (stepT k) |]
+stepT (Cut (Sub u (Var  Here      k))  m                         ) = Just $ Cut u (Cat (SubL u k) m) --(Cut u (SubL u k))                      m
+stepT (Cut (Sub u (Var (There el) k))  m                         ) = Just $ Var el (Cat (SubL u k) m) --Cut (Var el (SubL u k))                     m
+stepT (Cut (Sub u (Lam t)           )  m                         ) = Just $ Cut (Lam $ Sub (shiftTerm u) (shiftTerm t)) m
+stepT (Cut (Sub u (Cut k l)         )  m                         ) = Just $ Cut (Sub u k) (Cat (SubL u l) m) --(Cut (Sub u k) (SubL u l))              m
 
-  stepT  _                          = Nothing
+stepT (Cut  t                         (Cat  Nil                m)) = Just $ Cut t  m
+stepT (Cut  t                         (Cat (Cons u k)          m)) = Just $ Cut t (Cons u (Cat k m))
+stepT (Cut  t                         (Cat (Cat k l)           m)) = Just $ Cut t (Cat k (Cat l m))
 
-  stepS : Spine g a b -> Maybe (Spine g a b)
+stepT (Cut  t                         (Cat (SubL _  Nil      ) m)) = Just $ Cut t  m --(Cat Nil m)
+stepT (Cut  t                         (Cat (SubL u (Cons s k)) m)) = Just $ Cut t (Cat (Cons (Sub u s) (SubL u k)) m)
+stepT (Cut  t                         (Cat (SubL u (Cat k l) ) m)) = Just $ Cut t (Cat (SubL u k) (Cat (SubL u l) m)) --(Cat (Cat (SubL u k) (SubL u l)) m)
 
-  stepS (Cat  Nil       m) = Just m
-  stepS (Cat (Cons u k) m) = Just $ Cons u (Cat k m)
---stepS (Cat (Cat k l)  m) = Just $ Cat k (Cat l m)
-  stepS (Cat  k         m) = [| Cat (stepS k) (pure m) |] <|> [| Cat (pure k) (stepS m) |]
-
-  stepS (SubL _  Nil      ) = Just Nil
-  stepS (SubL u (Cons t k)) = Just $ Cons (Sub u t) (SubL u k)
---stepS (SubL u (Cat k l) ) = Just $ Cat (SubL u k) (SubL u l)
-  stepS (SubL u  k        ) = [| SubL (stepT u) (pure k) |] <|> [| SubL (pure u) (stepS k) |]
-
-  stepS  _                   = Nothing
+stepT  _                                                            = Nothing
 
 stepIter : Term [] a -> (Nat, TermJ [] a)
 stepIter = iterCount stepT . encode
@@ -72,7 +63,7 @@ stepIter = iterCount stepT . encode
 -- tests
 
 private
-test1 : stepIter TestTm0 = (5, encode ResultTm)
+test1 : stepIter TestTm0 = (4, encode ResultTm)
 test1 = Refl
 
 private
