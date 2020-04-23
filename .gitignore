@@ -1,4 +1,8 @@
 *.ibc
+*.ttc
+*.ttm
+*.out
+*.outm
 target
 elba.lock
 run.exe
