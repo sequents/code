@@ -29,6 +29,7 @@ step (Let (Var (There el)) (Slash _)) = Just $ Var el
 step (Let (Var  Here)      (Lift _) ) = Just $ Var Here
 step (Let (Var (There el)) (Lift s) ) = Just $ Let (Let (Var el) s) Shift
 step (Let (Var  el)         Shift   ) = Just $ Var (There el)
+step (Let  t                s       ) = [| Let (step t) (pure s) |]
 step  _                               = Nothing
 
 stepIter : Term [] a -> (Nat, TermU [] a)

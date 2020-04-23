@@ -42,10 +42,10 @@ stepT (Cut (Lam t)                    (Cons u k)                 ) = Just $ Cut 
 stepT (Cut (Lam t)                     Nil                       ) = Just $ Lam t
 stepT (Cut (Cut t k)                   m                         ) = Just $ Cut t (Cat k m)
 
-stepT (Cut (Sub u (Var  Here      k))  m                         ) = Just $ Cut u (Cat (SubL u k) m) --(Cut u (SubL u k))                      m
-stepT (Cut (Sub u (Var (There el) k))  m                         ) = Just $ Var el (Cat (SubL u k) m) --Cut (Var el (SubL u k))                     m
+stepT (Cut (Sub u (Var  Here      k))  m                         ) = Just $ Cut u (Cat (SubL u k) m) --(Cut u (SubL u k)) m
+stepT (Cut (Sub u (Var (There el) k))  m                         ) = Just $ Var el (Cat (SubL u k) m) --Cut (Var el (SubL u k)) m
 stepT (Cut (Sub u (Lam t)           )  m                         ) = Just $ Cut (Lam $ Sub (shiftTerm u) (shiftTerm t)) m
-stepT (Cut (Sub u (Cut k l)         )  m                         ) = Just $ Cut (Sub u k) (Cat (SubL u l) m) --(Cut (Sub u k) (SubL u l))              m
+stepT (Cut (Sub u (Cut k l)         )  m                         ) = Just $ Cut (Sub u k) (Cat (SubL u l) m) --(Cut (Sub u k) (SubL u l)) m
 
 stepT (Cut  t                         (Cat  Nil                m)) = Just $ Cut t  m
 stepT (Cut  t                         (Cat (Cons u k)          m)) = Just $ Cut t (Cons u (Cat k m))

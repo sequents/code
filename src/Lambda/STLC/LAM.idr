@@ -19,7 +19,7 @@ mutual
     Cl : Term g a -> Env g -> Clos a
 
 data Stack : Ty -> Ty -> Type where
-  Mt : Stack a a
+  Mt  : Stack a a
   Arg : Clos a -> Stack b c -> Stack (a~>b) c
   Fun : Clos (a~>b) -> Stack b c -> Stack a c
 
