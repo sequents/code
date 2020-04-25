@@ -21,8 +21,23 @@ fromN : Nat -> Term g A
 fromN  Z    = Zero
 fromN (S n) = Succ $ fromN n
 
+toN : Term g A -> Maybe Nat
+toN  Zero    = Just Z
+toN (Succ t) = S <$> toN t
+toN  _       = Nothing
+
+
+sucN : Term g (A~>A)
+sucN = Lam $ Succ $ Var Here
+
 idid : Term [] (A~>A)
 idid = App (Lam $ Var Here) (Lam $ Var Here)
+
+idid_id : Term [] (A~>A)
+idid_id = App (App (Lam $ Var Here) (Lam $ Var Here)) (Lam $ Var Here)
+
+id_idid : Term [] (A~>A)
+id_idid = App (Lam $ Var Here) (App (Lam $ Var Here) (Lam $ Var Here))
 
 bam : Term [] A
 bam = App (Lam Zero) (Fix $ Succ $ Var Here)
@@ -40,12 +55,6 @@ plusC = Lam $ Lam $ Lam $ Lam $ App (App (Var $ There $ There $ There Here)
                                               (Var $ There Here))
                                          (Var Here))
 
-twoN : Term g A
-twoN = Succ $ Succ Zero
-
-threeN : Term g A
-threeN = Succ $ Succ $ Succ Zero
-
 plusN : Term g (A~>A~>A)
 plusN = Fix $ Lam $ Lam $ If0 (Var $ There Here)
                               (Var Here)
@@ -54,10 +63,7 @@ plusN = Fix $ Lam $ Lam $ If0 (Var $ There Here)
                                           (Var $ There Here))
 
 twotwoN : Term [] A
-twotwoN = App (App plusN twoN) twoN
-
-sucN : Term g (A~>A)
-sucN = Lam $ Succ $ Var Here
+twotwoN = App (App plusN (fromN 2)) (fromN 2)
 
 twotwoC : Term [] A
 twotwoC = App (App (App (App plusC twoC) twoC) sucN) Zero
@@ -75,4 +81,7 @@ minusN = Fix $ Lam $ Lam $ If0 (Var Here)
                                          (Var $ There Here)))
 
 threeMinusTwoN : Term [] A
-threeMinusTwoN = App (App minusN threeN) twoN
+threeMinusTwoN = App (App minusN (fromN 3)) (fromN 2)
+
+plusplus : Term [] A
+plusplus = App (Lam $ App (App plusN (Var Here)) (Var Here)) (App (App plusN (fromN 9)) (fromN 1))

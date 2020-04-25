@@ -55,7 +55,7 @@ step (App  t1        t2 ) =
     then Nothing
     else [| App (step t1) (pure t2) |]
 step (Succ m)             = Succ <$> step m
-step (If0 Zero t f)       = Just t
+step (If0  Zero    t f)   = Just t
 step (If0 (Succ n) t f)   = Just $ subst1 f n
 step (If0 p t f)          = (\q => If0 q t f) <$> step p
 step (Fix f)              = Just $ subst1 f (Fix f)
@@ -73,7 +73,7 @@ stepV (App t1 t2)        =
       else App t1 <$> (stepV t2)
     else [| App (stepV t1) (pure t2) |]
 stepV (Succ m)           = Succ <$> stepV m
-stepV (If0 Zero t f)     = Just t
+stepV (If0  Zero    t f) = Just t
 stepV (If0 (Succ n) t f) = Just $ subst1 f n
 stepV (If0 p t f)        = (\q => If0 q t f) <$> stepV p
 stepV (Fix f)            = Just $ subst1 f (Fix f)
@@ -81,3 +81,6 @@ stepV  _                 = Nothing
 
 stepIter : Term g a -> (Nat, Term g a)
 stepIter = iterCount step
+
+stepIterV : Term g a -> (Nat, Term g a)
+stepIterV = iterCount stepV

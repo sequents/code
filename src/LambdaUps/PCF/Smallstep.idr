@@ -34,6 +34,7 @@ step (Let (App t u)         s       ) = Just $ App (Let t s) (Let u s)
 step (Let  Zero             s       ) = Just Zero
 step (Let (Succ t)          s       ) = Just $ Succ $ Let t s
 step (Let (If0 b t f)       s       ) = Just $ If0 (Let b s) (Let t s) (Let f (Lift s))
+step (Let (Fix f)           s       ) = Just $ Fix (Let f (Lift s))
 step (Let (Var  Here)      (Slash t)) = Just t
 step (Let (Var (There el)) (Slash _)) = Just $ Var el
 step (Let (Var  Here)      (Lift _) ) = Just $ Var Here
