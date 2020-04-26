@@ -40,17 +40,17 @@ modules = Iter
         , Lambda.STLC.Parser
         , Lambda.STLC.TyCheck
 
-        , PCF.Term
-        , PCF.Smallstep
-        , PCF.MachineN
-        , PCF.MachineV
-        , PCF.Parser
-        , PCF.TyCheck
-        , PCF.Untyped.InstructN
-        , PCF.Untyped.InstructV
-        , PCF.Bytecode
-        , PCF.InstructN
-        , PCF.InstructV
+        , Lambda.PCF.Term
+        , Lambda.PCF.Smallstep
+        , Lambda.PCF.MachineN
+        , Lambda.PCF.MachineV
+        , Lambda.PCF.Parser
+        , Lambda.PCF.TyCheck
+        , Lambda.PCF.Untyped.InstructN
+        , Lambda.PCF.Untyped.InstructV
+        , Lambda.PCF.Bytecode
+        , Lambda.PCF.InstructN
+        , Lambda.PCF.InstructV
 
         , LambdaMu.Untyped.Term
         , LambdaMu.Untyped.MuKAM
@@ -78,19 +78,19 @@ modules = Iter
         , LambdaMu.Top.Parser
         , LambdaMu.Top.TyCheck
 
-        , MuPCF.Term
-        , MuPCF.Smallstep
-        , MuPCF.MachineN
-        , MuPCF.Parser
-        , MuPCF.TyCheck
-        , MuPCF.Bytecode
-        , MuPCF.InstructN
+        , LambdaMu.PCF.Term
+        , LambdaMu.PCF.Smallstep
+        , LambdaMu.PCF.MachineN
+        , LambdaMu.PCF.Parser
+        , LambdaMu.PCF.TyCheck
+        , LambdaMu.PCF.Bytecode
+        , LambdaMu.PCF.InstructN
 
-        , MuPCF.Top.Term
-        , MuPCF.Top.Smallstep
-        , MuPCF.Top.MachineN
-        , MuPCF.Top.Parser
-        , MuPCF.Top.TyCheck
+        , LambdaMu.PCF.Top.Term
+        , LambdaMu.PCF.Top.Smallstep
+        , LambdaMu.PCF.Top.MachineN
+        , LambdaMu.PCF.Top.Parser
+        , LambdaMu.PCF.Top.TyCheck
 
         , LJ.LJ
 
@@ -99,9 +99,10 @@ modules = Iter
         , LJ.T.Parser
         , LJ.T.TyCheck
 
-        , LJPCF.T.Term
-        , LJPCF.T.Smallstep
-        , LJPCF.T.Parser
+        , LJ.T.PCF.Term
+        , LJ.T.PCF.Smallstep
+        , LJ.T.PCF.Parser
+        , LJ.T.PCF.TyCheck
 
         , LambdaUps.Term
         , LambdaUps.Smallstep
