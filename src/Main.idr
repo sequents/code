@@ -12,20 +12,20 @@ import Lambda.Untyped.Scoped.Parser
 import Lambda.STLC.Ty as STLC
 import Lambda.STLC.Term
 import Lambda.STLC.TyCheck
-import PCF.Term
-import PCF.Parser
-import PCF.TyCheck
-import PCF.Bytecode
-import PCF.InstructN
-import PCF.InstructV
+import Lambda.PCF.Term
+import Lambda.PCF.Parser
+import Lambda.PCF.TyCheck
+import Lambda.PCF.Bytecode
+import Lambda.PCF.InstructN
+import Lambda.PCF.InstructV
 import LambdaMu.Ty as STLMC
 import LambdaMu.Term
 import LambdaMu.TyCheck
-import MuPCF.Term
-import MuPCF.Parser
-import MuPCF.TyCheck
-import MuPCF.Bytecode
-import MuPCF.InstructN
+import LambdaMu.PCF.Term
+import LambdaMu.PCF.Parser
+import LambdaMu.PCF.TyCheck
+import LambdaMu.PCF.Bytecode
+import LambdaMu.PCF.InstructN
 --import MuPCF.InstructV
 
 %default covering
