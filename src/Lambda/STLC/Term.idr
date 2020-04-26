@@ -6,7 +6,7 @@ import Control.Isomorphism
 import Elem
 import Lambda.STLC.Ty
 import Lambda.Untyped.TermDB
-import Lambda.Untyped.Scoped.Term
+import Lambda.Scoped.Term
 
 %default total
 %access public export

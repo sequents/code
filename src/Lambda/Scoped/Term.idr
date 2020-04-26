@@ -1,4 +1,4 @@
-module Lambda.Untyped.Scoped.Term
+module Lambda.Scoped.Term
 
 import Data.Fin
 
@@ -15,19 +15,19 @@ Show (Term n) where
   show (Lam t) = "\\" ++ show t
   show (App t u) = "(" ++ show t ++ ")(" ++ show u ++ ")"
 
--- convenience  
+-- convenience
 
-V0 : Term (S n)     
-V0 = Var FZ       
-                    
-V1 : Term (2+n)     
-V1 = Var $ FS FZ  
+V0 : Term (S n)
+V0 = Var FZ
 
-V2 : Term (3+n)     
-V2 = Var $ FS $ FS FZ  
+V1 : Term (2+n)
+V1 = Var $ FS FZ
 
-V3 : Term (4+n)     
-V3 = Var $ FS $ FS $ FS FZ  
+V2 : Term (3+n)
+V2 = Var $ FS $ FS FZ
+
+V3 : Term (4+n)
+V3 = Var $ FS $ FS $ FS FZ
 
 -- Church
 

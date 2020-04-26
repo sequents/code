@@ -1,6 +1,7 @@
 module LJ.T.PCF.Term
 
 import Data.List
+import Elem
 import Subset
 
 import Lambda.STLC.Ty
@@ -25,6 +26,27 @@ mutual
     Cons : TermJ g a -> Spine g b c -> Spine g (a~>b) c  -- implication left intro
     Tst  : TermJ g a -> TermJ (A::g) a -> Spine g a b -> Spine g A b
     Inc  : Spine g A b -> Spine g A b
+
+mutual
+  showTerm : TermJ g a -> String
+  showTerm (Var n k)   = "(" ++ show (elem2Nat n) ++ " " ++ showSpine k ++ ")"
+  showTerm (Lam t)     = "\\." ++ showTerm t
+  showTerm (Cut t k)   = "<" ++ showTerm t ++ "|" ++ showSpine k ++ ">"
+  showTerm  Zero       = "Z"
+  showTerm (Succ n)    = "S" ++ showTerm n
+  showTerm (Fix t)     = "FIX." ++ showTerm t
+
+  showSpine : Spine g a b -> String
+  showSpine k = "[" ++ concat (intersperse "," (reverse $ go k [])) ++ "]"
+    where
+    go : Spine g a b -> List String -> List String
+    go  Nil        s = s
+    go (Cons t k)  s = showTerm t :: go k s
+    go (Tst t f k) s = ("TST(" ++ showTerm t ++ ") ELSE (" ++ showTerm f ++ ")") :: go k s
+    go (Inc k)     s = "$" :: go k s
+
+Show (TermJ g a) where
+  show = showTerm
 
 concat : Spine g a b -> Spine g b c -> Spine g a c
 concat  Nil         s2 = s2

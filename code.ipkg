@@ -24,9 +24,9 @@ modules = Iter
         , Lambda.Untyped.CK
         , Lambda.Untyped.CEK2
 
-        , Lambda.Untyped.Scoped.Term
-        , Lambda.Untyped.Scoped.Smallstep
-        , Lambda.Untyped.Scoped.Parser
+        , Lambda.Scoped.Term
+        , Lambda.Scoped.Smallstep
+        , Lambda.Scoped.Parser
 
         , Lambda.STLC.Ty
         , Lambda.STLC.Term
