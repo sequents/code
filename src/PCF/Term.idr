@@ -26,7 +26,6 @@ toN  Zero    = Just Z
 toN (Succ t) = S <$> toN t
 toN  _       = Nothing
 
-
 sucN : Term g (A~>A)
 sucN = Lam $ Succ $ Var Here
 

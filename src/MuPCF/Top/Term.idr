@@ -25,6 +25,9 @@ fromN : Nat -> Term g A d
 fromN  Z    = Zero
 fromN (S n) = Succ $ fromN n
 
+sucN : Term g (A~>A) d
+sucN = Lam $ Succ $ Var Here
+
 lift : Elem a d -> Term g (NOT a) d
 lift el = Lam $ Mu $ Named (There el) (Var Here)
 
@@ -50,15 +53,31 @@ handle m n = Mu $ Named Here $ App m (Mu $ Named (There Here) n)
 -- test
 
 foo : Term [] A []
-foo = handle (Lam $ Succ $ Var Here) (raise $ Succ $ Succ Zero)
+foo = handle sucN (raise $ Succ $ Succ Zero)
 
 bar : Term [] A []
-bar = handle (Lam $ Succ $ Var Here) (Succ $ Succ Zero)
+bar = handle sucN (Succ $ Succ Zero)
 
 baz : Term [] A []
-baz = App andSnd (App (App pair (fromN 2)) (fromN 3))
+baz = App andSnd (App (App pair (fromN 5)) (fromN 3))
 
-plus : Term [] (A~>A~>A) []
+bam : Term [] A []
+bam = App (Lam Zero) (Fix $ Succ $ Var Here)
+
+Ch : Ty -> Ty
+Ch a = (a~>a)~>(a~>a)
+
+twoC : Term g (Ch a) d
+twoC = Lam $ Lam $ App (Var $ There Here) (App (Var $ There Here) (Var Here))
+
+plusC : Term g (Ch a ~> Ch a ~> Ch a) d
+plusC = Lam $ Lam $ Lam $ Lam $ App (App (Var $ There $ There $ There Here)
+                                         (Var $ There Here))
+                                    (App (App (Var $ There $ There Here)
+                                              (Var $ There Here))
+                                         (Var Here))
+
+plus : Term g (A~>A~>A) d
 plus = Fix $ Lam $ Lam $ If0 (Var $ There Here)
                                (Var Here)
                                (Succ $ App (App (Var $ There $ There $ There Here)
@@ -74,5 +93,21 @@ minus = Fix (Lam (Lam (If0 (Var Here)
                                          (Var Here))
                                          (Var (There Here)))))))
 
-minus' : Term [] (A~>A~>A) []
+minus' : Term g (A~>A~>A) []
 minus' = Lam $ Lam $ handle (Lam $ Var Here) (App (App minus (Var Here)) (Var $ There Here))
+
+twotwoN : Term [] A []
+twotwoN = App (App plus (fromN 2)) (fromN 2)
+
+twotwoC : Term [] A []
+twotwoC = App (App (App (App plusC twoC) twoC) sucN) Zero
+
+threeMinusTwoN : Term [] A []
+threeMinusTwoN = App (App minus' (fromN 3)) (fromN 2)
+
+twoMinusThreeN : Term [] A []
+twoMinusThreeN = App (App minus' (fromN 2)) (fromN 3)
+
+plusplus : Term [] A []
+plusplus = App (Lam $ App (App Term.plus (Var Here)) (Var Here))
+               (App (App Term.plus (fromN 9)) (fromN 1))

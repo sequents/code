@@ -12,12 +12,12 @@ import PCF.Term
 -- untyped bytecode
 
 data I : Type where
-  Access : Nat -> I 
-  Grab   : I 
+  Access : Nat -> I
+  Grab   : I
   Push   : List I -> I
-  Nul    : I 
-  Inc    : I 
-  Case   : List I -> List I -> I 
+  Nul    : I
+  Inc    : I
+  Case   : List I -> List I -> I
   Loop   : I
 
 compile : Term g a -> List I
@@ -32,9 +32,9 @@ compile (Fix t)     = Loop :: compile t
 -- virtual machine
 
 mutual
-  Env : Type 
+  Env : Type
   Env = List Clos
-  
+
   data Clos : Type where
     Cl : List I -> Env -> Clos
 
@@ -42,24 +42,29 @@ data Stack : Type where
   Mt  : Stack
   Arg : Clos -> Stack -> Stack
   Tst : List I -> List I -> Env -> Stack -> Stack
+  Suc : Stack -> Stack
 
-record State where
-  constructor St 
-  ctr : List I
-  env : Env 
-  stk : Stack 
-  res : Nat
+data State : Type where
+  Ev : List I -> Env -> Stack -> State
+  Va : List I -> Stack -> State
 
 step : State -> Maybe State
-step (St (Access n::_) e             s  r) = (\(Cl c0 e0) => St c0                 e0                s    r) <$> index' n e
-step (St (    Grab::c) e     (Arg cl s) r) = Just $          St c             (cl::e)                s    r
-step (St ( Push c0::c) e             s  r) = Just $          St c                  e  (Arg (Cl c0 e) s)   r
-step (St (     Nul::_) _ (Tst t _ e1 s) r) = Just $          St t                  e1                s    r
-step (St (     Inc::c) e (Tst _ f e1 s) r) = Just $          St f         (Cl c e::e1)               s    r
-step (St (     Inc::c) e             s  r) = Just $          St c                  e                 s (S r)
-step (St (Case t f::c) e             s  r) = Just $          St c                  e      (Tst t f e s)   r
-step (St (    Loop::c) e             s  r) = Just $          St c (Cl (Loop::c) e::e)                s    r
-step  _                                    = Nothing  
+step (Ev (Access n::_) e             s ) =
+                                  (\(Cl i0 e0) => Ev i0                     e0                s
+                                  ) <$> index' n e
+step (Ev ( Push i0::i) e             s ) = Just $ Ev i                      e  (Arg (Cl i0 e) s)
+step (Ev (    Loop::i) e             s ) = Just $ Ev i     (Cl (Loop::i) e::e)                s
+step (Ev (Case t f::i) e             s ) = Just $ Ev i                      e      (Tst t f e s)
+step (Ev (     Nul::_) _ (Tst t _ e1 s)) = Just $ Ev t                      e1                s
+step (Ev (     Inc::i) e (Tst _ f e1 s)) = Just $ Ev f             (Cl i e::e1)               s
+step (Ev (     Nul::_) _             s ) = Just $ Va [Nul]                                    s
+step (Ev (     Inc::i) e             s ) = Just $ Ev i                      e            (Suc s)
+step (Ev (    Grab::i) e     (Arg cl s)) = Just $ Ev i                 (cl::e)                s
+step (Va            i           (Suc s)) = Just $ Va (Inc::i)                                 s
+step  _                                  = Nothing
 
 init : Term g a -> State
-init t = St (compile t) [] Mt Z
+init t = Ev (compile t) [] Mt
+
+runMach : Term g a -> (Nat, State)
+runMach = iterCount step . init

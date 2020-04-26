@@ -30,15 +30,15 @@ mutual
     Tp : Stack Bot a
     Arg : Clos a c -> Stack b c -> Stack (a~>b) c
     Tst : Control g a d -> Control (A::g) a d -> CEnv g c -> SEnv d c -> Stack a c -> Stack A c
-    Suc : Stack a c -> Stack a c
+    Suc : Stack A c -> Stack A c
 
 data State : Ty -> Type where
   Ev : Control g a d -> CEnv g t -> SEnv d t -> Stack a t -> State t
-  Rw : Control g A d -> Stack A t -> State t
+  Va : Control g A d -> Stack A t -> State t
 
 Show (State b) where
   show (Ev ctr _ _ _) = show ctr
-  show (Rw ctr _) = show ctr
+  show (Va ctr _) = show ctr
 
 indexE : Elem a g -> CEnv g c -> Clos a c
 indexE  Here     (CCE cl _)  = cl
@@ -51,19 +51,19 @@ findStack (There e) (CSE _ se) = findStack e se
 step : State b -> Maybe (State b)
 step (Ev (MkCtr _ _ _ (Access n::_)) ce _                   s ) = let Cl c0 ce0 se0 = indexE n ce in
                                                                   Just $ Ev           c0            ce0        se0                     s
-step (Ev (MkCtr d b z     (Grab::i)) ce se          (Arg cl s)) = Just $ Ev (MkCtr d b z i) (CCE cl ce)        se                      s
 step (Ev (MkCtr d b z  (Push c0::i)) ce se                  s ) = Just $ Ev (MkCtr d b z i)         ce         se   (Arg (Cl c0 ce se) s)
+step (Ev (MkCtr d b z     (Loop::i)) ce se                  s ) = let ce2 = CCE (Cl (MkCtr d b z (Loop::i)) ce se) ce in
+                                                                  Just $ Ev (MkCtr d b z i)         ce2        se                      s
+step (Ev (MkCtr d b z (Case t f::i)) ce se                  s ) = Just $ Ev (MkCtr d b z i)         ce         se       (Tst t f ce se s)
 step (Ev (MkCtr d b z    (Catch::i)) ce se                  s ) = Just $ Ev (MkCtr d b z i)         ce  (CSE s se)                    Tp
 step (Ev (MkCtr d b z  (Throw n::i)) ce se                 Tp ) = Just $ Ev (MkCtr d b z i)         ce         se        (findStack n se)
 step (Ev (MkCtr _ _ _      (Nul::_)) _  _  (Tst t _ ce1 se1 s)) = Just $ Ev              t          ce1        se1                     s
 step (Ev (MkCtr d b z      (Inc::i)) ce se (Tst _ f ce1 se1 s)) = let ce2 = CCE (Cl (MkCtr d b z i) ce se) ce1 in
                                                                   Just $ Ev              f          ce2        se1                     s
-step (Ev (MkCtr d _ z      (Nul::_)) _  _                   s ) = Just $ Rw (MkCtr d A z [Nul])                                        s
+step (Ev (MkCtr d _ z      (Nul::_)) _  _                   s ) = Just $ Va (MkCtr d A z [Nul])                                        s
 step (Ev (MkCtr d b z      (Inc::i)) ce se                  s ) = Just $ Ev (MkCtr d b z i)         ce         se                 (Suc s)
-step (Ev (MkCtr d b z (Case t f::i)) ce se                  s ) = Just $ Ev (MkCtr d b z i)         ce         se       (Tst t f ce se s)
-step (Ev (MkCtr d b z     (Loop::i)) ce se                  s ) = let ce2 = CCE (Cl (MkCtr d b z (Loop::i)) ce se) ce in
-                                                                  Just $ Ev (MkCtr d b z i)         ce2        se                      s
-step (Rw (MkCtr d b z             i)                   (Suc s)) = Just $ Rw (MkCtr d b z (Inc::i))                                     s
+step (Ev (MkCtr d b z     (Grab::i)) ce se          (Arg cl s)) = Just $ Ev (MkCtr d b z i) (CCE cl ce)        se                      s
+step (Va (MkCtr d b z             i)                   (Suc s)) = Just $ Va (MkCtr d b z (Inc::i))                                     s
 step  _                                                         = Nothing
 
 init : Control [] a [] -> State a

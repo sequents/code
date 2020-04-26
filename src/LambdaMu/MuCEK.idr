@@ -41,10 +41,10 @@ step : State b -> Maybe (State b)
 step (St (Var  Here)     (CCE (Cl t ce se) _) _                             s ) = Just $ St  t                        ce         se                    s
 step (St (Var (There el))          (CCE _ ce) se                            s ) = Just $ St (Var el)                  ce         se                    s
 step (St (App t u)                        ce  se                            s ) = Just $ St  t                        ce         se  (Arg (Cl u ce se) s)
-step (St  t                               ce  se (Fun (Cl (Lam t1) ce1 se1) s)) = Just $ St  t1     (CCE (Cl t ce se) ce1)       se1                   s
-step (St  t                               ce  se       (Arg (Cl t1 ce1 se1) s)) = Just $ St  t1                       ce1        se1 (Fun (Cl t ce se) s)
 step (St (Mu t)                           ce  se                            s ) = Just $ St  t                        ce  (CSE s se)                  Tp
 step (St (Named n t)                      ce  se                           Tp ) = Just $ St  t                        ce         se      (findStack n se)
+step (St  t                               ce  se (Fun (Cl (Lam t1) ce1 se1) s)) = Just $ St  t1     (CCE (Cl t ce se) ce1)       se1                   s
+step (St  t                               ce  se       (Arg (Cl t1 ce1 se1) s)) = Just $ St  t1                       ce1        se1 (Fun (Cl t ce se) s)
 step  _                                                                         = Nothing
 
 runMCEK : Term [] a [] -> (Nat, State a)

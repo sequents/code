@@ -61,6 +61,19 @@ compile         (Succ t)      = Inc +: compile t
 compile         (If0 c t f)   = Case (compile t) (compile f) +: compile c
 compile         (Fix t)       = Loop +: compile t
 
+decompile : Control g a -> Maybe (Term g a)
+decompile (MkCtr g a  Nil)              = Nothing
+decompile (MkCtr s c (Access e :: _)  ) = Just $ Var e
+decompile (MkCtr s c (Grab::q)        ) = Lam <$> decompile (MkCtr s c q)
+decompile (MkCtr s c (Push {a=e} u::q)) = assert_total $
+                                          [| App (decompile (MkCtr s c q)) (decompile u) |]
+decompile (MkCtr s c (Nul::_)         ) = Just Zero
+decompile (MkCtr s c (Inc::q)         ) = assert_total $
+                                          Succ <$> decompile (MkCtr s c q)
+decompile (MkCtr s c (Case tr fa::q)  ) = [| If0 (assert_total $ decompile (MkCtr s c q)) (decompile tr) (decompile fa) |]
+decompile (MkCtr s c (Loop::q)        ) = assert_total $
+                                          Fix <$> decompile (MkCtr s c q)
+
 Codec (Control g a) where
   toBuf buf (MkCtr k b p) = do b1 <- toBuf buf k
                                b2 <- toBuf b1 b
