@@ -1,7 +1,7 @@
 module LambdaUps.PCF.Term
 
 import Lambda.STLC.Ty
-import PCF.Term
+import Lambda.PCF.Term
 import Data.List
 
 %access public export

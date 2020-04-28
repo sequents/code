@@ -106,8 +106,8 @@ modules = Iter
 
         , LambdaUps.Term
         , LambdaUps.Smallstep
-        , LambdaUps.UMN
-        , LambdaUps.UMV
+        , LambdaUps.PCF.Term
+        , LambdaUps.PCF.Smallstep
 
         , LJ.T.ES.Term
         , LJ.T.ES.Smallstep
