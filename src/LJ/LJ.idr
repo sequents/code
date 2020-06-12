@@ -29,16 +29,30 @@ rename r (Cut t u)     = Cut (rename r t) (rename (ext r) u)
 
 -- Lam $ App (Var $ There $ There Here) (Var $ There Here)
 
+rot3L : Subset [c, a, b] [a, b, c]
+rot3L  Here                = There $ There Here
+rot3L (There  Here)        = Here
+rot3L (There (There Here)) = There Here
+
 ambig1 : Term [a, a~>b] (c~>b)
-ambig1 = Lam $ rename help $ ImpL (Var $ There $ There Here) (Var Here) Here
-  where
-  help : Subset [c, a, b] [a, b, c]
-  help  Here                = There $ There Here
-  help (There  Here)        = Here
-  help (There (There Here)) = There Here
+ambig1 = Lam $ rename rot3L $ ImpL (Var $ There $ There Here) (Var Here) Here
 
 ambig2 : Term [a, a~>b] (c~>b)
-ambig2 = rename permute $ ImpL (Var $ There Here) (Lam $ Var $ There Here) Here
+ambig2 = rename (permute []) $ ImpL (Var $ There Here) (Lam $ Var $ There Here) Here
+
+data TermH : List Ty -> Ty -> Type where
+  AxH   : TermH (a::g) a
+  VarH  : Elem a g -> TermH (a::g) b -> TermH g c
+  LamH  : TermH (a::g) b -> TermH g (a ~> b)
+  ImpLH : TermH g a -> TermH (b::g) c -> TermH ((a~>b)::g) c
+  CutH  : TermH g a -> TermH (a::g) b -> TermH g b
+
+renameH : Subset g d -> TermH g a -> TermH d a
+renameH r  AxH        = AxH
+renameH r (VarH el t) = ?wat2
+renameH r (LamH t)    = ?wat3
+renameH r (ImpLH t u)  = ?wat4
+renameH r (CutH t u)   = ?wat5
 
 data TermS : List Ty -> Ty -> Type where
   VarS  : Elem a g -> TermS g a

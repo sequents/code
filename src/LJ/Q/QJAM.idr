@@ -8,7 +8,7 @@ import Iter
 
 import Lambda.STLC.Ty
 import Lambda.STLC.Term
-import LJ.LJQ.Term
+import LJ.Q.Term
 
 %default total
 %access public export
@@ -18,21 +18,21 @@ mutual
   Env = All Clos
 
   data Clos : Ty -> Type where
-    Cl : RSync g a -> Env g -> Clos a
+    Cl : ValQ g a -> Env g -> Clos a
 
 data Stack : Ty -> Ty -> Type where
   Mt : Stack a a
-  Fun : Async (a::g) b -> Env g -> Stack b c -> Stack a c
+  Fun : TermQ (a::g) b -> Env g -> Stack b c -> Stack a c
 
 data State : Ty -> Type where
-  S1 : Async g a -> Env g -> Stack a b -> State b
-  S2 : RSync g a -> Env g -> Async (a::d) b -> Env d -> Stack b c -> State c
+  S1 : TermQ g a -> Env g -> Stack a b -> State b
+  S2 : ValQ g a -> Env g -> TermQ (a::d) b -> Env d -> Stack b c -> State c
 
-initState : Async [] a -> State a
+initState : TermQ [] a -> State a
 initState a = S1 a [] Mt
 
 step : State b -> Maybe (State b)
-step (S1 (Val p)       e (Fun t g c)) = Just $ S2 p e t g c
+step (S1 (V p)         e (Fun t g c)) = Just $ S2 p e t g c
 step (S1 (GApp p t el) e          c ) = case indexAll el e of
                                           Cl (Lam u) f => Just $ S2 p e u f (Fun t e c)
                                           _ => Nothing

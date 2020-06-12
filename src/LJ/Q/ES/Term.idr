@@ -1,4 +1,4 @@
-module LJ.LJQ.Term
+module LJ.Q.ES.Term
 
 import Data.List
 import Subset

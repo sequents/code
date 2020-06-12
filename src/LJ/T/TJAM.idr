@@ -1,4 +1,4 @@
-module LJ.T.ES.TJAM
+module LJ.T.TJAM
 
 import Data.List
 import Data.List.Quantifiers
@@ -7,7 +7,7 @@ import Iter
 
 import Lambda.STLC.Ty
 import Lambda.STLC.Term
-import LJ.T.ES.Term
+import LJ.T.Term
 
 %default total
 %access public export

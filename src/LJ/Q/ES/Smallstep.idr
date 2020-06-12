@@ -1,4 +1,4 @@
-module LJ.LJQ.Smallstep
+module LJ.Q.ES.Smallstep
 
 import Data.List
 import Subset

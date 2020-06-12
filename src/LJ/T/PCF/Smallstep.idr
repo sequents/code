@@ -66,15 +66,15 @@ stepT (Cut (Lam t)      Nil       ) = Step $ Lam t
 stepT (Cut (Cut t k)    m         ) = Step $ Cut t (concat k m)
 stepT (Cut  Zero       (Tst t _ k)) = Step $ Cut t k
 stepT (Cut (Succ n)    (Tst _ f k)) = Step $ Cut (subst1T f n) k
-stepT (Cut  Zero                k ) = Readback $ Cut Zero k
-stepT (Cut (Succ t)             k ) = Step $ Cut t (Inc k)
-stepT (Cut (Fix t)              k ) = Step $ Cut (subst1T t (Fix t)) k
+stepT (Cut  Zero        k         ) = Switch $ Cut Zero k
+stepT (Cut (Succ t)     k         ) = Step $ Cut t (Inc k)
+stepT (Cut (Fix t)      k         ) = Step $ Cut (subst1T t (Fix t)) k
 stepT  _                            = Stuck
 
-readback : TermJ g a -> Maybe (TermJ g a)
-readback (Cut t (Inc s)) = Just $ Cut (Succ t) s
-readback (Cut t  Nil   ) = Just t
-readback  _              = Nothing
+readback : TermJ g a -> Res (TermJ g a)
+readback (Cut t (Inc s)) = Step $ Cut (Succ t) s
+readback (Cut t  Nil   ) = Step t
+readback  _              = Stuck
 
 stepIter : Term [] a -> (Nat, TermJ [] a)
 stepIter = iterCountR stepT readback . encode

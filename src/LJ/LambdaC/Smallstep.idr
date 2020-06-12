@@ -15,70 +15,54 @@ import Lambda.STLC.Term
 -- substitution on terms
 
 Subst : List Ty -> List Ty -> Type
-Subst g d = {x : Ty} -> Elem x d -> Tm g x
-
-Sid : Subst g g
-Sid = V . Var
-
-Slmap : Subset g1 g2 -> Subst g1 d -> Subst g2 d
-Slmap f s = renameTm f . s
-
-SCons : Tm g a -> Subst g d -> Subst g (a::d)
-SCons t s  Here      = t
-SCons t s (There el) = s el
-
-weak : Subst g d -> Subst (a::g) d
-weak = Slmap There
+Subst g d = {x : Ty} -> Elem x g -> Tm d x
 
 exts : Subst g d -> Subst (b::g) (b::d)
-exts s = SCons (V $ Var Here) (weak s)
+exts _  Here      = V $ Var Here
+exts s (There el) = renameTm There (s el)
 
 mutual
-  substVal : Subst g d -> Val d a -> Tm g a
+  substVal : Subst g d -> Val g a -> Tm d a
   substVal s (Var el)    = s el
   substVal s (Lam t)     = V $ Lam $ substTm (exts s) t
 
-  substTm : Subst g d -> Tm d a -> Tm g a
+  substTm : Subst g d -> Tm g a -> Tm d a
   substTm s (V v)     = substVal s v
   substTm s (App t u) = App (substTm s t) (substTm s u)
   substTm s (Let m n) = Let (substTm s m) (substTm (exts s) n)
 
+sub1 : Tm g a -> Subst (a::g) g
+sub1 s  Here      = s
+sub1 s (There el) = V $ Var el
+
 subst1 : Tm (a::g) b -> Tm g a -> Tm g b
-subst1 t s = substTm (SCons s Sid) t
+subst1 t s = substTm (sub1 s) t
 
 -- substitution on values
 
 SubstV : List Ty -> List Ty -> Type
-SubstV g d = {x : Ty} -> Elem x d -> Val g x
-
-SidV : SubstV g g
-SidV = Var
-
-SlmapV : Subset g1 g2 -> SubstV g1 d -> SubstV g2 d
-SlmapV f s = renameVal f . s
-
-SConsV : Val g a -> SubstV g d -> SubstV g (a::d)
-SConsV t s  Here      = t
-SConsV t s (There el) = s el
-
-weakV : SubstV g d -> SubstV (a::g) d
-weakV = SlmapV There
+SubstV g d = {x : Ty} -> Elem x g -> Val d x
 
 extsV : SubstV g d -> SubstV (b::g) (b::d)
-extsV s = SConsV (Var Here) (weakV s)
+extsV s  Here      = Var Here
+extsV s (There el) = renameVal There (s el)
 
 mutual
-  substValV : SubstV g d -> Val d a -> Val g a
+  substValV : SubstV g d -> Val g a -> Val d a
   substValV s (Var el)    = s el
   substValV s (Lam t)     = Lam $ substTmV (extsV s) t
 
-  substTmV : SubstV g d -> Tm d a -> Tm g a
+  substTmV : SubstV g d -> Tm g a -> Tm d a
   substTmV s (V v)     = V $ substValV s v
   substTmV s (App t u) = App (substTmV s t) (substTmV s u)
   substTmV s (Let m n) = Let (substTmV s m) (substTmV (extsV s) n)
 
+sub1V : Val g a -> SubstV (a::g) g
+sub1V s  Here      = s
+sub1V s (There el) = Var el
+
 subst1V : Val (a::g) b -> Val g a -> Val g b
-subst1V t s = substValV (SConsV s SidV) t
+subst1V t s = substValV (sub1V s) t
 
 -- reduction
 

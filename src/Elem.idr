@@ -24,8 +24,3 @@ fin2Elem : (xs : List a) -> Fin (length xs) -> (x ** Elem x xs)
 fin2Elem (x::xs)  FZ    = (x ** Here)
 fin2Elem (x::xs) (FS f) = let (x ** p) = fin2Elem xs f in
                           (x ** There p)
-
--- TODO add to Data.List.Quantifiers
-indexAll : Elem x xs -> All p xs -> p x
-indexAll  Here     (p::_  ) = p
-indexAll (There e) ( _::ps) = indexAll e ps
