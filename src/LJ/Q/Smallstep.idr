@@ -13,27 +13,29 @@ import LJ.Q.Term
 
 -- reduction
 
-subst1V : ValQ (a::g) b -> ValQ g a -> ValQ g b
-subst1V  t                  (Var el) = renameVal (contract el) t
-subst1V (Var Here)        a@(Lam _)  = a
-subst1V (Var (There el))    (Lam _)  = Var el
-subst1V (Lam t)           a@(Lam _)  = Lam $ Let (shiftVal a) (shiftTerm t)
+subst1T : TermQ g a -> TermQ (a::g) b -> TermQ g b
+subst1T (V v)         t = Let v t
+subst1T (GApp el v u) t = GApp el v (subst1T u (renameTerm (permute0 . weaken) t))
+subst1T (Let v u)     t = Let v (subst1T u (renameTerm (permute0 . weaken) t))
 
-subst1T : TermQ (a::g) b -> TermQ g a -> TermQ g b
-subst1T t (V v)         = Let v t
-subst1T t (GApp el v u) = GApp el v (subst1T (renameTerm (permute0 . weaken) t) u)
-subst1T t (Let v u)     = Let v (subst1T (renameTerm (permute0 . weaken) t) u)
+mutual
+  subst1V : ValQ g a -> ValQ (a::g) b -> ValQ g b
+  subst1V   (Var el)  t               = renameVal (contract el) t
+  subst1V a@(Lam _)  (Var Here)       = a
+  subst1V   (Lam _)  (Var (There el)) = Var el
+  subst1V a@(Lam _)  (Lam t)          = Lam $ subst1VT (shiftVal a) (assert_smaller (Lam t) $ shiftTerm t)
+
+  subst1VT : ValQ g a -> TermQ (a::g) b -> TermQ g b
+  subst1VT   (Var el)  t                    = renameTerm (contract el) t
+  subst1VT a@(Lam _)  (V v)                 = V $ subst1V a v
+  subst1VT a@(Lam t)  (GApp  Here      v u) = subst1T (Let (subst1V a v) t)
+                                                      (Let (shiftVal a) (shiftTerm u))
+  subst1VT a@(Lam _)  (GApp (There el) v u) = GApp el (subst1V a v) (Let (shiftVal a) (shiftTerm u))
+  subst1VT a@(Lam _)  (Let v u)             = Let a (subst1VT v u)
 
 stepT : TermQ g a -> Maybe (TermQ g a)
-stepT (Let   (Var el)  t                   ) = Just $ renameTerm (contract el) t
-stepT (Let a@(Lam _)  (V v)                ) = Just $ V $ subst1V v a
-stepT (Let a@(Lam t)  (GApp  Here      v u)) = [| subst1T (assert_total $ stepT (Let (shiftVal a) (shiftTerm u)))
-                                                          (pure (Let (subst1V v a) t)) |]
-  --Just $ assert_total $ subst1T (Let (shiftVal a) (shiftTerm u))
-  --                                                            (Let (subst1V v a) t)
-stepT (Let a@(Lam _)  (GApp (There el) v u)) = Just $ GApp el (subst1V v a) (Let (shiftVal a) (shiftTerm u))
-stepT (Let v           t                   ) = [| Let (pure v) (stepT t) |]
-stepT  _                                     = Nothing
+stepT (Let v t) = Just $ subst1VT v t
+stepT _         = Nothing
 
 stepIter : Term [] a -> (Nat, TermQ [] a)
 stepIter = iterCount stepT . encode

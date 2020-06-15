@@ -17,7 +17,7 @@ mutual
   data TermQ : List Ty -> Ty -> Type where
     V    : ValQ g a -> TermQ g a                                     -- focus/dereliction
     GApp : Elem (a~>b) g -> ValQ g a -> TermQ (b::g) c -> TermQ g c  -- implication left intro, `let x : b = (f : a~>b) (t : a) in u : c`
-    Let  : ValQ g a -> TermQ (a::g) b -> TermQ g b                   -- head cut
+    Let  : ValQ g a -> TermQ (a::g) b -> TermQ g b                   -- head cut, `let x = t in u`
 
   -- right-synchronous
   data ValQ : List Ty -> Ty -> Type where
@@ -89,32 +89,32 @@ mutual
 forget : TermQ g a -> Term g a
 forget = forgetTm . forgetTermC
 
--- let a : (*~>*)~>(*~>*) = \x.[x]
---     b : (*~>*) = a (\x.[x])
+-- let f : (*~>*)~>(*~>*) = \x.[x]
+--     t : (*~>*) = f (\x.[x])
 --  in
--- b
+-- t
 testTm0 : TermQ [] (A~>A)
 testTm0 = Let (Lam $ V $ Var Here) $
           GApp Here (Lam $ V $ Var Here) $
           V $ Var Here
 
--- let a = \x.[x]
---     b = a (\x.[x])
---     c = b (\x.[x])
+-- let f = \x.[x]
+--     g = f (\x.[x])
+--     t = g (\x.[x])
 --  in
--- c
+-- t
 testTm1 : TermQ [] (Imp A A)
 testTm1 = Let (Lam $ V $ Var Here) $
           GApp Here (Lam $ V $ Var Here) $
           GApp Here (Lam $ V $ Var Here) $
           V $ Var Here
 
--- let a = \x.[x]
---     b = a (\x.[x])
---     c = \x.[x]
---     d = c b
+-- let f = \x.[x]
+--     g = f (\x.[x])
+--     h = \x.[x]
+--     t = h g
 --  in
--- d
+-- t
 testTm2 : TermQ [] (Imp A A)
 testTm2 = Let (Lam $ V $ Var Here) $
           GApp Here (Lam $ V $ Var Here) $
