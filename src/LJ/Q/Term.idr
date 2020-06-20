@@ -36,15 +36,15 @@ mutual
   renameVal sub (Var el) = Var $ sub el
   renameVal sub (Lam a)  = Lam (renameTerm (ext sub) a)
 
-mutual
-  renameMTerm : SubsetM g d -> TermQ g a -> Maybe (TermQ d a)
-  renameMTerm subm (V r)         = V <$> renameMVal subm r
-  renameMTerm subm (GApp el r a) = [| GApp (subm el) (renameMVal subm r) (renameMTerm (extM subm) a) |]
-  renameMTerm subm (Let r a)     = [| Let (renameMVal subm r) (renameMTerm (extM subm) a) |]
-
-  renameMVal : SubsetM g d -> ValQ g a -> Maybe (ValQ d a)
-  renameMVal subm (Var el) = Var <$> subm el
-  renameMVal subm (Lam a)  = Lam <$> (renameMTerm (extM subm) a)
+--mutual
+--  renameMTerm : SubsetM g d -> TermQ g a -> Maybe (TermQ d a)
+--  renameMTerm subm (V r)         = V <$> renameMVal subm r
+--  renameMTerm subm (GApp el r a) = [| GApp (subm el) (renameMVal subm r) (renameMTerm (extM subm) a) |]
+--  renameMTerm subm (Let r a)     = [| Let (renameMVal subm r) (renameMTerm (extM subm) a) |]
+--
+--  renameMVal : SubsetM g d -> ValQ g a -> Maybe (ValQ d a)
+--  renameMVal subm (Var el) = Var <$> subm el
+--  renameMVal subm (Lam a)  = Lam <$> (renameMTerm (extM subm) a)
 
 shiftTerm : {auto is : IsSubset g d} -> TermQ g a -> TermQ d a
 shiftTerm {is} = renameTerm (shift is)
@@ -91,8 +91,7 @@ forget = forgetTm . forgetTermC
 
 -- let f : (*~>*)~>(*~>*) = \x.[x]
 --     t : (*~>*) = f (\x.[x])
---  in
--- t
+-- in [t]
 testTm0 : TermQ [] (A~>A)
 testTm0 = Let (Lam $ V $ Var Here) $
           GApp Here (Lam $ V $ Var Here) $
@@ -101,8 +100,7 @@ testTm0 = Let (Lam $ V $ Var Here) $
 -- let f = \x.[x]
 --     g = f (\x.[x])
 --     t = g (\x.[x])
---  in
--- t
+-- in [t]
 testTm1 : TermQ [] (Imp A A)
 testTm1 = Let (Lam $ V $ Var Here) $
           GApp Here (Lam $ V $ Var Here) $
@@ -113,8 +111,7 @@ testTm1 = Let (Lam $ V $ Var Here) $
 --     g = f (\x.[x])
 --     h = \x.[x]
 --     t = h g
---  in
--- t
+-- in [t]
 testTm2 : TermQ [] (Imp A A)
 testTm2 = Let (Lam $ V $ Var Here) $
           GApp Here (Lam $ V $ Var Here) $
