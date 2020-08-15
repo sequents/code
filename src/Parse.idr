@@ -9,7 +9,7 @@ import TParsec
 data Error : Type where
   ParseError : Position -> Error
   IncompleteParse : Error
-  TypeError : Error
+  TypeError : String -> Error
 
 parseErr : Position -> String
 parseErr (MkPosition l r) = "parse error at line " ++ show l ++ " row " ++ show r ++ "\n"

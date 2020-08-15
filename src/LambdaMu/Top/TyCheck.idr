@@ -20,7 +20,7 @@ mutual
     Emb : Neu g m a d -> a = b -> Val g (Emb m) b d
 
   data ValC : Ctx Ty -> Val -> Ctx Ty -> Type where
-    Named : InCtx d s a -> Val g v a d -> ValC g (Named s v) d   
+    Named : InCtx d s a -> Val g v a d -> ValC g (Named s v) d
     Top : Val g v Bot d -> ValC g (Top v) d
 
   data Neu : Ctx Ty -> Neu -> Ty -> Ctx Ty -> Type where
@@ -58,7 +58,7 @@ Uninhabited (ValC g (Emb t) d) where
 
 neuUniq : Neu g m a d -> Neu g m b d -> a = b
 neuUniq (Var i1)   (Var i2)   = inCtxUniq i1 i2
-neuUniq (App t1 _) (App t2 _) = snd $ impInj $ neuUniq t1 t2 
+neuUniq (App t1 _) (App t2 _) = snd $ impInj $ neuUniq t1 t2
 neuUniq (Cut v1)   (Cut v2)   = Refl
 
 notArg : Neu g l (a~>b) d -> Not (Val g m a d) -> Not (c ** Neu g (App l m) c d)
@@ -73,15 +73,15 @@ notNamed ic nv (Named ic2 v) = let Refl = inCtxUniq ic ic2 in nv v
 notTop : Not (Val g v Bot d) -> Not (ValC g (Top v) d)
 notTop nv (Top v) = nv v
 
-mutual    
+mutual
   synth : (g : Ctx Ty) -> (m : Neu) -> (d : Ctx Ty) -> Dec (a ** Neu g m a d)
   synth g (Var s)   d = case lookup g s of
     Yes (a**el) => Yes (a ** Var el)
     No ctra => No $ \(a**Var el) => ctra (a ** el)
   synth g (App t u) d = case synth g t d of
-    Yes (A**n) => No $ \(_**App v _) => uninhabited $ neuUniq v n 
-    Yes (Bot**n) => No $ \(_**App v _) => uninhabited $ neuUniq v n 
-    Yes ((Imp a b)**n) => case inherit g u a d of 
+    Yes (A**n) => No $ \(_**App v _) => uninhabited $ neuUniq v n
+    Yes (Bot**n) => No $ \(_**App v _) => uninhabited $ neuUniq v n
+    Yes ((Imp a b)**n) => case inherit g u a d of
       Yes m => Yes (b ** App n m)
       No ctra => No $ notArg n ctra
     No ctra => No $ \(b**App {a} v _) => ctra ((a~>b) ** v)
@@ -95,7 +95,7 @@ mutual
   inherit g (Lam s v)   (Imp a b) d = case inherit ((s,a)::g) v b d of
     Yes w => Yes $ Lam w
     No ctra => No $ \(Lam w) => ctra w
-  inherit g (Mu s v)     a        d = case inheritC g v ((s,a)::d) of 
+  inherit g (Mu s v)     a        d = case inheritC g v ((s,a)::d) of
     Yes w => Yes $ Mu w
     No ctra => No $ \(Mu w) => ctra w
   inherit g (Named s v)  a        d = No uninhabited
@@ -114,12 +114,12 @@ mutual
     Yes (a**el) => case inherit g v a d of
       Yes w => Yes $ Named el w
       No ctra => No $ notNamed el ctra
-    No ctra => No $ \(Named {a} e _) => ctra (a ** e)    
+    No ctra => No $ \(Named {a} e _) => ctra (a ** e)
   inheritC g (Top v)      d = case inherit g v Bot d of
     Yes w => Yes $ Top w
     No ctra => No $ notTop ctra
 
-mutual     
+mutual
   val2Term : Val g m a d -> Term (eraseCtx g) a (eraseCtx d)
   val2Term (Lam v)      = Lam $ val2Term v
   val2Term (Mu v)       = Mu $ valc2Cmd v
@@ -131,11 +131,11 @@ mutual
 
   neu2Term : Neu g m a d -> Term (eraseCtx g) a (eraseCtx d)
   neu2Term (Var i)   = Var $ eraseInCtx i
-  neu2Term (Cut v)   = val2Term v 
+  neu2Term (Cut v)   = val2Term v
   neu2Term (App t u) = App (neu2Term t) (val2Term u)
 
-parseCheckTerm : String -> Either Error (a ** Term [] a [])  
+parseCheckTerm : String -> Either Error (a ** Term [] a [])
 parseCheckTerm s = do b <- parseNeu s
-                      case synth [] b [] of 
+                      case synth [] b [] of
                         Yes (a ** n) => Right (a ** neu2Term n)
-                        No _ => Left TypeError
+                        No _ => Left $ TypeError ""

@@ -198,4 +198,4 @@ parseCheckTerm : String -> Either Error (a ** Term [] a [])
 parseCheckTerm s = do b <- parseNeu s
                       case synth [] b [] of
                         Yes (a ** n) => Right (a ** neu2Term n)
-                        No _ => Left TypeError
+                        No _ => Left $ TypeError ""

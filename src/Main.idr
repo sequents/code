@@ -44,7 +44,7 @@ untyped =
       Right t => show t ++ "\n"
       Left (ParseError p) => parseErr p
       Left IncompleteParse => "parse error: incomplete parse\n"
-      Left TypeError => "type error (can't happen for ULC)\n"
+      Left (TypeError e) => "type error (can't happen for ULC): " ++ e ++ "\n"
 
 scoped : IO ()
 scoped =
@@ -53,7 +53,7 @@ scoped =
       Right (n**t) => show t ++ ": " ++ show n ++ "\n"
       Left (ParseError p) => parseErr p
       Left IncompleteParse => "parse error: incomplete parse\n"
-      Left TypeError => "type error (can't happen for scoped ULC)\n"
+      Left (TypeError e) => "type error (can't happen for scoped ULC): " ++ e ++ "\n"
 
 typed : IO ()
 typed =
@@ -62,7 +62,7 @@ typed =
       Right (ty**t) => show t ++ ": " ++ show ty ++ "\n"
       Left (ParseError p) => parseErr p
       Left IncompleteParse => "parse error: incomplete parse\n"
-      Left TypeError => "type error\n"
+      Left (TypeError e) => "type error: " ++ e ++ "\n"
 
 mu : IO ()
 mu =
@@ -71,7 +71,7 @@ mu =
       Right (ty**t) => show t ++ ": " ++ show ty ++ "\n"
       Left (ParseError p) => parseErr p
       Left IncompleteParse => "parse error: incomplete parse\n"
-      Left TypeError => "type error\n"
+      Left (TypeError e) => "type error: " ++ e ++ "\n"
 
 ljt : IO ()
 ljt =
@@ -80,7 +80,7 @@ ljt =
       Right (ty**t) => show t ++ ": " ++ show ty ++ "\n"
       Left (ParseError p) => parseErr p
       Left IncompleteParse => "parse error: incomplete parse\n"
-      Left TypeError => "type error\n"
+      Left (TypeError e) => "type error: " ++ e ++ "\n"
 
 compilePCF : String -> String -> IO ()
 compilePCF fnin fnout =
@@ -97,7 +97,7 @@ compilePCF fnin fnout =
                                         Right () => pure ())
        Left (ParseError p) => putStrLn $ parseErr p
        Left IncompleteParse => putStrLn "parse error: incomplete parse\n"
-       Left TypeError => putStrLn "type check error\n"
+       Left (TypeError e) => putStrLn $ "type error: " ++ e ++ "\n"
 
 compileMuPCF : String -> String -> IO ()
 compileMuPCF fnin fnout =
@@ -115,7 +115,7 @@ compileMuPCF fnin fnout =
                                         Right () => pure ())
        Left (ParseError p) => putStrLn $ parseErr p
        Left IncompleteParse => putStrLn "parse error: incomplete parse\n"
-       Left TypeError => putStrLn "type check error\n"
+       Left (TypeError e) => putStrLn $ "type check: " ++ e ++ "\n"
 
 stepLim : Nat
 stepLim = 1000

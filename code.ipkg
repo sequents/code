@@ -99,6 +99,8 @@ modules = Iter
         , LJ.T.Parser
         , LJ.T.TyCheck
 
+        , LJ.T.Bidi.STLCE
+
         , LJ.T.PCF.Term
         , LJ.T.PCF.Smallstep
         , LJ.T.PCF.Parser
