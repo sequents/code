@@ -39,6 +39,7 @@ modules = Iter
         , Lambda.STLC.LAM
         , Lambda.STLC.Parser
         , Lambda.STLC.TyCheck
+        , Lambda.STLC.TyCheckE
 
         , Lambda.PCF.Term
         , Lambda.PCF.Smallstep
@@ -99,7 +100,7 @@ modules = Iter
         , LJ.T.Parser
         , LJ.T.TyCheck
 
-        , LJ.T.Bidi.STLCE
+        , LJ.T.Bidi.CPS
 
         , LJ.T.PCF.Term
         , LJ.T.PCF.Smallstep
