@@ -11,7 +11,7 @@ import Lambda.STLC.TyCheck
 %default total
 
 mutual
-  synthC : (g : Ctx Ty) -> (m : Neu) -> (Dec (b ** Neu g m b) -> Dec (Val g n a)) -> Dec (Val g n a)
+  synthC : (g : Ctx Ty) -> (n : Neu) -> (Dec (b ** Neu g n b) -> Dec (Val g m a)) -> Dec (Val g m a)
   synthC g (Var s)   f = f $ case lookup g s of
                                Yes (b**el) => Yes (b**Var el)
                                No ctra => No $ \(a**Var el) => ctra (a ** el)

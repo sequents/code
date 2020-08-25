@@ -1,4 +1,4 @@
-module LJ.T.Bidi.Defun
+module LJ.T.Bidi.Reforest1
 
 import Data.List
 import Ctx
@@ -27,19 +27,27 @@ applyD g (SEmb a)    bne = case bne of
     Yes prf => Yes (Emb n (sym prf))
     No ctra => No $ notSwitch n (ctra . sym)
 
+data Head : Val -> Ty -> Type where
+  HVar : (s : String) -> Spine (Var s) m a -> Head m a
+  HCut : (v : Val) -> (t : Ty) -> Spine (Cut v t) m a -> Head m a
+
 mutual
-  synthD : (g : Ctx Ty) -> (n : Neu) -> Spine n m a -> Dec (Val g m a)
-  synthD g (Var s)   sp = applyD g sp $ case lookup g s of
+  head : (g : Ctx Ty) -> Head m a -> Dec (Val g m a)
+  head g (HVar s sp) = applyD g sp $ case lookup g s of
     Yes (b**el) => Yes (b ** Var el)
     No ctra => No $ \(b ** Var el) => ctra (b ** el)
-  synthD g (App t u) sp = synthD g t (SApp u sp)
-  synthD g (Cut v t) sp = applyD g sp $ case inheritD g v t of
-    Yes val => Yes (t**Cut val)
+  head g (HCut v t sp) = applyD g sp $ case assert_total $ inheritD g v t of
+    Yes val => Yes (t ** Cut val)
     No ctra => No $ \(_**Cut v) => ctra v
+
+  synthD : (g : Ctx Ty) -> (n : Neu) -> Spine n m a -> Head m a
+  synthD g (Var s)   sp = HVar s sp
+  synthD g (App t u) sp = synthD g t (SApp u sp)
+  synthD g (Cut v t) sp = HCut v t sp
 
   inheritD : (g : Ctx Ty) -> (m : Val) -> (a : Ty) -> Dec (Val g m a)
   inheritD _ (Lam _ _)  A        = No uninhabited
   inheritD g (Lam s v) (Imp a b) = case inheritD ((s,a)::g) v b of
     Yes w => Yes $ Lam w
     No ctra => No $ \(Lam w) => ctra w
-  inheritD g (Emb n)    a        = synthD g n (SEmb a)
+  inheritD g (Emb n)    a        = head g $ synthD g n (SEmb a)

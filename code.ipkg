@@ -101,6 +101,8 @@ modules = Iter
         , LJ.T.TyCheck
 
         , LJ.T.Bidi.CPS
+        , LJ.T.Bidi.Defun
+        , LJ.T.Bidi.Reforest1
 
         , LJ.T.PCF.Term
         , LJ.T.PCF.Smallstep

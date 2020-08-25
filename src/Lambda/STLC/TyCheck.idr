@@ -27,19 +27,19 @@ Uninhabited (Val _ (Lam _ _) A) where
   uninhabited (Lam _) impossible
   uninhabited (Emb _ _) impossible
 
-neuUniq : Neu g m a -> Neu g m b -> a = b
+neuUniq : Neu g n a -> Neu g n b -> a = b
 neuUniq (Var i1)   (Var i2)   = inCtxUniq i1 i2
 neuUniq (App t1 _) (App t2 _) = snd $ impInj $ neuUniq t1 t2
 neuUniq (Cut v1)   (Cut v2)   = Refl
 
-notArg : Neu g l (a~>b) -> Not (Val g m a) -> Not (c ** Neu g (App l m) c)
+notArg : Neu g n (a~>b) -> Not (Val g m a) -> Not (c ** Neu g (App n m) c)
 notArg n nv (c**App t u) = let Refl = fst $ impInj $ neuUniq n t in nv u
 
-notSwitch : Neu g m a -> Not (a = b) -> Not (Val g (Emb m) b)
+notSwitch : Neu g n a -> Not (a = b) -> Not (Val g (Emb n) b)
 notSwitch n neq (Emb v eq) = let Refl = neuUniq n v in neq eq
 
 mutual
-  synth : (g : Ctx Ty) -> (m : Neu) -> Dec (a ** Neu g m a)
+  synth : (g : Ctx Ty) -> (n : Neu) -> Dec (a ** Neu g n a)
   synth g (Var s)   = case lookup g s of
     Yes (a**el) => Yes (a ** Var el)
     No ctra => No $ \(a**Var el) => ctra (a ** el)
@@ -69,7 +69,7 @@ mutual
   val2Term (Lam v)      = Lam $ val2Term v
   val2Term (Emb v Refl) = neu2Term v
 
-  neu2Term : Neu g m a -> Term (eraseCtx g) a
+  neu2Term : Neu g n a -> Term (eraseCtx g) a
   neu2Term (Var i)   = Var $ eraseInCtx i
   neu2Term (Cut v)   = val2Term v
   neu2Term (App t u) = App (neu2Term t) (val2Term u)
