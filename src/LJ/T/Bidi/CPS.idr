@@ -27,7 +27,7 @@ mutual
      No ctra => No $ \(_**Cut v) => ctra v
 
   inheritC : (g : Ctx Ty) -> (m : Val) -> (a : Ty) -> Dec (Val g m a)
-  inheritC g (Lam s v)  A        = No uninhabited
+  inheritC _ (Lam _ _)  A        = No uninhabited
   inheritC g (Lam s v) (Imp a b) =
     case inheritC ((s,a)::g) v b of
       Yes w => Yes $ Lam w
