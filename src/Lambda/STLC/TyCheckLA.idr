@@ -42,19 +42,19 @@ notSwitch n neq (Emb v eq) = let Refl = neuUniq n v in neq eq
 
 mutual
   synth : (g : Ctx Ty) -> (n : Neu) -> Dec (a ** Neu g n a)
-  synth g (Var s)   = case lookup g s of
+  synth g (Var s)     = case lookup g s of
     Yes (a**el) => Yes (a ** Var el)
     No ctra => No $ \(a**Var el) => ctra (a ** el)
   synth g (Lan s a n) = case synth ((s,a)::g) n of
     Yes (b**x) => Yes (a~>b ** Lan x)
     No ctra => No $ \(t~>q ** Lan x) => ctra (q ** x)
-  synth g (App t u) = case synth g t of
+  synth g (App t u)   = case synth g t of
     Yes (A**n) => No $ \(_**App v _) => uninhabited $ neuUniq v n
     Yes ((Imp a b)**n) => case inherit g u a of
       Yes m => Yes (b ** App n m)
       No ctra => No $ notArg n ctra
     No ctra => No $ \(b**App {a} v _) => ctra ((a~>b) ** v)
-  synth g (Cut v t) = case inherit g v t of
+  synth g (Cut v t)   = case inherit g v t of
     Yes val => Yes (t ** Cut val)
     No ctra => No $ \(_**Cut v) => ctra v
 
