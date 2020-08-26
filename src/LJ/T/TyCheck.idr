@@ -54,12 +54,12 @@ notSwitch n neq (Emb v eq) = let Refl = neuUniq n v in neq eq
 mutual
   synth : (g : Ctx Ty) -> (m : Neu) -> Dec (a ** Neu g m a)
   synth g (Var s k) = case lookup g s of
-    Yes (a**el) => case synthS g a k of
+    Yes (a**el) => case spine g a k of
       Yes (b**q) => Yes (b ** Var el q)
       No ctra => No $ notVarArg el ctra
     No ctra => No $ \(_**Var {a} el _) => ctra (a**el)
   synth g (Cut m k) = case synth g m of
-    Yes (a**t) => case synthS g a k of
+    Yes (a**t) => case spine g a k of
       Yes (b**q) => Yes (b ** Cut t q)
       No ctra => No $ notCutArg t ctra
     No ctra => No $ \(_**Cut {a} t _) => ctra (a**t)
@@ -67,11 +67,11 @@ mutual
     Yes val => Yes (t ** Ann val)
     No ctra => No $ \(_**Ann v) => ctra v
 
-  synthS : (g : Ctx Ty) -> (a : Ty) -> (k : Spn) -> Dec (b ** Spn g a k b)
-  synthS g  a         Nil       = Yes (a ** Nil)
-  synthS g  A        (Cons m k) = No $ \(_**c) => absurd c
-  synthS g (Imp a b) (Cons m k) = case inherit g m a of
-    Yes t => case synthS g b k of
+  spine : (g : Ctx Ty) -> (a : Ty) -> (k : Spn) -> Dec (b ** Spn g a k b)
+  spine g  a         Nil       = Yes (a ** Nil)
+  spine g  A        (Cons m k) = No $ \(_**c) => absurd c
+  spine g (Imp a b) (Cons m k) = case inherit g m a of
+    Yes t => case spine g b k of
       Yes (c**q) => Yes (c ** Cons t q)
       No ctra => No $ \(c**Cons _ q) => ctra (c**q)
     No ctra => No $ \(_**Cons t _) => ctra t

@@ -40,6 +40,8 @@ modules = Iter
         , Lambda.STLC.Parser
         , Lambda.STLC.TyCheck
         , Lambda.STLC.TyCheckE
+        , Lambda.STLC.ParserLA
+        , Lambda.STLC.TyCheckLA
 
         , Lambda.PCF.Term
         , Lambda.PCF.Smallstep

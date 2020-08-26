@@ -1,4 +1,4 @@
-module Lambda.STLC.TyCheck
+module Lambda.STLC.TyCheckLA
 
 import Data.List
 import TParsec
@@ -6,7 +6,7 @@ import Parse
 import Ctx
 import Lambda.STLC.Ty
 import Lambda.STLC.Term
-import Lambda.STLC.Parser
+import Lambda.STLC.ParserLA
 
 %access public export
 %default total
@@ -20,6 +20,7 @@ mutual
 
   data Neu : Ctx Ty -> Neu -> Ty -> Type where
     Var : InCtx g s a -> Neu g (Var s) a
+    Lan : Neu ((s,a)::g) n b -> Neu g (Lan s a n) (a~>b)
     App : Neu g l (a~>b) -> Val g m a -> Neu g (App l m) b
     Cut : Val g m a -> Neu g (Cut m a) a
 
@@ -29,6 +30,7 @@ Uninhabited (Val _ (Lam _ _) A) where
 
 neuUniq : Neu g n a -> Neu g n b -> a = b
 neuUniq (Var i1)   (Var i2)   = inCtxUniq i1 i2
+neuUniq (Lan n1)   (Lan n2)   = cong $ neuUniq n1 n2
 neuUniq (App t1 _) (App t2 _) = snd $ impInj $ neuUniq t1 t2
 neuUniq (Cut v1)   (Cut v2)   = Refl
 
@@ -43,6 +45,9 @@ mutual
   synth g (Var s)   = case lookup g s of
     Yes (a**el) => Yes (a ** Var el)
     No ctra => No $ \(a**Var el) => ctra (a ** el)
+  synth g (Lan s a n) = case synth ((s,a)::g) n of
+    Yes (b**x) => Yes (a~>b ** Lan x)
+    No ctra => No $ \(t~>q ** Lan x) => ctra (q ** x)
   synth g (App t u) = case synth g t of
     Yes (A**n) => No $ \(_**App v _) => uninhabited $ neuUniq v n
     Yes ((Imp a b)**n) => case inherit g u a of
@@ -71,6 +76,7 @@ mutual
 
   neu2Term : Neu g n a -> Term (eraseCtx g) a
   neu2Term (Var i)   = Var $ eraseInCtx i
+  neu2Term (Lan n)   = Lam $ neu2Term n
   neu2Term (Cut v)   = val2Term v
   neu2Term (App t u) = App (neu2Term t) (val2Term u)
 
@@ -81,13 +87,13 @@ parseCheckTerm s = do b <- parseNeu s
                         No _ => Left $ TypeError ""
 
 private
-test0 : parseCheckTerm "(\\x.x : *->*)" = Right (TestTy ** ResultTm)
+test0 : parseCheckTerm "\\x:*.x" = Right (TestTy ** ResultTm)
 test0 = Refl
 
---private
---test1 : parseCheckTerm "(\\x.x : ((*->*)->(*->*))->((*->*)->(*->*))) (\\x.x) (\\x.x)" = Right (TestTy ** TestTm1)
---test1 = Refl
+private
+test1 : parseCheckTerm "(\\x:(*->*)->(*->*).x) (\\x.x) (\\x.x)" = Right (TestTy ** TestTm1)
+test1 = Refl
 
---private
---test2 : parseCheckTerm "(\\x.x : ((*->*)->(*->*))) ((\\x.x : (*->*)->(*->*)) (\\x.x))" = Right (TestTy ** TestTm2)
---test2 = Refl
+private
+test2 : parseCheckTerm "(\\x:*->*.x) ((\\x:*->*.x) (\\x.x))" = Right (TestTy ** TestTm2)
+test2 = Refl
