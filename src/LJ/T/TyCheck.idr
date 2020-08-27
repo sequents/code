@@ -34,8 +34,8 @@ Uninhabited (Spn g A (Cons m k) b) where
   uninhabited (Cons _ _) impossible
 
 spnUniq : Spn g c k a -> Spn g c k b -> a = b
-spnUniq  Nil            Nil           = Refl
-spnUniq (Cons _ k1)    (Cons _ k2)    = spnUniq k1 k2
+spnUniq  Nil         Nil        = Refl
+spnUniq (Cons _ k1) (Cons _ k2) = spnUniq k1 k2
 
 neuUniq : Neu g m a -> Neu g m b -> a = b
 neuUniq (Var i1 k1) (Var i2 k2) = let Refl = inCtxUniq i1 i2 in spnUniq k1 k2
