@@ -14,19 +14,6 @@ data Spine : Neu -> Val -> Ty -> Type where
   SEmb : (a : Ty) -> Spine n (Emb n) a
   SApp : (v : Val) -> Spine (App n v) w a -> Spine n w a
 
-applyD : (g : Ctx Ty) -> Spine n m a -> Dec (b ** Neu g n b) -> Dec (Val g m a)
-applyD g (SApp v sp) bne = applyD g sp $ case bne of
-  No ctra => No $ \(b**App {a} v _) => ctra ((a~>b) ** v)
-  Yes (A      **x) => No $ \(_**App v _) => uninhabited $ neuUniq v x
-  Yes (Imp a b**x) => case inherit g v a of
-    Yes y => Yes (b ** App x y)
-    No ctra => No $ notArg x ctra
-applyD g (SEmb a)    bne = case bne of
-  No ctra    => No $ \(Emb m Refl) => ctra (a ** m)
-  Yes (b**n) => case decEq a b of
-    Yes prf => Yes (Emb n (sym prf))
-    No ctra => No $ notSwitch n (ctra . sym)
-
 mutual
   synthD : (g : Ctx Ty) -> (n : Neu) -> Spine n m a -> Dec (Val g m a)
   synthD g (Var s)   sp = applyD g sp $ case lookup g s of
@@ -36,6 +23,19 @@ mutual
   synthD g (Cut v t) sp = applyD g sp $ case inheritD g v t of
     Yes val => Yes (t**Cut val)
     No ctra => No $ \(_**Cut v) => ctra v
+
+  applyD : (g : Ctx Ty) -> Spine n m a -> Dec (b ** Neu g n b) -> Dec (Val g m a)
+  applyD g (SApp v sp) bne = assert_total $ applyD g sp $ case bne of
+    No ctra => No $ \(b**App {a} v _) => ctra ((a~>b) ** v)
+    Yes (A      **x) => No $ \(_**App v _) => uninhabited $ neuUniq v x
+    Yes (Imp a b**x) => case inheritD g v a of
+      Yes y => Yes (b ** App x y)
+      No ctra => No $ notArg x ctra
+  applyD g (SEmb a)    bne = case bne of
+    No ctra    => No $ \(Emb m Refl) => ctra (a ** m)
+    Yes (b**n) => case decEq a b of
+      Yes prf => Yes (Emb n (sym prf))
+      No ctra => No $ notSwitch n (ctra . sym)
 
   inheritD : (g : Ctx Ty) -> (m : Val) -> (a : Ty) -> Dec (Val g m a)
   inheritD _ (Lam _ _)  A        = No uninhabited

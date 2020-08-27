@@ -14,22 +14,14 @@ data Spine : Neu -> Val -> Ty -> Type where
   SEmb : (a : Ty) -> Spine n (Emb n) a
   SApp : (v : Val) -> Spine (App n v) w a -> Spine n w a
 
-applyR1 : (g : Ctx Ty) -> Spine n m a -> Dec (b ** Neu g n b) -> Dec (Val g m a)
-applyR1 g (SApp v sp) bne = applyR1 g sp $ case bne of
-  No ctra => No $ \(b**App {a} v _) => ctra ((a~>b) ** v)
-  Yes (A      **x) => No $ \(_**App v _) => uninhabited $ neuUniq v x
-  Yes (Imp a b**x) => case inherit g v a of
-    Yes y => Yes (b ** App x y)
-    No ctra => No $ notArg x ctra
-applyR1 g (SEmb a)    bne = case bne of
-  No ctra    => No $ \(Emb m Refl) => ctra (a ** m)
-  Yes (b**n) => case decEq a b of
-    Yes prf => Yes (Emb n (sym prf))
-    No ctra => No $ notSwitch n (ctra . sym)
-
 data Head : Val -> Ty -> Type where
   HVar : (s : String) -> Spine (Var s) m a -> Head m a
   HCut : (v : Val) -> (t : Ty) -> Spine (Cut v t) m a -> Head m a
+
+synthR1 : (g : Ctx Ty) -> (n : Neu) -> Spine n m a -> Head m a
+synthR1 g (Var s)   sp = HVar s sp
+synthR1 g (App t u) sp = synthR1 g t (SApp u sp)
+synthR1 g (Cut v t) sp = HCut v t sp
 
 mutual
   headR1 : (g : Ctx Ty) -> Head m a -> Dec (Val g m a)
@@ -40,10 +32,18 @@ mutual
     Yes val => Yes (t ** Cut val)
     No ctra => No $ \(_**Cut v) => ctra v
 
-  synthR1 : (g : Ctx Ty) -> (n : Neu) -> Spine n m a -> Head m a
-  synthR1 g (Var s)   sp = HVar s sp
-  synthR1 g (App t u) sp = synthR1 g t (SApp u sp)
-  synthR1 g (Cut v t) sp = HCut v t sp
+  applyR1 : (g : Ctx Ty) -> Spine n m a -> Dec (b ** Neu g n b) -> Dec (Val g m a)
+  applyR1 g (SApp v sp) bne = assert_total $ applyR1 g sp $ case bne of
+    No ctra => No $ \(b**App {a} v _) => ctra ((a~>b) ** v)
+    Yes (A      **x) => No $ \(_**App v _) => uninhabited $ neuUniq v x
+    Yes (Imp a b**x) => case inheritR1 g v a of
+      Yes y => Yes (b ** App x y)
+      No ctra => No $ notArg x ctra
+  applyR1 g (SEmb a)    bne = case bne of
+    No ctra    => No $ \(Emb m Refl) => ctra (a ** m)
+    Yes (b**n) => case decEq a b of
+      Yes prf => Yes (Emb n (sym prf))
+      No ctra => No $ notSwitch n (ctra . sym)
 
   inheritR1 : (g : Ctx Ty) -> (m : Val) -> (a : Ty) -> Dec (Val g m a)
   inheritR1 _ (Lam _ _)  A        = No uninhabited
