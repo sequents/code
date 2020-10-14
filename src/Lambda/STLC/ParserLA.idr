@@ -18,7 +18,7 @@ mutual
 
   data Neu : Type where
     Var : String -> Neu
-    Lan : String -> Ty -> Neu -> Neu
+    Lan : String -> Ty -> Neu -> Neu   -- LAmbda aNnotated
     App : Neu -> Val -> Neu
     Cut : Val -> Ty -> Neu
 

@@ -31,13 +31,13 @@ notCut : Not (a=b) -> Not (Neu g (Cut m a) b)
 notCut neq (Cut n) = neq Refl
 
 mutual
-  valNot : NotVal g m a -> Not (Val g m a)
+  valNot : NotVal g m a -> Val g m a -> Void
   valNot      NotLamA         v           = uninhabited v
   valNot     (NotLam nv)     (Lam v)      = valNot nv v
   valNot {a} (NotEmb nn)     (Emb n Refl) = neuNot nn (a**n)
   valNot     (NotEmbQ n neq)  v           = notSwitch n neq v
 
-  neuNot : NotNeu g m -> Not (a ** Neu g m a)
+  neuNot : NotNeu g m -> (a ** Neu g m a) -> Void
   neuNot (NotVar nc)       (t**Var c)       = nc (t**c)
   neuNot (NotAppF nn)      (t**App {a} n _) = neuNot nn ((a~>t)**n)
   neuNot (NotAppFA na)     (_**App n _)     = uninhabited $ neuUniq na n

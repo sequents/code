@@ -85,7 +85,7 @@ parseCheckTerm s = do b <- parseNeu s
                       case synth [] b of
                         Yes (a ** n) => Right (a ** neu2Term n)
                         No _ => Left $ TypeError ""
-
+{-
 private
 test0 : parseCheckTerm "\\x:*.x" = Right (TestTy ** ResultTm)
 test0 = Refl
@@ -97,3 +97,4 @@ test1 = Refl
 private
 test2 : parseCheckTerm "(\\x:*->*.x) ((\\x:*->*.x) (\\x.x))" = Right (TestTy ** TestTm2)
 test2 = Refl
+-}
