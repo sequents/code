@@ -16,3 +16,4 @@ TG chat group: **@proof_theory**
 6. PCF compiler & virtual machine, basics of lambda-mu calculus
 7. Lambda-mu calculus: Parigot, Saurin and Ariola's variations
 8. LJ, LJT & LJTPCF calculi
+9. Three bidirectional tricks: semiannotated lambdas, detalized errors and LJT checker derivation
