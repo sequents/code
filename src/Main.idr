@@ -18,6 +18,7 @@ import Lambda.STLC.TyCheck
 
 import Lambda.PCF.Term
 import Lambda.PCF.TyCheck
+import Lambda.PCF.Bigstep
 import Lambda.PCF.Bytecode
 import Lambda.PCF.InstructN
 import Lambda.PCF.InstructV
@@ -60,6 +61,24 @@ typed =
   repl "t> " $ \s =>
     case STLC.TyCheck.parseCheckTerm s of
       Right (ty**t) => show t ++ ": " ++ show ty ++ "\n"
+      Left (ParseError p) => parseErr p
+      Left IncompleteParse => "parse error: incomplete parse\n"
+      Left (TypeError e) => "type error: " ++ e ++ "\n"
+
+pcf : IO ()
+pcf =
+  repl "p> " $ \s =>
+    case Lambda.PCF.TyCheck.parseCheckTerm s of
+      Right (ty**t) => show t ++ ": " ++ show ty ++ "\n"
+      Left (ParseError p) => parseErr p
+      Left IncompleteParse => "parse error: incomplete parse\n"
+      Left (TypeError e) => "type error: " ++ e ++ "\n"
+
+bigpcf : IO ()
+bigpcf =
+  repl "bp> " $ \s =>
+    case Lambda.PCF.TyCheck.parseCheckTerm s of
+      Right (ty**t) => show (eval0 t) ++ "\n"
       Left (ParseError p) => parseErr p
       Left IncompleteParse => "parse error: incomplete parse\n"
       Left (TypeError e) => "type error: " ++ e ++ "\n"
@@ -177,6 +196,8 @@ main =
        [_, "pu"] => untyped
        [_, "ps"] => scoped
        [_, "pt"] => typed
+       [_, "pp"] => pcf
+       [_, "bp"] => bigpcf
        [_, "pm"] => mu
        [_, "pj"] => ljt
        [_, "cp", fni, fno] => compilePCF fni fno

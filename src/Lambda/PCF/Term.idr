@@ -2,6 +2,7 @@ module Lambda.PCF.Term
 
 import Lambda.STLC.Ty
 import Data.List
+import Elem
 
 %access public export
 %default total
@@ -16,6 +17,17 @@ data Term : List Ty -> Ty -> Type where
   Succ : Term g A -> Term g A
   If0  : Term g A -> Term g a -> Term (A::g) a -> Term g a
   Fix  : Term (a::g) a -> Term g a
+
+-- print
+
+Show (Term g a) where
+  show (Var n)     = show $ elem2Nat n
+  show (Lam t)     = "\\" ++ show t
+  show (App t u)   = "(" ++ show t ++ ")(" ++ show u ++ ")"
+  show  Zero       = "Z"
+  show (Succ t)    = "S" ++ show t
+  show (If0 c t f) = "IFZ " ++ show c ++ " THEN " ++ show t ++ " ELSE " ++ show f
+  show (Fix t)     = "FIX " ++ show t
 
 fromN : Nat -> Term g A
 fromN  Z    = Zero
