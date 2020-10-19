@@ -1,4 +1,4 @@
-module Lambda.PCF.Bigstep
+module Lambda.PCF.BigstepV
 
 import Data.List
 import Data.List.Quantifiers

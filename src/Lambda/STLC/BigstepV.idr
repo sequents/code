@@ -1,4 +1,4 @@
-module Lambda.STLC.Bigstep
+module Lambda.STLC.BigstepV
 
 import Data.List
 import Data.List.Quantifiers

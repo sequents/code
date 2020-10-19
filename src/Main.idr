@@ -18,7 +18,7 @@ import Lambda.STLC.TyCheck
 
 import Lambda.PCF.Term
 import Lambda.PCF.TyCheck
-import Lambda.PCF.Bigstep
+import Lambda.PCF.BigstepV
 import Lambda.PCF.Bytecode
 import Lambda.PCF.InstructN
 import Lambda.PCF.InstructV
