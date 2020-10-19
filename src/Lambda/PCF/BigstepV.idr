@@ -11,6 +11,8 @@ import Lambda.PCF.Term
 %access public export
 %default total
 
+-- call-by-value
+
 mutual
   Env : List Ty -> Type
   Env = All Val
@@ -34,7 +36,6 @@ mutual
   showAll [] = ""
   showAll (v::vs) = show v ++ " " ++ showAll vs
 
--- cbv
 eval : Term g a -> Env g -> Val a
 eval (Var el)    env = indexAll el env
 eval (Lam t)     env = VCl env t
