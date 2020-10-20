@@ -40,7 +40,7 @@ eval (If0 {a} c t f) env = choose $ eval c env
   choose  VZ          = eval t env
   choose (VS v)       = eval f (v::env)
   choose (VCl env' v) = assert_total $ choose $ eval v env'
-eval (Fix t)     env = assert_total $ eval t (VCl env (Fix t)::env)
+eval (Fix t)     env = eval t (VCl env (Fix t)::env)
 
 
 eval0 : Term [] a -> Val a
