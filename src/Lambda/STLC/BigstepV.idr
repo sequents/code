@@ -24,7 +24,7 @@ eval : Term g a -> Env g -> Val a
 eval (Var el)  env = indexAll el env
 eval (Lam t)   env = VCl env t
 eval (App t u) env = case eval t env of
-                       VCl env' v => assert_total $ eval v (eval u env :: env')
+  VCl env' v => assert_total $ eval v (eval u env :: env')
 
 eval0 : Term [] a -> Val a
 eval0 t = eval t []

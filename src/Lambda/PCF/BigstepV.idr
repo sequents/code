@@ -40,8 +40,7 @@ eval : Term g a -> Env g -> Val a
 eval (Var el)    env = indexAll el env
 eval (Lam t)     env = VCl env t
 eval (App t u)   env = case eval t env of
-  VCl env' v => let w = eval u env in
-                assert_total $ eval v (w::env')
+  VCl env' v => assert_total $ eval v (eval u env::env')
 eval  Zero       env = VZ
 eval (Succ t)    env = VS $ eval t env
 eval (If0 c t f) env = case eval c env of
