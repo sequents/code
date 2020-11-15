@@ -25,8 +25,8 @@ mutual
     Cut : Neu -> Spn -> Neu
     Ann : Val -> Ty -> Neu
 
-type : All (Parser' Ty)
-type =
+ty : All (Parser' Ty)
+ty =
   fix _ $ \rec =>
   let
     base = alt (cmap A (char '*')) (parens rec)
@@ -38,22 +38,23 @@ name : All (Parser' String)
 name = lowerAlphas
 
 var : All (Box (Parser' Spn) :-> Parser' Neu)
-var recs = map (\(n,k) => Var n k) $
+var recs = map (uncurry Var) $
            between (char '<') (char '>') $
            andbox name (rand spaces recs)
 
 ann : All (Box (Parser' Val) :-> Parser' Neu)
-ann rec = map (\(v,t) => Ann v t) $
-          parens (andbox (Nat.map {a=Parser' _} commit rec)
-                         (rand (withSpaces (char ':'))
-                              type))
+ann recv = map (uncurry Ann) $
+           parens $
+           andbox (Nat.map {a=Parser' _} commit recv) $
+           rand (withSpaces $ char ':')
+                ty
 
 lam : All (Box (Parser' Val) :-> Parser' Val)
-lam recv = map (\(s,v) => Lam s v) $
-           rand (char '\\')
-                (and (withSpaces name)
-                     (rand (andopt (char '.') spaces)
-                           (Nat.map {a=Parser' _} commit recv)))
+lam recv = map (uncurry Lam) $
+           rand (char '\\') $
+           and (withSpaces name) $
+           rand (andopt (char '.') spaces)
+                (Nat.map {a=Parser' _} commit recv)
 
 spn : All (Box (Parser' Val) :-> Parser' Spn)
 spn recv = alt (cmap Nil $ string "[]") $
@@ -73,12 +74,9 @@ neu recs recv recn =
     (cmap Cut spaces)
     (spn recv)
 
-emb : All (Box (Parser' Spn) :-> Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' Val)
-emb recs recv recn = map Emb (neu recs recv recn)
-
 val : All (Box (Parser' Spn) :-> Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' Val)
 val recs recv recn = alts [ lam recv
-                          , emb recs recv recn
+                          , map Emb $ neu recs recv recn
                           , parens recv
                           ]
 
