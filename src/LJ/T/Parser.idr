@@ -12,18 +12,15 @@ import Lambda.STLC.Ty
 -- bidirectional-style raw terms
 
 mutual
-  data Val : Type where
-    Lam : String -> Val -> Val
-    Emb : Neu -> Val
+  data Val = Lam String Val
+           | Emb Neu
 
-  data Spn : Type where
-    Nil  : Spn
-    Cons : Val -> Spn -> Spn
+  data Spn = Nil
+           | Cons Val Spn
 
-  data Neu : Type where
-    Var : String -> Spn -> Neu
-    Cut : Neu -> Spn -> Neu
-    Ann : Val -> Ty -> Neu
+  data Neu = Var String Spn
+           | Cut Neu Spn
+           | Ann Val Ty
 
 ty : All (Parser' Ty)
 ty =

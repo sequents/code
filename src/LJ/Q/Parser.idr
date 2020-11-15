@@ -6,7 +6,7 @@ import TParsec.Running
 import Parse
 import Lambda.STLC.Ty
 
-%default covering
+%default total
 
 -- raw terms
 
