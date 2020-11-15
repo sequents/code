@@ -15,8 +15,8 @@ import LJ.T.Parser
 
 mutual
   data Val : Ctx Ty -> Val -> Ty -> Type where
-    Lam  : Val ((s,a)::g) v b -> Val g (Lam s v) (a~>b)
-    Emb  : Neu g m a -> a = b -> Val g (Emb m) b
+    Lam : Val ((s,a)::g) v b -> Val g (Lam s v) (a~>b)
+    Emb : Neu g m a -> a = b -> Val g (Emb m) b
 
   data Spn : Ctx Ty -> Ty -> Spn -> Ty -> Type where
     Nil  : Spn g a Nil a

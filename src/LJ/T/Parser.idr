@@ -82,23 +82,23 @@ val recs recv recn = alts [ lam recv
                           , parens recv
                           ]
 
-record PCF (n : Nat) where
-  constructor MkPCF
+record LJT (n : Nat) where
+  constructor MkLJT
   pval : Parser' Val n
   pspn : Parser' Spn n
   pneu : Parser' Neu n
 
-pcf : All PCF
-pcf = fix _ $ \rec =>
+ljt : All LJT
+ljt = fix _ $ \rec =>
   let
-    ihv = Nat.map {a=PCF} pval rec
-    ihs = Nat.map {a=PCF} pspn rec
-    ihn = Nat.map {a=PCF} pneu rec
+    ihv = Nat.map {a=LJT} pval rec
+    ihs = Nat.map {a=LJT} pspn rec
+    ihn = Nat.map {a=LJT} pneu rec
    in
-  MkPCF (val ihs ihv ihn) (spn ihv) (neu ihs ihv ihn)
+  MkLJT (val ihs ihv ihn) (spn ihv) (neu ihs ihv ihn)
 
 parseVal : String -> Either Error Val
-parseVal s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (pval pcf)
+parseVal s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (pval ljt)
 
 parseNeu : String -> Either Error Neu
-parseNeu s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (pneu pcf)
+parseNeu s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (pneu ljt)
