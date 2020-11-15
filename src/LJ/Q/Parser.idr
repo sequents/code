@@ -1,8 +1,8 @@
 module LJ.Q.Parser
 
---import Data.String.Parser
---import Data.String.Parser.Expression
+import Data.NEList
 import TParsec
+import TParsec.Running
 import Parse
 import Lambda.STLC.Ty
 
@@ -30,8 +30,8 @@ ty : All (Parser' Ty)
 ty =
   fix _ $ \rec =>
   let
-    base = alt (cmap A (char '*')) (parens rec)
-    arr = cmap Imp (withSpaces (string "->"))
+    base = (cmap A $ char '*') `alt` (parens rec)
+    arr = cmap Imp (withSpaces $ string "->")
    in
   chainr1 base arr
 
@@ -40,49 +40,56 @@ ty =
 name : All (Parser' String)
 name = lowerAlphas
 
-var : All (Parser' NeuV)
-var = map Var name
+cut : All (Box (Parser' Val) :-> Parser' NeuV)
+cut recv = map (uncurry Cut) $
+           parens $
+           andbox (Nat.map {a=Parser' _} commit recv) $
+           rand (withSpaces $ char ':')
+                ty
 
-cut : All (Parser' NeuV)
-cut = (uncurry Cut) <$>
-      (parens [| (lexeme val, token ":" *> ty) |])
+neuV : All (Box (Parser' Val) :-> Parser' NeuV)
+neuV recv = (map Var name) `alt` (cut recv)
 
-neuV : All (Parser' NeuV)
-neuV = alts [var, cut]
+gapp : All (Box (Parser' Val) :-> Box (Parser' Neu) :-> Parser' Neu)
+gapp recv recn = map (\(x,f,v,n) => GApp x f v n) $
+                 rand (string "LETF") $
+                 and (withSpaces name) $
+                 rand (char '=') $
+                 and (withSpaces name) $
+                 andbox (Nat.map {a=Parser' _} commit recv) $
+                 rand (withSpaces $ string "IN") $
+                      (Nat.map {a=Parser' _} commit recn)
 
-gapp : All (Parser' Neu)
-gapp = (\(x,f,v,n) => GApp x f v n) <$>
-       [| (,,,) (token "LETF" *> lexeme name <* token "=")
-                (lexeme name)
-                (lexeme val <* token "IN")
-                (lexeme neu) |]
+lett : All (Box (Parser' NeuV) :-> Box (Parser' Neu) :-> Parser' Neu)
+lett recnv recn = map (\(x,nv,n) => Let x nv n) $
+                  rand (string "LET") $
+                  and (withSpaces name) $
+                  rand (andopt (char '=') spaces) $
+                  andbox (Nat.map {a=Parser' _} commit recnv) $
+                  rand (withSpaces $ string "IN") $
+                       (Nat.map {a=Parser' _} commit recn)
 
-lett : All (Parser' Neu)
-lett = (\(x,nv,n) => Let x nv n) <$>
-       [| (,,) (token "LET" *> lexeme name <* token "=")
-               (lexeme neuV <* token "IN")
-               (lexeme neu) |]
+neu : All (Box (Parser' Val) :-> Box (Parser' NeuV) :-> Box (Parser' Neu) :-> Parser' Neu)
+neu recv recnv recn = alts [ map V $ neuV recv
+                           , gapp recv recn
+                           , lett recnv recn
+                           ]
 
-neu : All (Parser' Neu)
-neu = alts [ V <$> neuV
-           , gapp
-           , lett ]
+lam : All (Box (Parser' Neu) :-> Parser' Val)
+lam recn = map (uncurry Lam) $
+           rand (char '\\') $
+           and (withSpaces name) $
+           rand (andopt (char '.') spaces)
+                (Nat.map {a=Parser' _} commit recn)
 
-lam : All (Parser' Val)
-lam = (uncurry Lam) <$>
-      [| (token "\\" *> lexeme name, token "." *> neu) |]
-
-emb : All (Parser' Val)
-emb = Emb <$> neuV
-
-val : All (Parser' Val)
-val = alts [ lam, emb ]
+val : All (Box (Parser' Neu) :-> Box (Parser' Val) :-> Parser' Val)
+val recn recv = (lam recn) `alt` (map Emb $ neuV recv)
 
 record LJQ (n : Nat) where
   constructor MkLJQ
-  pval : Parser' Val n
+  pval : Parser' Val  n
   pnev : Parser' NeuV n
-  pneu : Parser' Neu n
+  pneu : Parser' Neu  n
 
 ljq : All LJQ
 ljq = fix _ $ \rec =>
@@ -91,7 +98,7 @@ ljq = fix _ $ \rec =>
     ihnv = Nat.map {a=LJQ} pnev rec
     ihn  = Nat.map {a=LJQ} pneu rec
    in
-  MkLJQ (val ihs ihv ihn) (nev ihv) (neu ihs ihv ihn)
+  MkLJQ (val ihn ihv) (neuV ihv) (neu ihv ihnv ihn)
 
 parseVal : String -> Either Error Val
 parseVal s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (pval ljq)
@@ -99,6 +106,7 @@ parseVal s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult
 parseNeu : String -> Either Error Neu
 parseNeu s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (pneu ljq)
 
--- "LET f = (\\x.x : (1->1)->(1->1)) IN LETF t = f \\x.x IN t"
--- "LET f = (\\x.x : ((1->1)->(1->1))->((1->1)->(1->1))) IN LETF g = f \\x.x IN LETF t = g \\x.x IN t"
--- "LET f = (\\x.x : (1->1)->(1->1)) IN LETF g = f \\x.x IN LET h = (\\x.x : (1->1)->(1->1)) IN LETF t = h g IN t"
+-- "LET f = (\\x.x : (*->*)->(*->*)) IN LETF t = f \\x.x IN t"
+-- "LET f = (\\x.x : ((*->*)->(*->*))->((*->*)->(*->*))) IN LETF g = f \\x.x IN LETF t = g \\x.x IN t"
+-- "LET f = (\\x.x : (*->*)->(*->*)) IN LETF g = f \\x.x IN LET h = (\\x.x : (*->*)->(*->*)) IN LETF t = h g IN t"
+-- "LET f = (\\x.x : (*->*)->(*->*)) IN LETF g = f \\x.x IN LETF t = f g IN t"
