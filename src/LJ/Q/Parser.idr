@@ -103,6 +103,7 @@ ljq = fix _ $ \rec =>
 parseVal : String -> Either Error Val
 parseVal s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (pval ljq)
 
+export
 parseNeu : String -> Either Error Neu
 parseNeu s = result Left Left (maybe (Left IncompleteParse) Right) $ parseResult s (pneu ljq)
 
