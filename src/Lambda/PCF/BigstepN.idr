@@ -24,12 +24,12 @@ mutual
 
 eval : Term g a -> Env g -> Val a
 eval (Var el)        env = case indexAll el env of
-  VCl env' v => assert_total $ eval v env'
-  vl => vl
+                             VCl env' v => assert_total $ eval v env'
+                             vl => vl
 eval (Lam t)         env = VCl env (Lam t)
 eval (App t u)       env = case eval t env of
-  VCl env' (Lam v) => assert_total $ eval v (VCl env u :: env')
-  VCl _     _      => VCl env (App t u)
+                             VCl env' (Lam v) => assert_total $ eval v (VCl env u :: env')
+                             VCl _     _      => VCl env (App t u)
 eval  Zero           env = VZ
 eval (Succ t)        env = VS $ eval t env
 eval (If0 {a} c t f) env = choose $ eval c env
