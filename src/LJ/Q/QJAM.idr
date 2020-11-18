@@ -33,7 +33,7 @@ initState a = S1 a [] Mt
 
 step : State b -> Maybe (State b)
 step (S1 (V p)         e (Fun t g c)) = Just $ S2 p e t g c
-step (S1 (GApp p t el) e          c ) = case indexAll el e of
+step (S1 (GApp el p t) e          c ) = case indexAll el e of
                                           Cl (Lam u) f => Just $ S2 p e u f (Fun t e c)
                                           _ => Nothing
 step (S1 (Let p t)    e           c ) = Just $ S2 p e t e c
