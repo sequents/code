@@ -21,32 +21,25 @@ mutual
     VZ  : Val A
     VS  : Val A -> Val A
     VCl : Env g -> Term (a::g) b -> Val (a~>b)
-
-toNV : Val A -> Nat
-toNV  VZ    = Z
-toNV (VS v) = S $ toNV v
-
-mutual
-  Show (Val a) where
-    show  VZ = "Z"
-    show (VS v) = "S" ++ show v
-    show (VCl e t) = "{" ++ showAll e ++ "}: " ++ show t
-
-  showAll : All Val l -> String
-  showAll [] = ""
-  showAll (v::vs) = show v ++ " " ++ showAll vs
+    VF  : Env g -> Term (a::g) a -> Val a
 
 eval : Term g a -> Env g -> Val a
-eval (Var el)    env = indexAll el env
-eval (Lam t)     env = VCl env t
-eval (App t u)   env = case eval t env of
-  VCl env' v => assert_total $ eval v (eval u env::env')
-eval  Zero       env = VZ
-eval (Succ t)    env = VS $ eval t env
-eval (If0 c t f) env = case eval c env of
-  VZ   => eval t env
-  VS v => eval f (v::env)
-eval (Fix t)     env = assert_total $ eval t (eval (Fix t) env::env)
+eval (Var el)        env = indexAll el env
+eval (Lam t)         env = VCl env t
+eval (App {a=x} t u) env = go (eval t env)
+  where
+  go : Val (x~>a) -> Val a
+  go (VCl env' v) = assert_total $ eval v (eval u env::env')
+  go (VF env' v)  = assert_total $ go (eval v (VF env' v :: env'))
+eval  Zero           env = VZ
+eval (Succ t)        env = VS $ eval t env
+eval (If0 {a} c t f) env = go (eval c env)
+  where
+  go : Val A -> Val a
+  go (VZ       ) = eval t env
+  go (VS v     ) = eval f (v::env)
+  go (VF env' v) = assert_total $ go (eval v (VF env' v :: env'))
+eval (Fix t)         env = VF env t
 
 eval0 : Term [] a -> Val a
 eval0 t = eval t []
