@@ -36,8 +36,8 @@ eval (Succ t)        env = VS $ eval t env
 eval (If0 {a} c t f) env = go (eval c env)
   where
   go : Val A -> Val a
-  go (VZ       ) = eval t env
-  go (VS v     ) = eval f (v::env)
+  go  VZ         = eval t env
+  go (VS v)      = eval f (v::env)
   go (VF env' v) = assert_total $ go (eval v (VF env' v :: env'))
 eval (Fix t)         env = VF env t
 
