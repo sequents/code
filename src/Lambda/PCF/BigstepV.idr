@@ -24,22 +24,30 @@ mutual
     VF  : Env g -> Term (a::g) a -> Val a
 
 eval : Term g a -> Env g -> Val a
-eval (Var el)        env = indexAll el env
-eval (Lam t)         env = VCl env t
-eval (App {a=x} t u) env = go (eval t env)
+eval (Var el)              env = indexAll el env
+eval (Lam t)               env = VCl env t
+eval (App {a=x} {b=y} t u) env = goF (eval t env)
   where
-  go : Val (x~>a) -> Val a
-  go (VCl env' v) = assert_total $ eval v (eval u env::env')
-  go (VF env' v)  = assert_total $ go (eval v (VF env' v :: env'))
-eval  Zero           env = VZ
-eval (Succ t)        env = VS $ eval t env
-eval (If0 {a} c t f) env = go (eval c env)
+  goF : Val (x~>y) -> Val y
+  goF (VCl env' v) = goA (eval u env)
+    where
+    goA : Val x -> Val y
+    goA (VF env'' w) = assert_total $ goA (eval w (VF env'' w :: env''))
+    goA w            = assert_total $ eval v (w :: env')
+  goF (VF env' v)  = assert_total $ goF (eval v (VF env' v :: env'))
+eval  Zero                 env = VZ
+eval (Succ t)              env = goS (eval t env)
   where
-  go : Val A -> Val a
-  go  VZ         = eval t env
-  go (VS v)      = eval f (v::env)
-  go (VF env' v) = assert_total $ go (eval v (VF env' v :: env'))
-eval (Fix t)         env = VF env t
+  goS : Val A -> Val A
+  goS (VF env' w) = assert_total $ goS (eval w (VF env' w :: env'))
+  goS  w          = VS w
+eval (If0 {a} c t f)       env = goI (eval c env)
+  where
+  goI : Val A -> Val a
+  goI  VZ         = eval t env
+  goI (VS v)      = eval f (v::env)
+  goI (VF env' v) = assert_total $ goI (eval v (VF env' v :: env'))
+eval (Fix t)               env = VF env t
 
 eval0 : Term [] a -> Val a
 eval0 t = eval t []
