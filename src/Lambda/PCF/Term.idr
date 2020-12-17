@@ -29,6 +29,8 @@ Show (Term g a) where
   show (If0 c t f) = "IFZ " ++ show c ++ " THEN " ++ show t ++ " ELSE " ++ show f
   show (Fix t)     = "FIX " ++ show t
 
+-- numbers
+
 fromN : Nat -> Term g A
 fromN  Z    = Zero
 fromN (S n) = Succ $ fromN n
@@ -41,6 +43,8 @@ toN  _       = Nothing
 sucN : Term g (A~>A)
 sucN = Lam $ Succ $ Var Here
 
+-- identity tests
+
 idid : Term [] (A~>A)
 idid = App (Lam $ Var Here) (Lam $ Var Here)
 
@@ -50,8 +54,12 @@ idid_id = App (App (Lam $ Var Here) (Lam $ Var Here)) (Lam $ Var Here)
 id_idid : Term [] (A~>A)
 id_idid = App (Lam $ Var Here) (App (Lam $ Var Here) (Lam $ Var Here))
 
+-- non-termination
+
 bam : Term [] A
 bam = App (Lam Zero) (Fix $ Succ $ Var Here)
+
+-- Church arithmetic
 
 Ch : Ty -> Ty
 Ch a = (a~>a)~>(a~>a)
@@ -66,6 +74,14 @@ plusC = Lam $ Lam $ Lam $ Lam $ App (App (Var $ There $ There $ There Here)
                                               (Var $ There Here))
                                          (Var Here))
 
+twotwoC : Term [] A
+twotwoC = App (App (App (App plusC twoC) twoC) sucN) Zero
+
+mkTwo : Term [] A
+mkTwo = App (App twoC sucN) Zero
+
+-- Nat arithmetic
+
 plusN : Term g (A~>A~>A)
 plusN = Fix $ Lam $ Lam $ If0 (Var $ There Here)
                               (Var Here)
@@ -75,12 +91,6 @@ plusN = Fix $ Lam $ Lam $ If0 (Var $ There Here)
 
 twotwoN : Term [] A
 twotwoN = App (App plusN (fromN 2)) (fromN 2)
-
-twotwoC : Term [] A
-twotwoC = App (App (App (App plusC twoC) twoC) sucN) Zero
-
-mkTwo : Term [] A
-mkTwo = App (App twoC sucN) Zero
 
 minusN : Term g (A~>A~>A)
 minusN = Fix $ Lam $ Lam $ If0 (Var Here)
@@ -94,5 +104,8 @@ minusN = Fix $ Lam $ Lam $ If0 (Var Here)
 threeMinusTwoN : Term [] A
 threeMinusTwoN = App (App minusN (fromN 3)) (fromN 2)
 
+-- sharing
+
 plusplus : Term [] A
-plusplus = App (Lam $ App (App plusN (Var Here)) (Var Here)) (App (App plusN (fromN 9)) (fromN 1))
+plusplus = App (Lam $ App (App plusN (Var Here)) (Var Here)) $
+           App (App plusN (fromN 9)) (fromN 1))

@@ -1,9 +1,9 @@
-module Lambda.PCFV.Term
+module Lambda.PCF.V.Mod.Term
 
 import Data.List
 import Elem
 import Subset
-import Lambda.PCFV.Ty
+import Lambda.PCF.V.Mod.Ty
 
 %default total
 

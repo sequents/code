@@ -1,9 +1,9 @@
-module Lambda.PCFV.Smallstep
+module Lambda.PCF.V.Mod.Smallstep
 
 import Data.List
 import Subset
 import Iter
-import Lambda.PCFV.Term
+import Lambda.PCF.V.Mod.Term
 
 %default total
 

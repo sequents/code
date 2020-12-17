@@ -1,4 +1,4 @@
-module Lambda.PCFV.Ty
+module Lambda.PCF.V.Mod.Ty
 
 %default total
 
