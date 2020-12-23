@@ -1,10 +1,10 @@
-module LJ.Q.PCF.Smallstep
+module LJ.Q.PCF.Mod.Smallstep
 
 import Data.List
 import Subset
 import Iter
 
-import Lambda.PCF.V.Mod.Ty
+import LJ.Q.PCF.Mod.Ty
 import LJ.Q.PCF.Mod.Term
 
 %default total
