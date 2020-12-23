@@ -143,6 +143,10 @@ minusN = LamF $ V $
                V $ Var Here) $
          V $ Var Here
 
+-- let minus = ..minusN..
+--     g = minus 3
+--     t = g 2
+-- in [t]
 threetwo : TermQ g A
 threetwo = Let minusN $
            GApp Here (fromN 3) $

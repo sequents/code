@@ -1,9 +1,9 @@
-module LJ.Q.PCF.Term
+module LJ.Q.PCF.Mod.Term
 
 import Data.List
 import Subset
 import Iter
-import Lambda.PCF.V.Mod.Ty
+import LJ.Q.PCF.Mod.Ty
 
 --import Lambda.STLC.Ty
 --import Lambda.PCF.Term
@@ -218,6 +218,11 @@ minusN = Fix $ V $
                     (V $ Var Here))
               (V $ Var Here)
 
+-- let minusC = ..minusN..
+--     minus <- minusC
+--     g = minus 3
+--     t = g 2
+-- in [t]
 threetwo : TermQ g A
 threetwo = Let minusN $
            Bnd Here $
