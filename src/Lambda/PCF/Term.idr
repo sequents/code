@@ -108,4 +108,4 @@ threeMinusTwoN = App (App minusN (fromN 3)) (fromN 2)
 
 plusplus : Term [] A
 plusplus = App (Lam $ App (App plusN (Var Here)) (Var Here)) $
-           App (App plusN (fromN 9)) (fromN 1))
+           App (App plusN (fromN 9)) (fromN 1)
