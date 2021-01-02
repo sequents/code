@@ -161,13 +161,13 @@ bam = Let (Lam $ V Zero) $
       GApp (There $ There Here) (Var Here) $
       V $ Var Here
 
--- FIX ff.\x.[\y.let r = if x
---                         then [y]
---                         else \z.let f <- ff
---                                     g = f z
---                                     t = g y
---                                 in [S [t]]
---               in [r]]
+-- FIX ff.[\x.[\y.let r = if x
+--                          then [y]
+--                          else \z.let f <- ff
+--                                      g = f z
+--                                      t = g y
+--                                  in [S [t]]
+--                in [r]]
 add : ValQ [] (C (A~>A~>A))
 add = Fix $ V $
       Lam $ V $
