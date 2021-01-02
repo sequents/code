@@ -82,8 +82,8 @@ fromN  Z    = Zero
 fromN (S n) = Succ $ fromN n
 
 -- let f = \x.[Z]
---     w = \f/x. let x = f (S x)
---               in [x]
+--     w = \g/x. let y = g (S x)
+--               in [y]
 --     x = w Z
 --     t = f x
 -- in [t]

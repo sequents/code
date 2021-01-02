@@ -1,4 +1,4 @@
-module LJ.LJQ.QJAM
+module LJ.Q.QJAM
 
 import Data.List
 import Data.List.Quantifiers
