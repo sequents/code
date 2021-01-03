@@ -10,23 +10,23 @@ import LJ.F.Ty
 
 mutual
   data TermS : List PTy -> NTy -> Type where
-    Ie : TermS g (p~>n) -> ValI g p -> TermS g n
-    Pe : ValS g (D n) -> TermS g n
-    Ct : TermI g n -> TermS g n
+    Ie : TermS g (p~>n) -> ValC g p -> TermS g n       -- app
+    Pe : ValS g (D n) -> TermS g n                     -- force
+    Ct : TermC g n -> TermS g n                        -- coerceT
 
   data ValS : List PTy -> PTy -> Type where
-    Ax : Elem p g -> ValS g p
-    Cp : ValI g p -> ValS g p
+    Ax : Elem p g -> ValS g p                          -- var
+    Cp : ValC g p -> ValS g p                          -- coerceV
 
-  data TermI : List PTy -> NTy -> Type where
-    Ni : ValI g p -> TermI g (U p)
-    Ii : TermI (p::g) n -> TermI g (p~>n)
-    Ne : TermS g (U p) -> TermI (p::g) m -> TermI g m
-    Mt : TermS g n -> UN n -> TermI g n
+  data TermC : List PTy -> NTy -> Type where
+    Ni : ValC g p -> TermC g (U p)                     -- pure
+    Ii : TermC (p::g) n -> TermC g (p~>n)              -- lam
+    Ne : TermS g (U p) -> TermC (p::g) m -> TermC g m  -- bind
+    Mt : TermS g n -> UN n -> TermC g n
 
-  data ValI : List PTy -> PTy -> Type where
-    Pi : TermI g n -> ValI g (D n)
-    Mp : ValS g p -> ValI g p
+  data ValC : List PTy -> PTy -> Type where
+    Pi : TermC g n -> ValC g (D n)                     -- thunk
+    Mp : ValS g p -> ValC g p
 
-lt : ValI g p -> TermI (p::g) n -> TermI g n
+lt : ValC g p -> TermC (p::g) n -> TermC g n
 lt v t = Ne (Ct $ Ni v) t
