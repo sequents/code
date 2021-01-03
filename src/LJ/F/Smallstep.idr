@@ -10,7 +10,7 @@ import LJ.F.Term
 %access public export
 
 concat : LSync g a b -> LSync g b c -> LSync g a c
-concat (AxL un)  s2 = s2
+concat (AxL _)   s2 = s2
 concat (IL t s1) s2 = IL t (concat s1 s2)
 concat (BL t)    s2 = BL $ HCL t (renameLSync weaken s2)
 
@@ -39,4 +39,4 @@ stepF (HCR p@(BR _)   (FR t)           ) = Just $ FR $ subst1R p t
 stepF (HCR p@(BR u)   (FL  Here      k)) = Just $ HCL u (subst1RL p k)
 stepF (HCR p@(BR _)   (FL (There el) k)) = Just $ FL el (subst1RL p k)
 
-stepF  _                                = Nothing
+stepF  _                                 = Nothing
