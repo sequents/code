@@ -16,15 +16,15 @@ mutual
   data TermQ : List Ty -> Ty -> Type where
     V    : ValQ g a -> TermQ g a                                                  -- focus/dereliction
     GApp : Elem (a~>b) g -> ValQ g a -> TermQ (b::g) c -> TermQ g c               -- implication left intro, `let x : b = (f : a~>b) (t : a) in u : c`
-    GIf0 : Elem A g -> TermQ g a -> TermQ (A::g) a -> TermQ (a::g) b -> TermQ g b -- N left intro
-    Let  : ValQ g a -> TermQ (a::g) b -> TermQ g b                                -- head cut, `let x = t in u`
+    GIf0 : Elem A g -> TermQ g a -> TermQ (A::g) a -> TermQ (a::g) b -> TermQ g b -- N left intro, `let x : a = if0 (n : A) then t else \(y : A).f in u : b`
+    Let  : ValQ g a -> TermQ (a::g) b -> TermQ g b                                -- head cut, `let x : a = t in u : b`
 
   -- right-synchronous
   data ValQ : List Ty -> Ty -> Type where
     Var  : Elem a g -> ValQ g a                    -- axiom
     LamF : TermQ (a::(a~>b)::g) b -> ValQ g (a~>b) -- implication intro (mixed)
-    Zero : ValQ g A                                -- N right intro Z
-    Succ : ValQ g A -> ValQ g A                    -- N right intro S
+    Zero : ValQ g A                                -- N right intro, Z
+    Succ : ValQ g A -> ValQ g A                    -- N right intro, S
 
 -- structural rules
 
