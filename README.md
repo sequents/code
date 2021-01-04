@@ -17,3 +17,4 @@ TG chat group: **@proof_theory**
 7. Lambda-mu calculus: Parigot, Saurin and Ariola's variations
 8. LJ, LJT & LJTPCF calculi
 9. Three bidirectional tricks: semiannotated lambdas, detalized errors and LJT checker derivation
+10. Big-step reduction, LJQ and 2 variants of LJQPCF
