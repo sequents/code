@@ -19,7 +19,7 @@ mutual
     GApp : Elem (a~>b) g -> ValQ g a -> TermQ (b::g) c -> TermQ g c  -- implication left intro, `let x : b = (f : a~>b) (t : a) in u : c`
     Let  : ValQ g a -> TermQ (a::g) b -> TermQ g b                   -- head cut, `let x = t in u`
 
-  -- right-synchronous
+  -- right-synchronous, are values
   data ValQ : List Ty -> Ty -> Type where
     Var  : Elem a g -> ValQ g a                                      -- axiom
     Lam  : TermQ (a::g) b -> ValQ g (a~>b)                           -- implication right intro
