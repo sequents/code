@@ -10,37 +10,37 @@ import LJ.F.Ty
 
 mutual
   -- asynchronous
-  data Async : List PTy -> NTy -> Type where
-    FL  : Elem (D n) g -> LSync g n m -> Async g m      -- left focus, continuation
-    FR  : RSync g p -> Async g (U p)                    -- right focus, value
-    IR  : Async (p::g) n -> Async g (p~>n)              -- lambda
-    HCL : Async g n -> LSync g n m -> Async g m         -- left head cut, stack
-    HCR : RSync g p -> Async (p::g) n -> Async g n      -- right head cut, let
+  data Term : List PTy -> NTy -> Type where
+    Cont : Elem (D n) g -> Stack g n m -> Term g m     -- left focus, continuation
+    Foc  : Val g p -> Term g (U p)                     -- right focus, value
+    Lam  : Term (p::g) n -> Term g (p~>n)              -- right implication
+    Cut  : Term g n -> Stack g n m -> Term g m         -- left head cut, stack
+    Let  : Val g p -> Term (p::g) n -> Term g n        -- right head cut, let
 
   -- left synchronous, context + stoup
-  data LSync : List PTy -> NTy -> NTy -> Type where
-    AxL : UN n -> LSync g n n                           -- nil
-    IL  : RSync g p -> LSync g n m -> LSync g (p~>n) m  -- cons
-    BL  : Async (p::g) m -> LSync g (U p) m             -- left blur
+  data Stack : List PTy -> NTy -> NTy -> Type where
+    Nil  : UN n -> Stack g n n                         -- left axiom
+    Cons : Val g p -> Stack g n m -> Stack g (p~>n) m  -- left implication
+    C    : Term (p::g) m -> Stack g (U p) m            -- left blur
 
   -- right-synchronous
-  data RSync : List PTy -> PTy -> Type where
-    AxR : Elem p g -> RSync g p                         -- variable
-    BR  : Async g n -> RSync g (D n)                    -- right blur
+  data Val : List PTy -> PTy -> Type where
+    Var : Elem p g -> Val g p                          -- right axiom
+    V   : Term g n -> Val g (D n)                      -- right blur
 
 mutual
-  renameAsync : Subset g d -> Async g a -> Async d a
-  renameAsync s (FL el k) = FL (s el) (renameLSync s k)
-  renameAsync s (FR r)    = FR $ renameRSync s r
-  renameAsync s (IR t)    = IR $ renameAsync (ext s) t
-  renameAsync s (HCL t c) = HCL (renameAsync s t) (renameLSync s c)
-  renameAsync s (HCR r a) = HCR (renameRSync s r) (renameAsync (ext s) a)
+  renameTerm : Subset g d -> Term g a -> Term d a
+  renameTerm s (Cont el k) = Cont (s el) (renameStack s k)
+  renameTerm s (Foc r)     = Foc $ renameVal s r
+  renameTerm s (Lam t)     = Lam $ renameTerm (ext s) t
+  renameTerm s (Cut t c)   = Cut (renameTerm s t) (renameStack s c)
+  renameTerm s (Let r a)   = Let (renameVal s r) (renameTerm (ext s) a)
 
-  renameLSync : Subset g d -> LSync g a b -> LSync d a b
-  renameLSync s (AxL prf)  = AxL prf
-  renameLSync s (IL t c)   = IL (renameRSync s t) (renameLSync s c)
-  renameLSync s (BL a)     = BL $ renameAsync (ext s) a
+  renameStack : Subset g d -> Stack g a b -> Stack d a b
+  renameStack s (Nil prf)  = Nil prf
+  renameStack s (Cons t c) = Cons (renameVal s t) (renameStack s c)
+  renameStack s (C a)      = C $ renameTerm (ext s) a
 
-  renameRSync : Subset g d -> RSync g a -> RSync d a
-  renameRSync s (AxR el)   = AxR $ s el
-  renameRSync s (BR a)     = BR $ renameAsync s a
+  renameVal : Subset g d -> Val g a -> Val d a
+  renameVal s (Var el) = Var $ s el
+  renameVal s (V a)    = V $ renameTerm s a
