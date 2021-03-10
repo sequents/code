@@ -124,9 +124,20 @@ modules = Iter
         , LJ.LambdaC.Term
         , LJ.LambdaC.Smallstep
 
-        , LJ.LJQ.Term
-        , LJ.LJQ.Smallstep
-        , LJ.LJQ.QJAM
+        , LJ.Q.Term
+        , LJ.Q.Smallstep
+        , LJ.Q.QJAM
+        , LJ.Q.Parser
+        , LJ.Q.TyCheck
+
+        , LJ.Q.PCF.LamF.Term
+        , LJ.Q.PCF.LamF.Smallstep
+
+        , LJ.Q.PCF.Mod.Ty
+        , LJ.Q.PCF.Mod.Term
+        , LJ.Q.PCF.Mod.Smallstep
+        , LJ.Q.PCF.Mod.Parser
+        , LJ.Q.PCF.Mod.TyCheck
 
 executable = run
 
