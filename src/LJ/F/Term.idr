@@ -12,7 +12,7 @@ mutual
   -- asynchronous
   data Term : List PTy -> NTy -> Type where
     Cont : Elem (D n) g -> Stack g n m -> Term g m     -- left focus, continuation
-    Foc  : Val g p -> Term g (U p)                     -- right focus, value
+    Foc  : Val g p -> Term g (U p)                     -- right focus, return
     Lam  : Term (p::g) n -> Term g (p~>n)              -- right implication
     Cut  : Term g n -> Stack g n m -> Term g m         -- left head cut, stack
     Let  : Val g p -> Term (p::g) n -> Term g n        -- right head cut, let
@@ -21,12 +21,12 @@ mutual
   data Stack : List PTy -> NTy -> NTy -> Type where
     Nil  : UN n -> Stack g n n                         -- left axiom
     Cons : Val g p -> Stack g n m -> Stack g (p~>n) m  -- left implication
-    C    : Term (p::g) m -> Stack g (U p) m            -- left blur
+    C    : Term (p::g) m -> Stack g (U p) m            -- left blur, case
 
   -- right-synchronous
   data Val : List PTy -> PTy -> Type where
     Var : Elem p g -> Val g p                          -- right axiom
-    V   : Term g n -> Val g (D n)                      -- right blur
+    V   : Term g n -> Val g (D n)                      -- right blur, thunk
 
 mutual
   renameTerm : Subset g d -> Term g a -> Term d a

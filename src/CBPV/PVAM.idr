@@ -8,7 +8,6 @@ import LJ.F.Ty
 import CBPV.NJPV
 
 %default total
-%access public export
 
 mutual
   Env : List PTy -> Type
@@ -22,6 +21,7 @@ data Stack : NTy -> NTy -> Type where
   Arg : Clos a -> Stack b c -> Stack (a~>b) c
   Fun : TermC (a::g) b -> Env g -> Stack b c -> Stack (U a) c
 
+-- value-forcing marker
 data Mark : PTy -> NTy -> Type where
   MM : TermC (a::g) b -> Env g -> Mark a b
   FM : Mark (D a) a
@@ -33,7 +33,7 @@ data State : NTy -> Type where
 step : State a -> Maybe (State a)
 step (TM (CoeT (Bind t u)) e                 s ) = Just $ TM t e      (Fun u e s)
 step (TM (App t u)         e                 s ) = Just $ TM t e (Arg (Cl u e) s)
-step (TM (Force v)         e                 s ) = Just $ VM  v        e   FM        s
+step (TM (Fce v)           e                 s ) = Just $ VM  v        e   FM        s
 step (TM (CoeT (Pure v))   e      (Fun t1 e1 s)) = Just $ VM (CoeV v)  e  (MM t1 e1) s
 step (TM (CoeT (Lam t))    e (Arg (Cl u1 e1) s)) = Just $ VM (CoeV u1) e1 (MM t e)   s
 step (VM (Var  Here)      (Cl u e2::_) (MM t1 e1) s) = Just $ VM (CoeV u) e2 (MM t1 e1) s
